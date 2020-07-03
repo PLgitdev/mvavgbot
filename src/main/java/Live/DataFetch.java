@@ -44,7 +44,7 @@ public class DataFetch {
     public ArrayList<Map<?,?>> historicalDataFetcher() throws IOException, InterruptedException {
         String dayOne = "DAY_1";
         URL url =
-            new URL( "https://api.bittrex.com/v3/markets/" + mOne + "-" + mTwo + "/candles/" + dayOne +
+            new URL( "https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + dayOne +
                 "/recent");
         StringBuilder historicalData = fetch(url);
         return objectMapper.readValue(historicalData.toString(), new TypeReference<ArrayList<Map<?,?>>>(){});
