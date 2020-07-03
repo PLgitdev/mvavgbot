@@ -36,6 +36,7 @@ public class Main {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                    mongoCRUD.deleteAllMarketData("historicaldata");
                     break;
                 } else {
                     System.out.println("Market entry invalid, please try again");

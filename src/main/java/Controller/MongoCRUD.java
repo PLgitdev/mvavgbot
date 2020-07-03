@@ -1,8 +1,12 @@
 package Controller;
 
 import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
+import org.bson.conversions.Bson;
+
+import java.time.LocalDateTime;
 import java.util.Map;
 
 public class MongoCRUD {
@@ -28,10 +32,13 @@ public class MongoCRUD {
        db.getCollection(collection).insertOne(doc);
     }
 
-    /*
     public void deleteAllMarketData(String collection) {
-        db.getCollection(collection).deleteMany({});
-
+        LocalDateTime now = LocalDateTime.now();
+        String nowS = now.toString();
+        Map <String, String> stringMap = null;
+        Document doc = new Document();
+        stringMap.put("startsAt",nowS);
+        stringMap.forEach(doc::append);
+        db.getCollection(collection).deleteMany(doc);
     }
-    */
 }
