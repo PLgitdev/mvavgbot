@@ -23,7 +23,7 @@ public class Main {
             try {
                 marketSplit = markets.split(",");
                 String mOne = marketSplit[0].toUpperCase();
-                String mTwo = marketSplit[1].toUpperCase());
+                String mTwo = marketSplit[1].toUpperCase();
                 fetcher = DataFetch.getInstance(mOne,mTwo);
                 if (fetcher.valid()) {
                     try {
