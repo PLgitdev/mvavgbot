@@ -22,9 +22,9 @@ public class Main {
             markets = sc.next();
             try {
                 marketSplit = markets.split(",");
-                fetcher = DataFetch.getInstance(marketSplit[0].toUpperCase(),
-                    marketSplit[1].toUpperCase());
-
+                String mOne = marketSplit[0].toUpperCase();
+                String mTwo = marketSplit[1].toUpperCase());
+                fetcher = DataFetch.getInstance(mOne,mTwo);
                 if (fetcher.valid()) {
                     try {
                         ArrayList<Map<?, ?>> historicalData = fetcher.historicalDataFetcher();
@@ -36,7 +36,7 @@ public class Main {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    mongoCRUD.deleteAllMarketData("historicaldata");
+                    mongoCRUD.deleteAllMarketData("marketsummary", mOne, mTwo);
                     break;
                 } else {
                     System.out.println("Market entry invalid, please try again");

@@ -32,12 +32,10 @@ public class MongoCRUD {
        db.getCollection(collection).insertOne(doc);
     }
 
-    public void deleteAllMarketData(String collection) {
-        LocalDateTime now = LocalDateTime.now();
-        String nowS = now.toString();
+    public void deleteAllMarketData(String collection, String mOne, String mTwo) {
         Map <String, String> stringMap = null;
         Document doc = new Document();
-        stringMap.put("startsAt",nowS);
+        stringMap.put(mOne,mTwo);
         stringMap.forEach(doc::append);
         db.getCollection(collection).deleteMany(doc);
     }
