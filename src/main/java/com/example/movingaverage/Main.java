@@ -4,6 +4,7 @@ import Controller.MongoCRUD;
 import Live.DataFetch;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -33,6 +34,10 @@ public class Main {
                         ArrayList<?> result = (ArrayList<?>) marketData.get("result");
                         Map<?, ?> resultM = (Map<?, ?>) result.get(0);
                         mongoCRUD.createMarketData(resultM, "marketsummary");
+                        List<Map<?,?>> thirtyDaysData = mongoCRUD
+                            .retrieveMarketDataByDays("historicaldata", (long) 30);
+                        List<Map<?,?>> ninetyDaysData = mongoCRUD
+                            .retrieveMarketDataByDays("historicaldata", (long) 90);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
