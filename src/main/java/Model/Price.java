@@ -3,10 +3,8 @@ package Model;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 
-import java.math.MathContext;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 
 @EqualsAndHashCode
 @Builder
@@ -19,7 +17,7 @@ public class Price {
     private LocalDateTime now = LocalDateTime.now();
     private int dateLimit = now.plusHours(24).getNano();
 
-    public void addPrice() {
+    public void addPrice(Float price) {
         price30.add(price);
         price90.add(price);
     }
@@ -28,11 +26,10 @@ public class Price {
         price90.forEach((price) -> total90 += price);
         Float avg30 = ( total30 / price30.size() );
         Float avg90 = ( total90 / price90.size() );
-        if (avg30 >= price.floatValue()) {
+        if (avg30 >= ) {
 
         }
         if (avg90)
-
    }
    public void dateLimitCheck() {
         if (LocalDateTime.now().getNano() > dateLimit) {

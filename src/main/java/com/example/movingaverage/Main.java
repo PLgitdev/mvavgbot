@@ -4,10 +4,9 @@ import Controller.MongoCRUD;
 import Live.DataFetch;
 import Model.Price;
 
-import javax.naming.CompositeName;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Scanner;
 
 public class Main {
 
@@ -18,6 +17,7 @@ public class Main {
          String [] marketSplit;
          DataFetch fetcher;
          String markets = "";
+         Long inputL;
 
         System.out.println("Please enter markets separated by comma, or stop");
         while (!markets.equalsIgnoreCase("stop")) {
@@ -32,10 +32,14 @@ public class Main {
                     try {
                         ArrayList<Map<?, ?>> historicalData = fetcher.historicalDataFetcher();
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
+                        System.out.println("Please enter days for the short moving avg");
+                        inputL = sc.nextLong();
                         ArrayList<Map<?, ?>> thirtyDaysData = mongoCRUD
-                            .retrieveMarketDataByDays("historicaldata", (long) 30);
+                            .retrieveMarketDataByDays("historicaldata", inputL);
+                        System.out.println("Please enter days for the long moving avg");
+                        inputL = sc.nextLong();
                         ArrayList<Map<?, ?>> ninetyDaysData = mongoCRUD
-                            .retrieveMarketDataByDays("historicaldata", (long) 90);
+                            .retrieveMarketDataByDays("historicaldata", inputL);
                         ArrayList<Float> prices30 = new ArrayList<>();
                         thirtyDaysData.forEach( (day)
                             -> prices30.add(Float.parseFloat(day.values().toString())
@@ -45,17 +49,16 @@ public class Main {
                         ninetyDaysData.forEach( (day)
                             -> prices90.add(Float.parseFloat(day.values().toString()))
                         );
-                        //add up values and check avg
+                        //create price object
+                        Price priceObj = Price.builder().price30(prices30)
+                            .price90(prices90)
+                            .build();
                         while (true) {
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
                             mongoCRUD.createMarketData(resultM, "marketsummary");
-                            Price priceObj = Price.builder().price30(prices30)
-                                .price90(prices90)
-                                .price(Float.parseFloat(resultM.get("Last").toString()))
-                                .build();
-                            priceObj.addPrice();
+                            priceObj.addPrice((Float) resultM.get("Last"));
                             //check average inequality
                             if (priceObj.validBuyCrossover()) {
 
