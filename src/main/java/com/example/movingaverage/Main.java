@@ -3,17 +3,14 @@ package com.example.movingaverage;
 import Controller.MongoCRUD;
 import Live.DataFetch;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
     public static void main(String[] args) {
          Scanner sc = new Scanner(System.in);
          MongoCRUD mongoCRUD = MongoCRUD.getInstance();
-         Map<?, ?> marketData;
+         Map<?, ?> liveMarketData;
          String [] marketSplit;
          DataFetch fetcher;
          String markets = "";
@@ -30,14 +27,14 @@ public class Main {
                     try {
                         ArrayList<Map<?, ?>> historicalData = fetcher.historicalDataFetcher();
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
-                        marketData = fetcher.marketDataFetcher();
-                        ArrayList<?> result = (ArrayList<?>) marketData.get("result");
+                        ArrayList thirtyDaysData = mongoCRUD
+                            .retrieveMarketDataByDays("historicaldata", (long) 30);
+                        ArrayList ninetyDaysData = mongoCRUD
+                            .retrieveMarketDataByDays("historicaldata", (long) 90);
+                        liveMarketData = fetcher.marketDataFetcher();
+                        ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
                         Map<?, ?> resultM = (Map<?, ?>) result.get(0);
                         mongoCRUD.createMarketData(resultM, "marketsummary");
-                        List<Map<?,?>> thirtyDaysData = mongoCRUD
-                            .retrieveMarketDataByDays("historicaldata", (long) 30);
-                        List<Map<?,?>> ninetyDaysData = mongoCRUD
-                            .retrieveMarketDataByDays("historicaldata", (long) 90);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

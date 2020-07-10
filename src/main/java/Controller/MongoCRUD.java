@@ -1,19 +1,19 @@
 package Controller;
 
+import com.mongodb.Block;
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 import static com.mongodb.client.model.Filters.gte;
-import static com.mongodb.client.model.Projections.*;
-import static com.sun.tools.doclint.Entity.and;
-import static org.hibernate.criterion.Restrictions.eq;
+import static com.mongodb.client.model.Projections.include;
 
 public class MongoCRUD {
     private  MongoDatabase db;
@@ -49,13 +49,13 @@ public class MongoCRUD {
     }
 
 
-    public List<Map<?,?>> retrieveMarketDataByDays(String collection,Long days) {
-        List<Map<?,?>> marketDataList = null;
-        MongoCollection dbCollection = db.getCollection(collection);
-        marketDataList.add((Map<?, ?>) dbCollection.find(gte("startsAt",
-            now.minusDays(days))).projection(fields(excludeId(),
-            include("close"))));
-        return marketDataList;
+    public ArrayList retrieveMarketDataByDays(String collection, Long days) {
+        ArrayList marketDataCollection = new ArrayList();
+        MongoCollection<Document> dbCollection = db.getCollection(collection);
+        dbCollection .find(gte("startsAt", now.minusDays(days).toString()))
+            .projection(include("close"))
+            .forEach((Consumer<? super Document>) (marketData) -> marketDataCollection.add(marketData));
+        return marketDataCollection;
 
     }
 }
