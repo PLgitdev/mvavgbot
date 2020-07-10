@@ -1,15 +1,13 @@
 package Controller;
 
-import com.mongodb.Block;
 import com.mongodb.MongoClient;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.mongodb.client.model.Filters.gte;
@@ -49,12 +47,12 @@ public class MongoCRUD {
     }
 
 
-    public ArrayList retrieveMarketDataByDays(String collection, Long days) {
-        ArrayList marketDataCollection = new ArrayList();
+    public ArrayList<Map<?, ?>> retrieveMarketDataByDays(String collection, Long days) {
+        ArrayList<Map<?, ?>> marketDataCollection = new ArrayList<Map<?, ?>>(){};
         MongoCollection<Document> dbCollection = db.getCollection(collection);
         dbCollection .find(gte("startsAt", now.minusDays(days).toString()))
             .projection(include("close"))
-            .forEach((Consumer<? super Document>) (marketData) -> marketDataCollection.add(marketData));
+            .forEach((Consumer<? super Document>) marketDataCollection::add);
         return marketDataCollection;
 
     }

@@ -3,6 +3,9 @@ package com.example.movingaverage;
 import Controller.MongoCRUD;
 import Live.DataFetch;
 
+import javax.naming.CompositeName;
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class Main {
@@ -27,20 +30,38 @@ public class Main {
                     try {
                         ArrayList<Map<?, ?>> historicalData = fetcher.historicalDataFetcher();
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
-                        ArrayList thirtyDaysData = mongoCRUD
+                        ArrayList<Map<?, ?>> thirtyDaysData = mongoCRUD
                             .retrieveMarketDataByDays("historicaldata", (long) 30);
-                        ArrayList ninetyDaysData = mongoCRUD
+                        ArrayList<Map<?, ?>> ninetyDaysData = mongoCRUD
                             .retrieveMarketDataByDays("historicaldata", (long) 90);
-                        liveMarketData = fetcher.marketDataFetcher();
-                        ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
-                        Map<?, ?> resultM = (Map<?, ?>) result.get(0);
-                        mongoCRUD.createMarketData(resultM, "marketsummary");
+                        int dateLimit = LocalDateTime.now().plusHours(24).getNano();
+                        ArrayList<Collection<?>> prices30 = new ArrayList();
+                        ninetyDaysData.forEach( (day)
+                            -> prices30.add(day.values())
+                        );
+
+                        ArrayList<Collection<?>>  prices90 = new ArrayList();
+                        ninetyDaysData.forEach( (day)
+                            -> prices90.add(day.values())
+                        );
+                        //add up values and check avg
+                        while (true) {
+                            if (LocalDateTime.now().getNano() > dateLimit) {
+                                //delete the day every 24 hours and add new data to list
+                            }
+                            liveMarketData = fetcher.marketDataFetcher();
+                            ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
+                            Map<?, ?> resultM = (Map<?, ?>) result.get(0);
+                            mongoCRUD.createMarketData(resultM, "marketsummary");
+                            prices30.add(resultM.values());
+                            prices90.add(resultM.values());
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     mongoCRUD.deleteAllMarketData("marketsummary", mOne, mTwo);
                     break;
-                } else {
+                    } else {
                     System.out.println("Market entry invalid, please try again");
                 }
             } catch (IndexOutOfBoundsException e) {
