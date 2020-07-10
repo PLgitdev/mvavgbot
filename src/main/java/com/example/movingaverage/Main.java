@@ -2,6 +2,7 @@ package com.example.movingaverage;
 
 import Controller.MongoCRUD;
 import Live.DataFetch;
+import Model.Price;
 
 import javax.naming.CompositeName;
 import java.io.IOException;
@@ -27,6 +28,7 @@ public class Main {
                 String mTwo = marketSplit[1].toUpperCase();
                 fetcher = DataFetch.getInstance(mOne,mTwo);
                 if (fetcher.valid()) {
+                    //grab all needed historical data
                     try {
                         ArrayList<Map<?, ?>> historicalData = fetcher.historicalDataFetcher();
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
@@ -34,27 +36,31 @@ public class Main {
                             .retrieveMarketDataByDays("historicaldata", (long) 30);
                         ArrayList<Map<?, ?>> ninetyDaysData = mongoCRUD
                             .retrieveMarketDataByDays("historicaldata", (long) 90);
-                        int dateLimit = LocalDateTime.now().plusHours(24).getNano();
-                        ArrayList<Collection<?>> prices30 = new ArrayList();
-                        ninetyDaysData.forEach( (day)
-                            -> prices30.add(day.values())
-                        );
+                        ArrayList<Float> prices30 = new ArrayList<>();
+                        thirtyDaysData.forEach( (day)
+                            -> prices30.add(Float.parseFloat(day.values().toString())
+                        ));
 
-                        ArrayList<Collection<?>>  prices90 = new ArrayList();
+                        ArrayList<Float>  prices90 = new ArrayList<>();
                         ninetyDaysData.forEach( (day)
-                            -> prices90.add(day.values())
+                            -> prices90.add(Float.parseFloat(day.values().toString()))
                         );
                         //add up values and check avg
                         while (true) {
-                            if (LocalDateTime.now().getNano() > dateLimit) {
-                                //delete the day every 24 hours and add new data to list
-                            }
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
                             mongoCRUD.createMarketData(resultM, "marketsummary");
-                            prices30.add(resultM.values());
-                            prices90.add(resultM.values());
+                            Price priceObj = Price.builder().price30(prices30)
+                                .price90(prices90)
+                                .price(Float.parseFloat(resultM.get("Last").toString()))
+                                .build();
+                            priceObj.addPrice();
+                            //check average inequality
+                            if (priceObj.validBuyCrossover()) {
+
+                            }
+                            priceObj.dateLimitCheck();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
