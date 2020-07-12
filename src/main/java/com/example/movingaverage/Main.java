@@ -4,6 +4,7 @@ import Controller.MongoCRUD;
 import Live.DataFetch;
 import Model.Price;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
@@ -17,7 +18,8 @@ public class Main {
          String [] marketSplit;
          DataFetch fetcher;
          String markets = "";
-         Long inputL;
+         long inputL;
+         long inputL2;
 
         System.out.println("Please enter markets separated by comma, or stop");
         while (!markets.equalsIgnoreCase("stop")) {
@@ -32,26 +34,21 @@ public class Main {
                     try {
                         ArrayList<Map<?, ?>> historicalData = fetcher.historicalDataFetcher();
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
-                        System.out.println("Please enter days for the short moving avg");
+                        System.out.println("Please enter start day for the short moving avg");
                         inputL = sc.nextLong();
                         ArrayList<Map<?, ?>> thirtyDaysData = mongoCRUD
-                            .retrieveMarketDataByDays("historicaldata", inputL);
-                        System.out.println("Please enter days for the long moving avg");
-                        inputL = sc.nextLong();
+                            .retrieveMarketDataByDays("historicaldata", inputL, "startsAt", "close");
+                        System.out.println("Please enter start day for the long moving avg up to one year, 365 days");
+                        inputL2 = sc.nextLong();
                         ArrayList<Map<?, ?>> ninetyDaysData = mongoCRUD
-                            .retrieveMarketDataByDays("historicaldata", inputL);
+                            .retrieveMarketDataByDays("historicaldata", inputL2, "startsAt", "close");
                         ArrayList<Float> prices30 = new ArrayList<>();
-                        thirtyDaysData.forEach( (day)
-                            -> prices30.add(Float.parseFloat(day.values().toString())
-                        ));
-
+                        thirtyDaysData.forEach( (day) -> prices30.add(Float.parseFloat(day.values().toString())));
                         ArrayList<Float>  prices90 = new ArrayList<>();
-                        ninetyDaysData.forEach( (day)
-                            -> prices90.add(Float.parseFloat(day.values().toString()))
-                        );
+                        ninetyDaysData.forEach( (day)-> prices90.add(Float.parseFloat(day.values().toString())));
                         //create price object
-                        Price priceObj = Price.builder().price30(prices30)
-                            .price90(prices90)
+                        Price priceObj = Price.builder().priceShorter(prices30)
+                            .priceLonger(prices90)
                             .build();
                         while (true) {
                             liveMarketData = fetcher.marketDataFetcher();
@@ -62,6 +59,18 @@ public class Main {
                             //check average inequality
                             if (priceObj.validBuyCrossover()) {
 
+                            }
+                            if (LocalDateTime.now().equals(priceObj.getNow().plusDays(inputL))) {
+                                priceObj.getPriceShorter().clear();
+                                priceObj.getPriceLonger().clear();
+                                mongoCRUD
+                                    .retrieveMarketDataByDays("marketSummary",
+                                        (long) inputL, "Timestamp","Last").forEach( (data) -> priceObj
+                                    .addPriceShorter(Float.parseFloat(data.get("Last").toString())));
+                                mongoCRUD
+                                    .retrieveMarketDataByDays("marketSummary",
+                                        (long) inputL2, "Timestamp","Last").forEach( (data) -> priceObj
+                                    .addPriceLonger(Float.parseFloat(data.get("Last").toString())));
                             }
                             priceObj.dateLimitCheck();
                         }
