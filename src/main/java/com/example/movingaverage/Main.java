@@ -36,48 +36,52 @@ public class Main {
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
                         System.out.println("Please enter start day for the short moving avg");
                         inputL = sc.nextLong();
-                        ArrayList<Map<?, ?>> thirtyDaysData = mongoCRUD
+                        ArrayList<Map<?, ?>> shorterDaysData = mongoCRUD
                             .retrieveMarketDataByDays("historicaldata", inputL, "startsAt", "close");
                         System.out.println("Please enter start day for the long moving avg up to one year, 365 days");
                         inputL2 = sc.nextLong();
-                        ArrayList<Map<?, ?>> ninetyDaysData = mongoCRUD
+                        ArrayList<Map<?, ?>> longerDaysData = mongoCRUD
                             .retrieveMarketDataByDays("historicaldata", inputL2, "startsAt", "close");
-                        ArrayList<Float> prices30 = new ArrayList<>();
-                        thirtyDaysData.forEach( (day) -> prices30.add(Float.parseFloat(day.values().toString())));
-                        ArrayList<Float>  prices90 = new ArrayList<>();
-                        ninetyDaysData.forEach( (day)-> prices90.add(Float.parseFloat(day.values().toString())));
-                        //create price object
-                        Price priceObj = Price.builder().priceShorter(prices30)
-                            .priceLonger(prices90)
+                        ArrayList<Double> pricesS = new ArrayList<>();
+                        shorterDaysData.forEach( (map) -> pricesS.add(Double.valueOf((String) map.get("close"))));
+                        ArrayList<Double>  pricesL = new ArrayList<>();
+                        longerDaysData.forEach( (map)-> pricesL.add(Double.valueOf((String) map.get("close"))));
+                        Price priceObj = Price.builder().priceShorter(pricesS)
+                            .priceLonger(pricesL)
+                            .totalShorter(0.0).totalLonger(0.0)
+                            .timestamp(LocalDateTime.now())
+                            .dateLimit(LocalDateTime.now().plusDays(24).getNano())
                             .build();
                         while (true) {
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
+                            System.out.println(resultM.toString());
                             mongoCRUD.createMarketData(resultM, "marketsummary");
-                            priceObj.addPrice((Float) resultM.get("Last"));
+                            priceObj.addPrice((Double) resultM.get("Last"));
                             //check average inequality
                             if (priceObj.validBuyCrossover()) {
-
+                                System.out.println("BUY at " + priceObj.getPrice());
                             }
-                            if (LocalDateTime.now().equals(priceObj.getNow().plusDays(inputL))) {
+                            //reset the historical data
+                            if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL2))) {
                                 priceObj.getPriceShorter().clear();
                                 priceObj.getPriceLonger().clear();
                                 mongoCRUD
                                     .retrieveMarketDataByDays("marketSummary",
-                                        (long) inputL, "Timestamp","Last").forEach( (data) -> priceObj
-                                    .addPriceShorter(Float.parseFloat(data.get("Last").toString())));
+                                        inputL, "Timestamp","Last").forEach( (data) -> priceObj
+                                    .addPriceShorter((Double) data.get("Last")));
                                 mongoCRUD
                                     .retrieveMarketDataByDays("marketSummary",
-                                        (long) inputL2, "Timestamp","Last").forEach( (data) -> priceObj
-                                    .addPriceLonger(Float.parseFloat(data.get("Last").toString())));
+                                        inputL2, "Timestamp","Last").forEach( (data) -> priceObj
+                                    .addPriceLonger((Double)(data.get("Last"))));
                             }
                             priceObj.dateLimitCheck();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    mongoCRUD.deleteAllMarketData("marketsummary", mOne, mTwo);
+                  //  mongoCRUD.deleteAllMarketData("marketsummary", mOne, mTwo);
                     break;
                     } else {
                     System.out.println("Market entry invalid, please try again");

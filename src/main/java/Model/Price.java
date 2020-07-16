@@ -11,31 +11,30 @@ import java.util.ArrayList;
 @Builder
 @Data
 public class Price {
-    private ArrayList<Float> priceShorter;
-    private ArrayList<Float> priceLonger;
-    private Float totalShorter;
-    private Float totalLonger;
-    private Float price;
+    private ArrayList<Double> priceShorter;
+    private ArrayList<Double> priceLonger;
+    private Double totalShorter;
+    private Double totalLonger;
+    private Double price;
     private LocalDateTime timestamp;
-    private LocalDateTime now = LocalDateTime.now();
-    private int dateLimit = now.plusHours(24).getNano();
+    private int dateLimit;
 
-    public void addPriceShorter (Float price) {
+    public void addPriceShorter (Double price) {
         priceShorter.add(price);
     }
-    public void addPriceLonger (Float price) {
+    public void addPriceLonger (Double price) {
         priceLonger.add(price);
     }
 
-    public void addPrice(Float price) {
+    public void addPrice(Double price) {
         priceShorter.add(price);
         priceLonger.add(price);
     }
     public boolean validBuyCrossover() {
-        priceShorter.forEach( (price) -> totalShorter += price);
-        priceLonger.forEach((price) -> totalLonger += price);
-        float avgShorter = ( totalShorter / priceShorter.size() );
-        float avgLonger = ( totalLonger / priceLonger.size() );
+        priceShorter.forEach( (p) -> totalShorter += p);
+        priceLonger.forEach((p) -> totalLonger += p);
+        Double avgShorter = ( totalShorter / priceShorter.size() );
+        Double avgLonger = ( totalLonger / priceLonger.size() );
         return avgShorter <= avgLonger;
    }
 
@@ -43,8 +42,8 @@ public class Price {
     public boolean validSellCrossover() {
         priceShorter.forEach( (price) -> totalShorter += price);
         priceLonger.forEach((price) -> totalLonger += price);
-        Float avgShorter = ( totalShorter / priceShorter.size() );
-        Float avgLonger = ( totalLonger / priceLonger.size() );
+        Double avgShorter = ( totalShorter / priceShorter.size() );
+        Double avgLonger = ( totalLonger / priceLonger.size() );
         if (avgShorter <= avgLonger ) { return true; }
     }
     */

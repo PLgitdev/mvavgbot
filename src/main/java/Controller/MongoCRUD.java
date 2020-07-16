@@ -7,6 +7,7 @@ import org.bson.Document;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -39,7 +40,7 @@ public class MongoCRUD {
     }
 
     public void deleteAllMarketData(String collection, String mOne, String mTwo) {
-        Map <String, String> stringMap = null;
+        HashMap<String, String> stringMap = new HashMap<>();
         Document doc = new Document();
         stringMap.put(mOne,mTwo);
         stringMap.forEach(doc::append);
