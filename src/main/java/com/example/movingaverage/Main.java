@@ -53,7 +53,8 @@ public class Main {
                             .timestamp(LocalDateTime.now())
                             .dateLimit(LocalDateTime.now().plusDays(24).getNano())
                             .build();
-                        while (true) {
+                        while (!"stop".equalsIgnoreCase(markets)) {
+                            markets = sc.next();
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
@@ -81,7 +82,7 @@ public class Main {
                                             .addPriceLonger((Double) (data.get("Last"))));
                                 priceObj.setTimestamp(LocalDateTime.now());
                             }
-                            if (!start.plusDays(inputL2).equals(start)) { priceObj.dateLimitCheck(1); }
+                            if (!start.equals(start.plusDays(inputL2))) { priceObj.dateLimitCheck(1); }
 
                         }
                     } catch (Exception e) {
