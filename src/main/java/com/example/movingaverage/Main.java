@@ -62,6 +62,7 @@ public class Main {
                             //check average inequality
                             if (priceObj.validBuyCrossover()) {
                                 System.out.println("BUY at " + priceObj.getPrice());
+
                             }
                             //reset the historical data
                             if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL2))) {
@@ -75,6 +76,7 @@ public class Main {
                                     .retrieveMarketDataByDays("marketSummary",
                                         inputL2, "Timestamp","Last").forEach( (data) -> priceObj
                                             .addPriceLonger((Double)(data.get("Last"))));
+                                priceObj.setTimestamp(LocalDateTime.now());
                             }
                             priceObj.dateLimitCheck();
                         }
