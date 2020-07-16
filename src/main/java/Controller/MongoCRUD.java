@@ -39,12 +39,8 @@ public class MongoCRUD {
        db.getCollection(collection).insertOne(doc);
     }
 
-    public void deleteAllMarketData(String collection, String mOne, String mTwo) {
-        HashMap<String, String> stringMap = new HashMap<>();
-        Document doc = new Document();
-        stringMap.put(mOne,mTwo);
-        stringMap.forEach(doc::append);
-        db.getCollection(collection).deleteMany(doc);
+    public void deleteAllMarketData(String collection) {
+        db.getCollection(collection).drop();
     }
 
 

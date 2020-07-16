@@ -22,7 +22,7 @@ public class Main {
          long inputL2;
 
         System.out.println("Please enter markets separated by comma, or stop");
-        while (!markets.equalsIgnoreCase("stop")) {
+        while (!"stop".equalsIgnoreCase(markets)) {
             markets = sc.next();
             try {
                 marketSplit = markets.split(",");
@@ -70,18 +70,19 @@ public class Main {
                                 mongoCRUD
                                     .retrieveMarketDataByDays("marketSummary",
                                         inputL, "Timestamp","Last").forEach( (data) -> priceObj
-                                    .addPriceShorter((Double) data.get("Last")));
+                                            .addPriceShorter((Double) data.get("Last")));
                                 mongoCRUD
                                     .retrieveMarketDataByDays("marketSummary",
                                         inputL2, "Timestamp","Last").forEach( (data) -> priceObj
-                                    .addPriceLonger((Double)(data.get("Last"))));
+                                            .addPriceLonger((Double)(data.get("Last"))));
                             }
                             priceObj.dateLimitCheck();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                  //  mongoCRUD.deleteAllMarketData("marketsummary", mOne, mTwo);
+                    mongoCRUD.deleteAllMarketData("marketsummary");
+                    mongoCRUD.deleteAllMarketData("historicaldata");
                     break;
                     } else {
                     System.out.println("Market entry invalid, please try again");
@@ -91,6 +92,8 @@ public class Main {
                     ", please enter your market");
                 e.printStackTrace();
             }
+            mongoCRUD.deleteAllMarketData("marketsummary");
+            mongoCRUD.deleteAllMarketData("historicaldata");
         }
     }
 }
