@@ -44,7 +44,7 @@ public class Price {
         priceLonger.forEach((price) -> totalLonger += price);
         Double avgShorter = ( totalShorter / priceShorter.size() );
         Double avgLonger = ( totalLonger / priceLonger.size() );
-        if (avgShorter <= avgLonger ) { return true; }
+        return  (avgShorter <= avgLonger );
     }
 
    public void dateLimitCheck() {
