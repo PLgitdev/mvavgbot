@@ -47,10 +47,10 @@ public class Price {
         return  (avgShorter <= avgLonger );
     }
 
-   public void dateLimitCheck() {
+   public void dateLimitCheck(int x) {
         if (LocalDateTime.now().getNano() > dateLimit) {
-           priceShorter.remove(priceShorter.size()-1);
-           priceLonger.remove(priceLonger.size()-1);
+           priceShorter.remove(priceShorter.size()-x);
+           priceLonger.remove(priceLonger.size()-x);
        }
    }
 }

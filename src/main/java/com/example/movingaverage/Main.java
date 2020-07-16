@@ -20,6 +20,7 @@ public class Main {
          String markets = "";
          long inputL;
          long inputL2;
+         LocalDateTime start = LocalDateTime.now();
 
         System.out.println("Please enter markets separated by comma, or stop");
         while (!"stop".equalsIgnoreCase(markets)) {
@@ -80,8 +81,7 @@ public class Main {
                                             .addPriceLonger((Double) (data.get("Last"))));
                                 priceObj.setTimestamp(LocalDateTime.now());
                             }
-
-                            priceObj.dateLimitCheck();
+                            if (!start.plusDays(inputL).equals(start)) { priceObj.dateLimitCheck(1); }
 
                         }
                     } catch (Exception e) {
