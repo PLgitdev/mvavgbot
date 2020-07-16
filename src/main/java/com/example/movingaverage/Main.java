@@ -65,19 +65,20 @@ public class Main {
 
                             }
                             //reset the historical data
-                            if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL2))) {
+                            if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL))) {
                                 priceObj.getPriceShorter().clear();
-                                priceObj.getPriceLonger().clear();
                                 mongoCRUD
                                     .retrieveMarketDataByDays("marketSummary",
                                         inputL, "Timestamp","Last").forEach( (data) -> priceObj
                                             .addPriceShorter((Double) data.get("Last")));
+                            if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL2)))
+                                priceObj.getPriceLonger().clear();
                                 mongoCRUD
                                     .retrieveMarketDataByDays("marketSummary",
                                         inputL2, "Timestamp","Last").forEach( (data) -> priceObj
                                             .addPriceLonger((Double)(data.get("Last"))));
                                 priceObj.setTimestamp(LocalDateTime.now());
-                            }
+
                             priceObj.dateLimitCheck();
                         }
                     } catch (Exception e) {
