@@ -81,7 +81,7 @@ public class Main {
                                             .addPriceLonger((Double) (data.get("Last"))));
                                 priceObj.setTimestamp(LocalDateTime.now());
                             }
-                            if (!start.plusDays(inputL).equals(start)) { priceObj.dateLimitCheck(1); }
+                            if (!start.plusDays(inputL2).equals(start)) { priceObj.dateLimitCheck(1); }
 
                         }
                     } catch (Exception e) {
