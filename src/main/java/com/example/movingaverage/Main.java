@@ -71,6 +71,7 @@ public class Main {
                             //check average inequality
                             if (priceObj.validBuyCrossover()) {
                                 System.out.println("BUY at " + priceObj.getPrice());
+                                //send a buy request then either scale profits or sell at crossover
 
                             }
 
@@ -98,6 +99,7 @@ public class Main {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                    //drop database
                     mongoCRUD.deleteAllMarketData("marketsummary");
                     mongoCRUD.deleteAllMarketData("historicaldata");
                     break;
@@ -109,6 +111,7 @@ public class Main {
                     ", please enter your market");
                 e.printStackTrace();
             }
+            //drop database
             mongoCRUD.deleteAllMarketData("marketsummary");
             mongoCRUD.deleteAllMarketData("historicaldata");
         }
