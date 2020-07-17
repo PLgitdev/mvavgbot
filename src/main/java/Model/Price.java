@@ -17,7 +17,7 @@ public class Price {
     private Double totalLonger;
     private Double price;
     private LocalDateTime timestamp;
-    private int dateLimit;
+    private LocalDateTime dateLimit;
     private Double avgShorter;
     private Double avgLonger;
 
@@ -47,7 +47,7 @@ public class Price {
      */
 
    public void dateLimitCheck(int x) {
-        if (LocalDateTime.now().getNano() > dateLimit) {
+        if (LocalDateTime.now() > dateLimit) {
            priceShorter.remove(priceShorter.size()-x);
            priceLonger.remove(priceLonger.size()-x);
        }

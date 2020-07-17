@@ -30,6 +30,8 @@ public class Main {
                 String mOne = marketSplit[0].toUpperCase();
                 String mTwo = marketSplit[1].toUpperCase();
                 fetcher = DataFetch.getInstance(mOne,mTwo);
+                ArrayList<Double> pricesS = new ArrayList<>();
+                ArrayList<Double>  pricesL = new ArrayList<>();
                 if (fetcher.valid()) {
                     //grab all needed historical data
                     try {
@@ -43,15 +45,13 @@ public class Main {
                         inputL2 = sc.nextLong();
                         ArrayList<Map<?, ?>> longerDaysData = mongoCRUD
                             .retrieveMarketDataByDays("historicaldata", inputL2-1, "startsAt", "close");
-                        ArrayList<Double> pricesS = new ArrayList<>();
                         shorterDaysData.forEach( (map) -> pricesS.add(Double.valueOf((String) map.get("close"))));
-                        ArrayList<Double>  pricesL = new ArrayList<>();
                         longerDaysData.forEach( (map)-> pricesL.add(Double.valueOf((String) map.get("close"))));
                         Price priceObj = Price.builder().priceShorter(pricesS)
                             .priceLonger(pricesL)
                             .totalShorter(0.0).totalLonger(0.0)
                             .timestamp(LocalDateTime.now())
-                            .dateLimit(LocalDateTime.now().plusHours(24).getNano())
+                            .dateLimit(LocalDateTime.now().plusHours(24))
                             .build();
                         while (true) {
                             liveMarketData = fetcher.marketDataFetcher();
@@ -82,6 +82,7 @@ public class Main {
                                             .addPriceLonger((Double) (data.get("Last"))));
                                 priceObj.setTimestamp(LocalDateTime.now());
                             }
+                            //if it is within the
                             if (!start.equals(start.plusDays(inputL2))) { priceObj.dateLimitCheck(1); }
 
                         }
