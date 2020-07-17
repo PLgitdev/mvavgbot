@@ -47,7 +47,7 @@ public class Price {
      */
 
    public void dateLimitCheck(int x) {
-        if (LocalDateTime.now() > dateLimit) {
+        if (LocalDateTime.now().compareTo(dateLimit) > 0) {
            priceShorter.remove(priceShorter.size()-x);
            priceLonger.remove(priceLonger.size()-x);
        }

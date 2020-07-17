@@ -40,11 +40,19 @@ public class Main {
                         System.out.println("Please enter start day for the short moving avg");
                         inputL = sc.nextLong();
                         ArrayList<Map<?, ?>> shorterDaysData = mongoCRUD
-                            .retrieveMarketDataByDays("historicaldata", inputL-1, "startsAt", "close");
+                            .retrieveMarketDataByDays("historicaldata",
+                                inputL-1,
+                                "startsAt",
+                                "close"
+                            );
                         System.out.println("Please enter start day for the long moving avg up to one year, 365 days");
                         inputL2 = sc.nextLong();
                         ArrayList<Map<?, ?>> longerDaysData = mongoCRUD
-                            .retrieveMarketDataByDays("historicaldata", inputL2-1, "startsAt", "close");
+                            .retrieveMarketDataByDays("historicaldata",
+                                inputL2-1,
+                                "startsAt",
+                                "close"
+                            );
                         shorterDaysData.forEach( (map) -> pricesS.add(Double.valueOf((String) map.get("close"))));
                         longerDaysData.forEach( (map)-> pricesL.add(Double.valueOf((String) map.get("close"))));
                         Price priceObj = Price.builder().priceShorter(pricesS)
@@ -82,7 +90,7 @@ public class Main {
                                             .addPriceLonger((Double) (data.get("Last"))));
                                 priceObj.setTimestamp(LocalDateTime.now());
                             }
-                            //if it is within the
+                            //if it has not reset fully then subtract 1 a day
                             if (!start.equals(start.plusDays(inputL2))) { priceObj.dateLimitCheck(1); }
 
                         }
