@@ -47,9 +47,13 @@ public class Price {
      */
 
    public void dateLimitCheck(int x) {
-        if (LocalDateTime.now().compareTo(dateLimit) > 0) {
-           priceShorter.remove(priceShorter.size()-x);
-           priceLonger.remove(priceLonger.size()-x);
+       if (LocalDateTime.now().compareTo(dateLimit) > 0) {
+           priceShorter.remove(priceShorter.size() - x);
+       }
+   }
+   public void dateLimitCheckLonger(int x) {
+       if (LocalDateTime.now().compareTo(dateLimit) > 0) {
+            priceLonger.remove(priceLonger.size()-x);
        }
    }
 }

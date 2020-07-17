@@ -91,7 +91,8 @@ public class Main {
                                 priceObj.setTimestamp(LocalDateTime.now());
                             }
                             //if it has not reset fully then subtract 1 a day
-                            if (!start.equals(start.plusDays(inputL2))) { priceObj.dateLimitCheck(1); }
+                            if (!start.equals(start.plusDays(inputL))) { priceObj.dateLimitCheck(1); }
+                            if (!start.equals(start.plusDays(inputL2))) { priceObj.dateLimitCheckLonger(1); }
 
                         }
                     } catch (Exception e) {
