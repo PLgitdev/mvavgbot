@@ -18,6 +18,8 @@ public class Price {
     private Double price;
     private LocalDateTime timestamp;
     private int dateLimit;
+    private Double avgShorter;
+    private Double avgLonger;
 
     public void addPriceShorter (Double price) {
         priceShorter.add(price);
@@ -33,19 +35,16 @@ public class Price {
     public boolean validBuyCrossover() {
         priceShorter.forEach( (p) -> totalShorter += p);
         priceLonger.forEach((p) -> totalLonger += p);
-        Double avgShorter = ( totalShorter / priceShorter.size() );
-        Double avgLonger = ( totalLonger / priceLonger.size() );
+        this.avgShorter = ( totalShorter / priceShorter.size() );
+        this.avgLonger = ( totalLonger / priceLonger.size() );
         return avgShorter >= avgLonger;
    }
 
 
-    public boolean validSellCrossover() {
-        priceShorter.forEach( (price) -> totalShorter += price);
-        priceLonger.forEach((price) -> totalLonger += price);
-        Double avgShorter = ( totalShorter / priceShorter.size() );
-        Double avgLonger = ( totalLonger / priceLonger.size() );
-        return  (avgShorter <= avgLonger );
+    /*public boolean runTha() {
+        this.avgShorter
     }
+     */
 
    public void dateLimitCheck(int x) {
         if (LocalDateTime.now().getNano() > dateLimit) {
