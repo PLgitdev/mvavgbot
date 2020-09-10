@@ -12,7 +12,7 @@ import java.io.InputStreamReader;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class DataFetch {
 
@@ -34,31 +34,29 @@ public class DataFetch {
         return soleInstanceDataFetch;
     }
 
-    public Map<?, ?> marketDataFetcher() throws IOException, InterruptedException {
+    public LinkedHashMap<?, ?> marketDataFetcher() throws IOException, InterruptedException {
         URL url =
             new URL("https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=" + mOne + "-" + mTwo);
-        StringBuilder content = fetch(url);
-        return objectMapper.readValue(content.toString(), new TypeReference<Map<?,?>>(){});
+        StringBuffer content = fetch(url);
+        return objectMapper.readValue(content.toString(), new TypeReference<LinkedHashMap<?,?>>(){});
     }
 
-    public ArrayList<Map<?,?>> historicalDataFetcher() throws IOException, InterruptedException {
+    public ArrayList<LinkedHashMap<?,?>> historicalDataFetcher() throws IOException, InterruptedException {
         String dayOne = "DAY_1";
         URL url =
             new URL( "https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + dayOne +
                 "/recent");
-        StringBuilder historicalData = fetch(url);
-        return objectMapper.readValue(historicalData.toString(), new TypeReference<ArrayList<Map<?,?>>>(){});
+        StringBuffer historicalData = fetch(url);
+        return objectMapper.readValue(historicalData.toString(), new TypeReference<ArrayList<LinkedHashMap<?,?>>>(){});
     }
 
-    public StringBuilder fetch(URL url) throws InterruptedException {
-        StringBuilder data = new StringBuilder();
+    public StringBuffer fetch(URL url) throws InterruptedException, IOException {
+        StringBuffer data = new StringBuffer();
         try (InputStream is = url.openStream();
         BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
              String inputLine = br.readLine();
              data.append(inputLine);
-             } catch (IOException ex) {
-                ex.printStackTrace();
-             }
+        }
         Thread.sleep(5000);
         return data;
     }

@@ -6,6 +6,7 @@ import Model.Price;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -35,7 +36,7 @@ public class Main {
                 if (fetcher.valid()) {
                     //grab all needed historical data
                     try {
-                        ArrayList<Map<?, ?>> historicalData = fetcher.historicalDataFetcher();
+                        ArrayList<LinkedHashMap<?, ?>> historicalData = fetcher.historicalDataFetcher();
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
                         System.out.println("Please enter start day for the short moving avg");
                         inputL = sc.nextLong();
