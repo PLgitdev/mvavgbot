@@ -3,7 +3,6 @@ package com.example.movingaverage;
 import Controller.MongoCRUD;
 import Live.DataFetch;
 import Model.Price;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -68,12 +67,13 @@ public class Main {
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
                             System.out.println(resultM.toString());
                             mongoCRUD.createMarketData(resultM, "marketsummary");
-                            priceObj.addPrice((Double) resultM.get("Last"));
+                            priceObj.addBothPrices((Double) resultM.get("Last"));
                             //check average inequality
                             if (priceObj.validBuyCrossover()) {
                                 System.out.println("BUY at " + priceObj.getPrice());
                                 //send a buy request then either scale profits or sell at crossover
-
+                                //check out v1 and look at buy request as well as the profit scaling
+                                //check out new version of api as well and decide if you want to use that
                             }
 
                             //reset the historical data
@@ -81,14 +81,18 @@ public class Main {
                                 priceObj.getPriceShorter().clear();
                                 mongoCRUD
                                     .retrieveMarketDataByDays("marketsummary",
-                                        inputL-1, "TimeStamp", "Last").forEach((data) -> priceObj
+                                        inputL-1,
+                                        "TimeStamp",
+                                        "Last").forEach((data) -> priceObj
                                             .addPriceShorter((Double) data.get("Last")));
                             }
                             if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL2))) {
                                 priceObj.getPriceLonger().clear();
                                 mongoCRUD
                                     .retrieveMarketDataByDays("marketsummary",
-                                        inputL2-1, "TimeStamp", "Last").forEach((data) -> priceObj
+                                        inputL2-1,
+                                        "TimeStamp",
+                                        "Last").forEach((data) -> priceObj
                                             .addPriceLonger((Double) (data.get("Last"))));
                                 priceObj.setTimestamp(LocalDateTime.now());
                             }

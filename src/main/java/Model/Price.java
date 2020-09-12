@@ -22,29 +22,24 @@ public class Price {
     private Double avgLonger;
 
     public void addPriceShorter (Double price) {
-        priceShorter.add(price);
+        this.priceShorter.add(price);
     }
     public void addPriceLonger (Double price) {
-        priceLonger.add(price);
+        this.priceLonger.add(price);
     }
 
-    public void addPrice(Double price) {
-        priceShorter.add(price);
-        priceLonger.add(price);
+    public void addBothPrices(Double price) {
+        this.priceShorter.add(price);
+        this.priceLonger.add(price);
     }
     public boolean validBuyCrossover() {
         priceShorter.forEach( (p) -> totalShorter += p);
         priceLonger.forEach((p) -> totalLonger += p);
-        this.avgShorter = ( totalShorter / priceShorter.size() );
-        this.avgLonger = ( totalLonger / priceLonger.size() );
-        return avgShorter >= avgLonger;
+        avgShorter = ( totalShorter / priceShorter.size() );
+        avgLonger = ( totalLonger / priceLonger.size() );
+
+        return (avgShorter > avgLonger) && price != null;
    }
-
-
-    /*public boolean runTha() {
-        this.avgShorter
-    }
-     */
 
    public void dateLimitCheck(int x) {
        if (LocalDateTime.now().compareTo(dateLimit) > 0) {

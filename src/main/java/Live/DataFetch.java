@@ -56,12 +56,13 @@ public class DataFetch {
         BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
              String inputLine = br.readLine();
              data.append(inputLine);
+             //both requests are received as a single line
         }
         Thread.sleep(5000);
         return data;
     }
     public boolean valid() {
-        String marketV = "^(\\w|\\D|\\S){3}$";
+        String marketV = "^(\\w|\\D|\\S){2,3}$";
         if (!mOne.matches(marketV)) return false;
         return mTwo.matches(marketV);
     }
