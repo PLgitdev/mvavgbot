@@ -42,7 +42,7 @@ public class DataFetch {
     }
 
     public ArrayList<LinkedHashMap<?,?>> historicalDataFetcher() throws IOException, InterruptedException {
-        String dayOne = "DAY_1";
+        String dayOne = "HOUR_1";
         URL url =
             new URL( "https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + dayOne +
                 "/recent");
