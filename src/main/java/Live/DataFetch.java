@@ -62,7 +62,7 @@ public class DataFetch {
         return data;
     }
     public boolean valid() {
-        String marketV = "^(\\w|\\D|\\S){2,3}$";
+        String marketV = "^(\\w|\\D|\\S){2,6}$";
         if (!mOne.matches(marketV)) return false;
         return mTwo.matches(marketV);
     }
