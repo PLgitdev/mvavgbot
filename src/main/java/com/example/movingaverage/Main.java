@@ -66,19 +66,21 @@ public class Main {
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
+                            priceObj.addBothPrices((Double) resultM.get("Last"));
+                            priceObj.takeAvg();
+                            mongoCRUD.createMarketData(resultM, "marketsummary");
                             resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                             System.out.println(inputL + " day avg, shorter:" + priceObj.getAvgShorter());
                             System.out.println(inputL2 + " day avg, longer:" + priceObj.getAvgLonger());
-                            mongoCRUD.createMarketData(resultM, "marketsummary");
-                            priceObj.addBothPrices((Double) resultM.get("Last"));
                             //check average inequality
                             if (priceObj.validBuyCrossover()) {
                                 System.out.println("\n" + "BUY at "
-                                    + priceObj.getPriceLonger().get(priceObj.getPriceLonger().size() - 1));
+                                    + resultM.get("Bid"));
                                 buyMode = false;
                                 //send a buy request then either scale profits or sell at crossover
                                 //check out v1 and look at buy request as well as the profit scaling
                                 //check out new version of api as well and decide if you want to use that
+                                //make buy order a limit buy that is a little less than the target. (safety)
                             }
 
                             //reset the historical data

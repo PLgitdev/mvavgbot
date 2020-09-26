@@ -16,7 +16,7 @@ public class Price {
     private ArrayList<Double> priceLonger;
     private Double totalShorter;
     private Double totalLonger;
-    private Double price;
+    //private Double price;
     private LocalDateTime timestamp;
     private LocalDateTime dateLimit;
     private Double avgShorter;
@@ -33,16 +33,17 @@ public class Price {
         this.priceShorter.add(price);
         this.priceLonger.add(price);
     }
-    public boolean validBuyCrossover() {
+    public void takeAvg() {
         totalShorter = 0.0;
         totalLonger = 0.0;
         priceShorter.forEach( (p) -> totalShorter = totalShorter + p);
         priceLonger.forEach((p) -> totalLonger = totalLonger + p);
-        avgShorter = totalShorter / priceShorter.size();
-        avgLonger = totalLonger / priceLonger.size();
-
-        if (price != null | avgShorter > avgLonger) {
-            return (avgShorter > avgLonger);
+        this.avgShorter = totalShorter / priceShorter.size();
+        this.avgLonger = totalLonger / priceLonger.size();
+    }
+    public boolean validBuyCrossover() {
+        if (avgShorter != null && avgLonger  != null) {
+            return avgShorter > avgLonger;
         }
         return false;
    }
