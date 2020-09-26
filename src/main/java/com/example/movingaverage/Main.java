@@ -65,12 +65,14 @@ public class Main {
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
-                            System.out.println(resultM.toString());
+                            resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
+                            System.out.println("avg shorter:" + priceObj.getAvgShorter());
+                            System.out.println("avg longer:" + priceObj.getAvgLonger());
                             mongoCRUD.createMarketData(resultM, "marketsummary");
                             priceObj.addBothPrices((Double) resultM.get("Last"));
                             //check average inequality
                             if (priceObj.validBuyCrossover()) {
-                                System.out.println("BUY at " + priceObj.getPrice());
+                                System.out.println("\n" + "BUY at " + priceObj.getPrice());
                                 //send a buy request then either scale profits or sell at crossover
                                 //check out v1 and look at buy request as well as the profit scaling
                                 //check out new version of api as well and decide if you want to use that
@@ -115,10 +117,11 @@ public class Main {
                 System.out.println("You have entered an entry too short, or have forgotten a comma" +
                     ", please enter your market");
                 e.printStackTrace();
+            } finally {
+                //drop database
+                mongoCRUD.deleteAllMarketData("marketsummary");
+                mongoCRUD.deleteAllMarketData("historicaldata");
             }
-            //drop database
-            mongoCRUD.deleteAllMarketData("marketsummary");
-            mongoCRUD.deleteAllMarketData("historicaldata");
         }
     }
 }
