@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.mongodb.client.model.Filters.gt;
+import static com.mongodb.client.model.Filters.gte;
 import static com.mongodb.client.model.Projections.include;
 
 public class MongoCRUD {
@@ -45,7 +46,7 @@ public class MongoCRUD {
     public ArrayList<Map<?, ?>> retrieveMarketDataByDays(String collection, Long days, String q, String p) {
         ArrayList<Map<?, ?>> marketDataCollection = new ArrayList<Map<?, ?>>(){};
         MongoCollection<Document> dbCollection = db.getCollection(collection);
-        dbCollection .find(gt(q, now.minusDays(days).toString()))
+        dbCollection .find(gte(q, now.minusDays(days).toString()))
             .projection(include(p))
             .forEach((Consumer<? super Document>) marketDataCollection::add);
         return marketDataCollection;

@@ -34,12 +34,17 @@ public class Price {
         this.priceLonger.add(price);
     }
     public boolean validBuyCrossover() {
-        priceShorter.forEach( (p) -> totalShorter += p);
-        priceLonger.forEach((p) -> totalLonger += p);
-        avgShorter = ( totalShorter / priceShorter.size() );
-        avgLonger = ( totalLonger / priceLonger.size() );
+        totalShorter = 0.0;
+        totalLonger = 0.0;
+        priceShorter.forEach( (p) -> totalShorter = totalShorter + p);
+        priceLonger.forEach((p) -> totalLonger = totalLonger + p);
+        avgShorter = totalShorter / priceShorter.size();
+        avgLonger = totalLonger / priceLonger.size();
 
-        return (avgShorter > avgLonger) && price != null;
+        if (price != null | avgShorter > avgLonger) {
+            return (avgShorter > avgLonger);
+        }
+        return false;
    }
 
    public void dateLimitCheck(int x) {

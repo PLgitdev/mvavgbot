@@ -21,6 +21,7 @@ public class Main {
          long inputL;
          long inputL2;
          LocalDateTime start = LocalDateTime.now();
+         boolean buyMode = true;
 
         System.out.println("Please enter markets separated by comma, or stop");
         while (!"stop".equalsIgnoreCase(markets)) {
@@ -61,18 +62,20 @@ public class Main {
                             .timestamp(LocalDateTime.now())
                             .dateLimit(LocalDateTime.now().plusHours(24))
                             .build();
-                        while (true) {
+                        while (buyMode) {
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
                             resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
-                            System.out.println("avg shorter:" + priceObj.getAvgShorter());
-                            System.out.println("avg longer:" + priceObj.getAvgLonger());
+                            System.out.println(inputL + " day avg, shorter:" + priceObj.getAvgShorter());
+                            System.out.println(inputL2 + " day avg, longer:" + priceObj.getAvgLonger());
                             mongoCRUD.createMarketData(resultM, "marketsummary");
                             priceObj.addBothPrices((Double) resultM.get("Last"));
                             //check average inequality
                             if (priceObj.validBuyCrossover()) {
-                                System.out.println("\n" + "BUY at " + priceObj.getPrice());
+                                System.out.println("\n" + "BUY at "
+                                    + priceObj.getPriceLonger().get(priceObj.getPriceLonger().size() - 1));
+                                buyMode = false;
                                 //send a buy request then either scale profits or sell at crossover
                                 //check out v1 and look at buy request as well as the profit scaling
                                 //check out new version of api as well and decide if you want to use that
