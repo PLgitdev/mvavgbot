@@ -20,6 +20,7 @@ public class Main {
          String markets = "";
          long inputL;
          long inputL2;
+         String inputS;
          LocalDateTime start = LocalDateTime.now();
          boolean buyMode = true;
 
@@ -32,7 +33,7 @@ public class Main {
                 String mTwo = marketSplit[1].toUpperCase();
                 fetcher = DataFetch.getInstance(mOne,mTwo);
                 ArrayList<Double> pricesS = new ArrayList<>();
-                ArrayList<Double>  pricesL = new ArrayList<>();
+                ArrayList<Double> pricesL = new ArrayList<>();
                 ArrayList<Double> shorterDaysDataOpenD = new ArrayList<>();
                 ArrayList<Double> shorterDaysDataCloseD = new ArrayList<>();
                 ArrayList<Double> longerDaysDataOpenD = new ArrayList<>();
@@ -72,20 +73,36 @@ public class Main {
                                 "startsAt",
                                 "open"
                             );
-                        //take the avg of open and close
-                        shorterDaysDataOpen.forEach((map) ->
-                            shorterDaysDataOpenD.add(Double.parseDouble((String) map.get("open"))));
-                        shorterDaysDataClose.forEach((map) ->
-                            shorterDaysDataCloseD.add(Double.parseDouble((String) map.get("close"))));
-                        longerDaysDataOpen.forEach( (map) ->
-                            longerDaysDataOpenD.add(Double.valueOf((String) map.get("open"))));
-                        longerDaysDataClose.forEach( (map) ->
-                            longerDaysDataCloseD.add(Double.valueOf((String) map.get("close"))));
-                        for (int i = 0; i < shorterDaysDataOpen.size(); i++) {
-                            pricesS.add((shorterDaysDataOpenD.get(i) + shorterDaysDataCloseD.get(i))/2);
-                        }
-                        for (int i = 0; i < longerDaysDataOpen.size(); i++) {
-                            pricesL.add((longerDaysDataOpenD.get(i) + longerDaysDataCloseD.get(i))/2);
+                        System.out.println("Please enter a calculation strategy hi-low = 0, open-close = 1, close = 2");
+                        inputS = sc.next();
+                        switch (inputS){
+                            case "0":
+
+                                break;
+                            case "1":
+                                shorterDaysDataOpen.forEach((map) ->
+                                    shorterDaysDataOpenD.add(Double.parseDouble((String) map.get("open"))));
+                                shorterDaysDataClose.forEach((map) ->
+                                    shorterDaysDataCloseD.add(Double.parseDouble((String) map.get("close"))));
+                                longerDaysDataOpen.forEach((map) ->
+                                    longerDaysDataOpenD.add(Double.valueOf((String) map.get("open"))));
+                                longerDaysDataClose.forEach((map) ->
+                                    longerDaysDataCloseD.add(Double.valueOf((String) map.get("close"))));
+                                //take the avg of open and close
+                                for (int i = 0; i < shorterDaysDataOpen.size(); i++) {
+                                    pricesS.add((shorterDaysDataOpenD.get(i) + shorterDaysDataCloseD.get(i)) / 2);
+                                }
+                                for (int i = 0; i < longerDaysDataOpen.size(); i++) {
+                                    pricesL.add((longerDaysDataOpenD.get(i) + longerDaysDataCloseD.get(i)) / 2);
+                                }
+                                break;
+                            case "2":
+                                shorterDaysDataClose.forEach((map) ->
+                                    pricesS.add(Double.parseDouble((String) map.get("close"))));
+                                longerDaysDataClose.forEach((map) ->
+                                    pricesL.add(Double.valueOf((String) map.get("close"))));
+                                break;
+
                         }
                         Price priceObj = Price.builder().priceShorter(pricesS)
                             .priceLonger(pricesL)
