@@ -41,10 +41,9 @@ public class DataFetch {
         return objectMapper.readValue(content.toString(), new TypeReference<LinkedHashMap<?,?>>(){});
     }
 
-    public ArrayList<LinkedHashMap<?,?>> historicalDataFetcher() throws IOException, InterruptedException {
-        String dayOne = "HOUR_1";
+    public ArrayList<LinkedHashMap<?,?>> historicalDataFetcher(String s) throws IOException, InterruptedException {
         URL url =
-            new URL( "https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + dayOne +
+            new URL( "https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + s +
                 "/recent");
         StringBuffer historicalData = fetch(url);
         return objectMapper.readValue(historicalData.toString(), new TypeReference<ArrayList<LinkedHashMap<?,?>>>(){});

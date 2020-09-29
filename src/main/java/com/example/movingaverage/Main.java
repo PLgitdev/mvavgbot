@@ -42,9 +42,23 @@ public class Main {
                 if (fetcher.valid()) {
                     //grab all needed historical data
                     try {
-                        ArrayList<LinkedHashMap<?, ?>> historicalData = fetcher.historicalDataFetcher();
+                        System.out.println("Welcome please enter a candle length" +
+                            " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
+                        int strategy = sc.nextInt();
+                        String s = "";
+                        switch (strategy % 10) {
+                            case 0: s = "MINUTE_1";
+                                break;
+                            case 1: s = "MINUTE_5";
+                                break;
+                            case 2: s = "HOUR_1";
+                                break;
+                            case 3: s = "DAY_1";
+                                break;
+                        }
+                        ArrayList<LinkedHashMap<?, ?>> historicalData = fetcher.historicalDataFetcher(s);
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
-                        System.out.println("Please enter day count for the short moving avg");
+                        System.out.println("Please enter day count for the short moving avg up to 365 days");
                         inputL = sc.nextLong();
                         ArrayList<Map<?, ?>> shorterDaysDataClose = mongoCRUD
                             .retrieveMarketDataByDays("historicaldata",
