@@ -81,12 +81,12 @@ public class Main {
                                         "low");
                                 ArrayList<Map<?, ?>> longerDaysDataHigh = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
-                                        inputL - 1,
+                                        inputL2 - 1,
                                         "startsAt",
                                         "high");
                                 ArrayList<Map<?, ?>> longerDaysDataLow = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
-                                        inputL - 1,
+                                        inputL2 - 1,
                                         "startsAt",
                                         "low");
                                 ArrayList<Double> shorterDaysDataHighD =  new ArrayList<>();
@@ -141,15 +141,15 @@ public class Main {
                                 takeAvg(longerDaysDataOpen,longerDaysDataOpenD,longerDaysDataCloseD,pricesL);
                                 break;
                             case "2":
-                                 longerDaysDataClose = mongoCRUD
-                                    .retrieveMarketDataByDays("historicaldata",
-                                        inputL2-1,
-                                        "startsAt",
-                                        "close"
-                                    );
                                 shorterDaysDataClose = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
                                         inputL-1,
+                                        "startsAt",
+                                        "close"
+                                    );
+                                longerDaysDataClose = mongoCRUD
+                                    .retrieveMarketDataByDays("historicaldata",
+                                        inputL2-1,
                                         "startsAt",
                                         "close"
                                     );
@@ -235,7 +235,7 @@ public class Main {
         }
     }
 
-    public static void takeAvg (ArrayList<Map<?, ?>> maps ,
+    public static void takeAvg (ArrayList<Map<?, ?>> maps,
                                 ArrayList<Double> arOne, ArrayList<Double> arTwo,
                                 ArrayList<Double> prices) {
         for (int i = 0; i < maps.size(); i++) {
