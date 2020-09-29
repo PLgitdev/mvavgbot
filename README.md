@@ -22,5 +22,5 @@ This is for use with MongoDB.
 (Work in progress)
 
 
-![buy](https://github.com/PLgitdev/images/blob/master/buyyyy.PNG)
+![buy](https://github.com/PLgitdev/images/blob/master/buy.PNG)
 example https://gist.github.com/PLgitdev/54c448e221ce3143e404d1a836921b2b
