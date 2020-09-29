@@ -54,7 +54,7 @@ public class Main {
                         inputL = sc.nextLong();
                         System.out.println("Please enter day count for the long moving avg up to one year, 365 days");
                         inputL2 = sc.nextLong();
-                        System.out.println("Please enter a calculation strategy hi-low = 0, open-close = 1, close = 2");
+                        System.out.println("Please enter a calculation strategy high-low = 0, open-close = 1, close = 2");
                         inputS = sc.next();
                         ArrayList<Map<?, ?>> shorterDaysDataClose;
                         ArrayList<Map<?, ?>> shorterDaysDataOpen;
@@ -250,4 +250,3 @@ public class Main {
                                     pricesL.add((longerDaysDataOpenD.get(i) + longerDaysDataCloseD.get(i)) / 2);
                                 }
                                 */
-
