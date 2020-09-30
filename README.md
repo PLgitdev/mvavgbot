@@ -15,7 +15,7 @@ Then enter your strategy for calculation.
 
 The database will build on entry after the market is selected.
 
-If you do not complete a buy or stop the program you will need to clear before next use.
+If you do not complete a buy or you stop the program without a command you will need to clear before next use.
 
 This is for use with MongoDB.
 
