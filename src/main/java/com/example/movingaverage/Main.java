@@ -171,7 +171,7 @@ public class Main {
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
-                            priceObj.addBothPrices((Double) resultM.get("Last"));
+                            priceObj.setPrices((Double) resultM.get("Last"));
                             priceObj.takeAvg();
                             priceObj.calculateCurrentEMA();
                             mongoCRUD.createMarketData(resultM, "marketsummary");
