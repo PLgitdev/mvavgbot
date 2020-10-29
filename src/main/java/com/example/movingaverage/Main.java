@@ -182,7 +182,7 @@ public class Main {
                             System.out.println(l + " candles");
 
                             //check average inequality
-                            if (priceObj.validBuyCrossover()) {
+                            if (priceObj.validSMACrossover()) {
                                 System.out.println("\n" + "BUY at " +
                                     resultM.get("Bid"));
                                 buyMode = false;

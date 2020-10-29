@@ -9,6 +9,7 @@ import lombok.ToString;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 @EqualsAndHashCode
 @Builder
@@ -40,6 +41,7 @@ public class Price {
         this.priceShorter.add(price);
         this.priceLonger.add(price);
     }
+
     public void takeAvg() {
         totalShorter = 0.0;
         totalLonger = 0.0;
@@ -50,11 +52,9 @@ public class Price {
         avgShorterList.add(avgShorter);
         avgLongerList.add(avgLonger);
     }
-    public boolean validBuyCrossover() {
-        if (avgShorter != null && avgLonger  != null) {
-            return avgShorter > avgLonger;
-        }
-        return false;
+
+    public boolean validSMACrossover() {
+        return validCrossover(avgShorter,avgLonger);
     }
 
     public void calculateCurrentEMA() {
@@ -67,15 +67,42 @@ public class Price {
         else ema.add(priceLonger.get(priceLonger.size() -1));
     }
 
-
    public void dateLimitCheck(int x) {
        if (LocalDateTime.now().compareTo(dateLimit) > 0) {
            priceShorter.remove(priceShorter.size() - x);
        }
    }
+
    public void dateLimitCheckLonger(int x) {
        if (LocalDateTime.now().compareTo(dateLimit) > 0) {
             priceLonger.remove(priceLonger.size()-x);
        }
    }
+
+   private boolean vaildExpansion(List<Double> ma, int amt) {
+        int counter = 0;
+        for (int i = 0; i < ma.size(); i++) {
+            if (i > 0 && (ma.get(i) > ma.get(i - 1))) {
+                counter++;
+            }
+        }
+        return  counter == amt;
+    }
+   private boolean validContraction(LinkedList<Double> ma,int amt) {
+        int counter = 0;
+       for (int i = 0; i < ma.size(); i++) {
+           if (i > 0 && (ma.get(i) < ma.get(i - 1))) {
+               counter++;
+           }
+       }
+       return counter == amt;
+
+   }
+
+    public boolean validCrossover(Double mas, Double mal) {
+        if (mas != null &&  mal != null) {
+            return mas > mal;
+        }
+        return false;
+    }
 }
