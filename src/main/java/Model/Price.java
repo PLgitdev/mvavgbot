@@ -8,6 +8,7 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 @EqualsAndHashCode
 @Builder
@@ -21,7 +22,9 @@ public class Price {
     private LocalDateTime timestamp;
     private LocalDateTime dateLimit;
     private Double avgShorter;
+    private LinkedList<Double> avgShorterList;
     private Double avgLonger;
+    private LinkedList<Double> avgLongerList;
     private Double emaMultiplier;
     private Double currentEMA;
     private ArrayList<Double> ema;
@@ -44,6 +47,8 @@ public class Price {
         priceLonger.forEach((p) -> totalLonger = totalLonger + p);
         this.avgShorter = totalShorter / priceShorter.size();
         this.avgLonger = totalLonger / priceLonger.size();
+        avgShorterList.add(avgShorter);
+        avgLongerList.add(avgLonger);
     }
     public boolean validBuyCrossover() {
         if (avgShorter != null && avgLonger  != null) {
