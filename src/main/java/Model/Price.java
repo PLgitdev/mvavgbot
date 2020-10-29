@@ -1,5 +1,6 @@
 package Model;
 
+import Controller.MongoCRUD;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,6 +22,9 @@ public class Price {
     private LocalDateTime dateLimit;
     private Double avgShorter;
     private Double avgLonger;
+    private Double emaMultiplier;
+    private Double currentEMA;
+    private ArrayList<Double> ema;
 
     public void addPriceShorter (Double price) {
         this.priceShorter.add(price);
@@ -46,7 +50,18 @@ public class Price {
             return avgShorter > avgLonger;
         }
         return false;
-   }
+    }
+
+    public void calculateCurrentEMA() {
+        emaMultiplier = (2 / (double) (priceLonger.size() + 1));
+        if (ema.size() > 0) {
+            this.currentEMA = (priceLonger.get(priceLonger.size() - 1) * emaMultiplier) +
+                (ema.get(ema.size() - 1) * (1 - emaMultiplier));
+            ema.add(currentEMA);
+        }
+        else ema.add(priceLonger.get(priceLonger.size() -1));
+    }
+
 
    public void dateLimitCheck(int x) {
        if (LocalDateTime.now().compareTo(dateLimit) > 0) {

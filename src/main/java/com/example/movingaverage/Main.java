@@ -165,6 +165,7 @@ public class Main {
                             .totalShorter(0.0).totalLonger(0.0)
                             .timestamp(LocalDateTime.now())
                             .dateLimit(LocalDateTime.now().plusHours(24))
+                            .ema(new ArrayList<Double>(0))
                             .build();
                         while (buyMode) {
                             liveMarketData = fetcher.marketDataFetcher();
@@ -172,8 +173,10 @@ public class Main {
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
                             priceObj.addBothPrices((Double) resultM.get("Last"));
                             priceObj.takeAvg();
+                            priceObj.calculateCurrentEMA();
                             mongoCRUD.createMarketData(resultM, "marketsummary");
                             resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
+                            System.out.println("this is the current EMA: " + priceObj.getCurrentEMA());
                             System.out.println(inputL + " day avg, shorter:" + priceObj.getAvgShorter());
                             System.out.println(inputL2 + " day avg, longer:" + priceObj.getAvgLonger());
                             System.out.println(l + " candles");
