@@ -1,10 +1,8 @@
 package Model;
 
-import Controller.MongoCRUD;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -55,6 +53,12 @@ public class Price {
     public boolean validSMACrossover() {
         return validCrossover(avgShorter,avgLonger);
     }
+    public boolean mvAvgRibbonContractionLonger(int amt) {  return validContraction(avgLongerList, amt);}
+    public boolean mvAvgRibbonContractionShorter(int amt) { return validContraction(avgShorterList, amt);}
+    public boolean MvAvgRibbonExpansionLonger(int amt) { return validExpansion(avgLongerList, amt);}
+    public boolean emaContraction(int amt) { return validContraction(ema, amt);}
+    public boolean emaExpansion(int amt) { return validExpansion(ema, amt);}
+
     public void calculateCurrentEMA() {
         emaMultiplier = (2 / (double) (priceLonger.size() + 1));
         if (ema.size() > 0) {
@@ -76,7 +80,7 @@ public class Price {
        }
    }
 
-   private boolean vaildExpansion(List<Double> ma, int amt) {
+   private boolean validExpansion(List<Double> ma, int amt) {
         int counter = 0;
         for (int i = 0; i < ma.size(); i++) {
             if (i > 0 && (ma.get(i) > ma.get(i - 1))) {
@@ -85,7 +89,7 @@ public class Price {
         }
         return  counter == amt;
     }
-    private boolean validContraction(LinkedList<Double> ma,int amt) {
+    private boolean validContraction(List<Double> ma,int amt) {
         int counter = 0;
        for (int i = 0; i < ma.size(); i++) {
            if (i > 0 && (ma.get(i) < ma.get(i - 1))) {
@@ -101,4 +105,6 @@ public class Price {
         }
         return false;
     }
+    //what if it kept trying different amts
+    //when there is a valid contraction after a valid sma crossover
 }
