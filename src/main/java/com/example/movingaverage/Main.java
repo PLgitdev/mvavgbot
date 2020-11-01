@@ -4,10 +4,7 @@ import Controller.MongoCRUD;
 import Live.DataFetch;
 import Model.Price;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
@@ -18,8 +15,8 @@ public class Main {
          String [] marketSplit;
          DataFetch fetcher;
          String markets = "";
-         long inputL;
-         long inputL2;
+         int inputL;
+         int inputL2;
          String inputS;
          LocalDateTime start = LocalDateTime.now();
          boolean buyMode = true;
@@ -52,18 +49,18 @@ public class Main {
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
                         System.out.println("Please enter day count for the short moving avg up to 365 days");
                         inputL = sc.nextLong();
-                        System.out.println("Please enter day count for the long moving avg up to one year, 365 days");
+                        System.out.println("Please enter day count for the int moving avg up to one year, 365 days");
                         inputL2 = sc.nextLong();
                         System.out.println("Please enter a calculation strategy high-low = 0, open-close = 1, close = 2");
                         inputS = sc.next();
                         ArrayList<Map<?, ?>> shorterDaysDataClose;
                         ArrayList<Map<?, ?>> shorterDaysDataOpen;
-                        ArrayList<Map<?, ?>> longerDaysDataClose;
-                        ArrayList<Map<?, ?>> longerDaysDataOpen;
+                        ArrayList<Map<?, ?>> interDaysDataClose;
+                        ArrayList<Map<?, ?>> interDaysDataOpen;
                         ArrayList<Double> shorterDaysDataOpenD = new ArrayList<>();
                         ArrayList<Double> shorterDaysDataCloseD = new ArrayList<>();
-                        ArrayList<Double> longerDaysDataOpenD = new ArrayList<>();
-                        ArrayList<Double> longerDaysDataCloseD = new ArrayList<>();
+                        ArrayList<Double> interDaysDataOpenD = new ArrayList<>();
+                        ArrayList<Double> interDaysDataCloseD = new ArrayList<>();
                         ArrayList<Double> pricesS = new ArrayList<>();
                         ArrayList<Double> pricesL = new ArrayList<>();
 
@@ -79,30 +76,30 @@ public class Main {
                                         inputL - 1,
                                         "startsAt",
                                         "low");
-                                ArrayList<Map<?, ?>> longerDaysDataHigh = mongoCRUD
+                                ArrayList<Map<?, ?>> interDaysDataHigh = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
                                         inputL2 - 1,
                                         "startsAt",
                                         "high");
-                                ArrayList<Map<?, ?>> longerDaysDataLow = mongoCRUD
+                                ArrayList<Map<?, ?>> interDaysDataLow = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
                                         inputL2 - 1,
                                         "startsAt",
                                         "low");
                                 ArrayList<Double> shorterDaysDataHighD =  new ArrayList<>();
                                 ArrayList<Double> shorterDaysDataLowD = new ArrayList<>();
-                                ArrayList<Double> longerDaysDataHighD =  new ArrayList<>();
-                                ArrayList<Double> longerDaysDataLowD = new ArrayList<>();
+                                ArrayList<Double> interDaysDataHighD =  new ArrayList<>();
+                                ArrayList<Double> interDaysDataLowD = new ArrayList<>();
                                 shorterDaysDataHigh.forEach((map) ->
                                     shorterDaysDataHighD.add(Double.parseDouble((String) map.get("high"))));
                                 shorterDaysDataLow.forEach((map) ->
                                     shorterDaysDataLowD.add(Double.parseDouble((String) map.get("low"))));
-                                longerDaysDataHigh.forEach((map) ->
-                                    longerDaysDataHighD.add(Double.valueOf((String) map.get("high"))));
-                                longerDaysDataLow.forEach((map) ->
-                                    longerDaysDataLowD.add(Double.valueOf((String) map.get("low"))));
+                                interDaysDataHigh.forEach((map) ->
+                                    interDaysDataHighD.add(Double.valueOf((String) map.get("high"))));
+                                interDaysDataLow.forEach((map) ->
+                                    interDaysDataLowD.add(Double.valueOf((String) map.get("low"))));
                                 takeAvg(shorterDaysDataHigh,shorterDaysDataHighD,shorterDaysDataLowD,pricesS);
-                                takeAvg(longerDaysDataHigh,longerDaysDataHighD,longerDaysDataLowD, pricesL);
+                                takeAvg(interDaysDataHigh,interDaysDataHighD,interDaysDataLowD, pricesL);
                                 break;
                             case "1":
                                 shorterDaysDataClose = mongoCRUD
@@ -117,13 +114,13 @@ public class Main {
                                         "startsAt",
                                         "open"
                                     );
-                                longerDaysDataClose = mongoCRUD
+                                interDaysDataClose = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
                                         inputL2-1,
                                         "startsAt",
                                         "close"
                                     );
-                                longerDaysDataOpen = mongoCRUD
+                                interDaysDataOpen = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
                                         inputL2-1,
                                         "startsAt",
@@ -133,12 +130,12 @@ public class Main {
                                     shorterDaysDataOpenD.add(Double.parseDouble((String) map.get("open"))));
                                 shorterDaysDataClose.forEach((map) ->
                                     shorterDaysDataCloseD.add(Double.parseDouble((String) map.get("close"))));
-                                longerDaysDataOpen.forEach((map) ->
-                                    longerDaysDataOpenD.add(Double.valueOf((String) map.get("open"))));
-                                longerDaysDataClose.forEach((map) ->
-                                    longerDaysDataCloseD.add(Double.valueOf((String) map.get("close"))));
+                                interDaysDataOpen.forEach((map) ->
+                                    interDaysDataOpenD.add(Double.valueOf((String) map.get("open"))));
+                                interDaysDataClose.forEach((map) ->
+                                    interDaysDataCloseD.add(Double.valueOf((String) map.get("close"))));
                                 takeAvg(shorterDaysDataOpen,shorterDaysDataOpenD,shorterDaysDataCloseD,pricesS);
-                                takeAvg(longerDaysDataOpen,longerDaysDataOpenD,longerDaysDataCloseD,pricesL);
+                                takeAvg(interDaysDataOpen,interDaysDataOpenD,interDaysDataCloseD,pricesL);
                                 break;
                             case "2":
                                 shorterDaysDataClose = mongoCRUD
@@ -147,7 +144,7 @@ public class Main {
                                         "startsAt",
                                         "close"
                                     );
-                                longerDaysDataClose = mongoCRUD
+                                interDaysDataClose = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
                                         inputL2-1,
                                         "startsAt",
@@ -155,11 +152,19 @@ public class Main {
                                     );
                                 shorterDaysDataClose.forEach((map) ->
                                     pricesS.add(Double.parseDouble((String) map.get("close"))));
-                                longerDaysDataClose.forEach((map) ->
+                                interDaysDataClose.forEach((map) ->
                                     pricesL.add(Double.parseDouble((String) map.get("close"))));
                                 break;
 
                         }
+                        List<Map<?,?>> twelveDayPeriod = mongoCRUD.retrieveMarketDataByDays("historicaldata",
+                            12,
+                            "startsAt",
+                            "close" );
+                        List<Map<?,?>> twentySixDayPeriod = mongoCRUD.retrieveMarketDataByDays("historicaldata",
+                            26,
+                            "startsAt",
+                            "close" );
                         Price priceObj = Price.builder().priceShorter(pricesS)
                             .priceLonger(pricesL)
                             .totalShorter(0.0).totalLonger(0.0)
@@ -178,7 +183,7 @@ public class Main {
                             resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                             System.out.println("this is the current EMA: " + priceObj.getCurrentEMA());
                             System.out.println(inputL + " day avg, shorter:" + priceObj.getAvgShorter());
-                            System.out.println(inputL2 + " day avg, longer:" + priceObj.getAvgLonger());
+                            System.out.println(inputL2 + " day avg, inter:" + priceObj.getAvgLonger());
                             System.out.println(l + " candles");
 
                             //check average inequality
@@ -249,7 +254,7 @@ public class Main {
 //take the avg of open and close
                                 /*for (int i = 0; i < shorterDaysDataOpen.size(); i++) {
                                     pricesS.add((shorterDaysDataOpenD.get(i) + shorterDaysDataCloseD.get(i)) / 2);
-                                } for (int i = 0; i < longerDaysDataOpen.size(); i++) {
-                                    pricesL.add((longerDaysDataOpenD.get(i) + longerDaysDataCloseD.get(i)) / 2);
+                                } for (int i = 0; i < interDaysDataOpen.size(); i++) {
+                                    pricesL.add((interDaysDataOpenD.get(i) + interDaysDataCloseD.get(i)) / 2);
                                 }
                                 */

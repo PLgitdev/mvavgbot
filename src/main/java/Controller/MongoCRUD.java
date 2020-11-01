@@ -43,7 +43,7 @@ public class MongoCRUD {
     }
 
 
-    public ArrayList<Map<?, ?>> retrieveMarketDataByDays(String collection, Long days, String q, String p) {
+    public ArrayList<Map<?, ?>> retrieveMarketDataByDays(String collection, int days, String q, String p) {
         ArrayList<Map<?, ?>> marketDataCollection = new ArrayList<Map<?, ?>>(){};
         MongoCollection<Document> dbCollection = db.getCollection(collection);
         dbCollection .find(gte(q, now.minusDays(days).toString()))
