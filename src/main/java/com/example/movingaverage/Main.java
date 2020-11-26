@@ -176,24 +176,23 @@ public class Main {
                             .priceLonger(pricesL)
                             .shortMACDPeriod(shortMacdPeriod)
                             .longerMACDPeriod(longerMacdPeriod)
-                            .timestamp(LocalDateTime.now())
-                            .dateLimit(LocalDateTime.now().plusHours(24))
-                            .sMACDEMA(0.0)
-                            .lMACDEMA(0.0)
                             .nineDayMACDA(new ArrayList<Double>(0))
                             .twentySixDayMACDA(new ArrayList<Double>(0))
+                            .timestamp(LocalDateTime.now())
+                            .dateLimit(LocalDateTime.now().plusHours(24))
                             .build();
                         while (buyMode) {
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
                             priceObj.setPrices((Double) resultM.get("Last"));
+                            priceObj.setSMA();
                             priceObj.setSMACDEMA();
                             priceObj.setLMACDEMA();
-                            priceObj.setSMA();
-
+                            priceObj.setMACD();
                             mongoCRUD.createMarketData(resultM, "marketsummary");
                             resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
+                            System.out.println("this is the current MACD: " + priceObj.getMACD());
                             System.out.println("this is the current sMACDavg: " + priceObj.getSMACDEMA());
                             System.out.println("this is the current lMACDavg: " + priceObj.getSMACDEMA());
                             System.out.println(inputL + " day SMA, shorter:" + priceObj.getAvgShorter());
@@ -203,11 +202,12 @@ public class Main {
                             //check average inequality
                             if (priceObj.validSMACrossover()) {
                                 System.out.println(("valid SMA crossover "));
-                                if (priceObj.validMACDCrossover()) {
+                                /*if (priceObj.validMACDCrossover()) {
                                     System.out.println("\n" + "BUY at " +
                                         resultM.get("Bid"));
                                     buyMode = false;
                                 }
+                                 */
                                 //send a buy request then either scale profits or sell at crossover
                                 //check out v1 and look at buy request as well as the profit scaling
                                 //make buy order a limit buy that is a little less than the target. (safety)

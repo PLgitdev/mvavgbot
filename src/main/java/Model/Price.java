@@ -20,6 +20,7 @@ public class Price {
     private LocalDateTime dateLimit;
     private Double avgShorter;
     private Double avgLonger;
+    private Double mACD;
     private Double sMACDEMA;
     private Double lMACDEMA;
     private List<Double> nineDayMACDA;
@@ -39,19 +40,28 @@ public class Price {
         this.priceLonger.add(price);
         this.currentPrice = price;
     }
-    public void setSMACDEMA() {
-        if (nineDayMACDA.size() > 0 ) {
-            this.sMACDEMA  = calculateCurrentEMA(shortMACDPeriod, nineDayMACDA);
-            nineDayMACDA.add((this.lMACDEMA));
+    public void setMACD() {
+        if (this.lMACDEMA != null) {
+            this.mACD = this.lMACDEMA - this.sMACDEMA;
         }
-        else nineDayMACDA.add(0.0);
+    }
+    public void setSMACDEMA() {
+        if (!nineDayMACDA.isEmpty()) {
+            this.sMACDEMA = calculateCurrentEMA(shortMACDPeriod, nineDayMACDA);
+            nineDayMACDA.add((this.sMACDEMA));
+        }
+        else {
+            nineDayMACDA.add(avgShorter);
+        }
     }
     public void setLMACDEMA() {
-        if (twentySixDayMACDA.size() > 0 ) {
-            this.sMACDEMA  = calculateCurrentEMA(shortMACDPeriod, twentySixDayMACDA);
+        if(!twentySixDayMACDA.isEmpty()) {
+            this.lMACDEMA  = calculateCurrentEMA(longerMACDPeriod, twentySixDayMACDA);
             twentySixDayMACDA.add((this.lMACDEMA));
         }
-        else twentySixDayMACDA.add(0.0);
+        else {
+            twentySixDayMACDA.add(avgLonger);
+        }
     }
     public void setSMA() {
         this.avgShorter = calculateSMA(priceShorter);
@@ -60,9 +70,10 @@ public class Price {
     public boolean validSMACrossover() {
         return validShortCrossover(avgShorter,avgLonger);
     }
-    public boolean validMACDCrossover() {
-       return validShortCrossover(sMACDEMA, lMACDEMA);
+    /*public boolean validMACDCrossover() {
+       return validShortCrossover(mACD, signalLine);
     }
+     */
     public void dateLimitCheck(int x) {
         if (LocalDateTime.now().compareTo(dateLimit) > 0) {
             priceShorter.remove(priceShorter.size() - x);
@@ -95,8 +106,8 @@ public class Price {
     }
     private double calculateCurrentEMA(List<Double> ma , List<Double> ema) {
         Double emaMultiplier = (2 / (double) (ma.size() + 1));
-        return (currentPrice * emaMultiplier) +
-                (ema.get(ema.size() - 1) * (1 - emaMultiplier));
+        return (ema.size() > 1) ? (currentPrice * emaMultiplier) +
+                (ema.get(ema.size() - 2) * (1 - emaMultiplier)) : currentPrice * emaMultiplier;
     }
 
     //what if it kept trying different amts
