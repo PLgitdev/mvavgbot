@@ -176,7 +176,7 @@ public class Main {
                             .priceLonger(pricesL)
                             .shortMACDPeriod(shortMacdPeriod)
                             .longerMACDPeriod(longerMacdPeriod)
-                            .nineDayMACDA(new ArrayList<Double>(0))
+                            .twelveDayMACDA(new ArrayList<Double>(0))
                             .twentySixDayMACDA(new ArrayList<Double>(0))
                             .timestamp(LocalDateTime.now())
                             .dateLimit(LocalDateTime.now().plusHours(24))
@@ -194,7 +194,7 @@ public class Main {
                             resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                             System.out.println("this is the current MACD: " + priceObj.getMACD());
                             System.out.println("this is the current sMACDavg: " + priceObj.getSMACDEMA());
-                            System.out.println("this is the current lMACDavg: " + priceObj.getSMACDEMA());
+                            System.out.println("this is the current lMACDavg: " + priceObj.getLMACDEMA());
                             System.out.println(inputL + " day SMA, shorter:" + priceObj.getAvgShorter());
                             System.out.println(inputL2 + " day SMA, longer:" + priceObj.getAvgLonger());
                             System.out.println(l + " candles");
@@ -202,12 +202,12 @@ public class Main {
                             //check average inequality
                             if (priceObj.validSMACrossover()) {
                                 System.out.println(("valid SMA crossover "));
-                                /*if (priceObj.validMACDCrossover()) {
+                                if (priceObj.validMACDCrossover()) {
                                     System.out.println("\n" + "BUY at " +
                                         resultM.get("Bid"));
                                     buyMode = false;
                                 }
-                                 */
+
                                 //send a buy request then either scale profits or sell at crossover
                                 //check out v1 and look at buy request as well as the profit scaling
                                 //make buy order a limit buy that is a little less than the target. (safety)

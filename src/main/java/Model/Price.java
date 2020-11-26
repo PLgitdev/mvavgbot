@@ -23,7 +23,7 @@ public class Price {
     private Double mACD;
     private Double sMACDEMA;
     private Double lMACDEMA;
-    private List<Double> nineDayMACDA;
+    private List<Double> twelveDayMACDA;
     private List<Double> twentySixDayMACDA;
     private List<Double> shortMACDPeriod;
     private List<Double> longerMACDPeriod;
@@ -46,21 +46,21 @@ public class Price {
         }
     }
     public void setSMACDEMA() {
-        if (!nineDayMACDA.isEmpty()) {
-            this.sMACDEMA = calculateCurrentEMA(shortMACDPeriod, nineDayMACDA);
-            nineDayMACDA.add((this.sMACDEMA));
+        if (twelveDayMACDA.size() > 0) {
+            this.sMACDEMA = calculateCurrentEMA(shortMACDPeriod, twelveDayMACDA, 2);
+            twelveDayMACDA.add((this.sMACDEMA));
         }
         else {
-            nineDayMACDA.add(avgShorter);
+            twelveDayMACDA.add(calculateSMA(shortMACDPeriod));
         }
     }
     public void setLMACDEMA() {
-        if(!twentySixDayMACDA.isEmpty()) {
-            this.lMACDEMA  = calculateCurrentEMA(longerMACDPeriod, twentySixDayMACDA);
+        if(twentySixDayMACDA.size() > 0) {
+            this.lMACDEMA  = calculateCurrentEMA(longerMACDPeriod, twentySixDayMACDA, 2);
             twentySixDayMACDA.add((this.lMACDEMA));
         }
         else {
-            twentySixDayMACDA.add(avgLonger);
+            twentySixDayMACDA.add(calculateSMA(longerMACDPeriod));
         }
     }
     public void setSMA() {
@@ -70,10 +70,9 @@ public class Price {
     public boolean validSMACrossover() {
         return validShortCrossover(avgShorter,avgLonger);
     }
-    /*public boolean validMACDCrossover() {
-       return validShortCrossover(mACD, signalLine);
+    public boolean validMACDCrossover() {
+       return validShortCrossover(sMACDEMA, lMACDEMA);
     }
-     */
     public void dateLimitCheck(int x) {
         if (LocalDateTime.now().compareTo(dateLimit) > 0) {
             priceShorter.remove(priceShorter.size() - x);
@@ -81,7 +80,7 @@ public class Price {
     }
     public void dateLimitCheckLonger(int x) {
         if (LocalDateTime.now().compareTo(dateLimit) > 0) {
-             priceLonger.remove(priceLonger.size()-x);
+             priceLonger.remove(priceLonger.size() - x);
         }
     }
     private boolean validShortCrossover(Double mas, Double mal) {
@@ -104,12 +103,14 @@ public class Price {
         }
         return sum / a.size();
     }
-    private double calculateCurrentEMA(List<Double> ma , List<Double> ema) {
-        Double emaMultiplier = (2 / (double) (ma.size() + 1));
-        return (ema.size() > 1) ? (currentPrice * emaMultiplier) +
-                (ema.get(ema.size() - 2) * (1 - emaMultiplier)) : currentPrice * emaMultiplier;
+    private double emaMultiplier(List<Double> ma, int smoothing) {
+        return (smoothing / (double) (ma.size() + 1));
     }
-
+    private double calculateCurrentEMA(List<Double> ma , List<Double> ema, int smoothing) {
+        Double emaMultiplier = emaMultiplier(ma, smoothing);
+        return (currentPrice * emaMultiplier) +
+            (ema.get(ema.size() - 1) * (1 - emaMultiplier));
+    }
     //what if it kept trying different amts
     //when there is a valid contraction after a valid sma crossover
 // ?? random idea i had basically will reach a vaLid expansion for a certain amount set
