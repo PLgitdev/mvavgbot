@@ -12,7 +12,7 @@ import java.io.InputStreamReader;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class DataFetch {
 
@@ -34,19 +34,19 @@ public class DataFetch {
         return soleInstanceDataFetch;
     }
 
-    public LinkedHashMap<?, ?> marketDataFetcher() throws IOException, InterruptedException {
+    public Map<?, ?> marketDataFetcher() throws IOException, InterruptedException {
         URL url =
             new URL("https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=" + mOne + "-" + mTwo);
         StringBuffer content = fetch(url);
-        return objectMapper.readValue(content.toString(), new TypeReference<LinkedHashMap<?,?>>(){});
+        return objectMapper.readValue(content.toString(), new TypeReference<Map<?,?>>(){});
     }
 
-    public ArrayList<LinkedHashMap<?,?>> historicalDataFetcher(String s) throws IOException, InterruptedException {
+    public ArrayList<Map<?,?>> historicalDataFetcher(String s) throws IOException, InterruptedException {
         URL url =
             new URL( "https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + s +
                 "/recent");
         StringBuffer historicalData = fetch(url);
-        return objectMapper.readValue(historicalData.toString(), new TypeReference<ArrayList<LinkedHashMap<?,?>>>(){});
+        return objectMapper.readValue(historicalData.toString(), new TypeReference<ArrayList<Map<?,?>>>(){});
     }
 
     public StringBuffer fetch(URL url) throws InterruptedException, IOException {

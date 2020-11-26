@@ -25,8 +25,11 @@ public class Price {
     private Double avgLonger;
     private LinkedList<Double> avgLongerList;
     private Double emaMultiplier;
-    private Double currentEMA;
+    private Double currentEma;
     private ArrayList<Double> ema;
+    private List<Double> nineDayMACD;
+    private List<Double> shortMACDPeriod;
+    private List<Double> longerMACDPeriod;
 
     public void addPriceShorter (Double price) {
         this.priceShorter.add(price);
@@ -40,6 +43,12 @@ public class Price {
         this.priceLonger.add(price);
         this.currentPrice = price;
     }
+    public void addShortMACDEma() {
+        calculateCurrentEMA(shortMACDPeriod);
+    }
+    public void addLongerMACDEma() {
+        calculateCurrentEMA(longerMACDPeriod);
+    }
     public void takeAvg() {
         totalShorter = 0.0;
         totalLonger = 0.0;
@@ -50,24 +59,15 @@ public class Price {
         avgShorterList.add(avgShorter);
         avgLongerList.add(avgLonger);
     }
+    //public boolean validMACDCrossover()
     public boolean validSMACrossover() {
-        return validCrossover(avgShorter,avgLonger);
+        return validShortCrossover(avgShorter,avgLonger);
     }
-    public boolean mvAvgRibbonContractionLonger(int amt) {  return validContraction(avgLongerList, amt);}
-    public boolean mvAvgRibbonContractionShorter(int amt) { return validContraction(avgShorterList, amt);}
-    public boolean MvAvgRibbonExpansionLonger(int amt) { return validExpansion(avgLongerList, amt);}
-    public boolean emaContraction(int amt) { return validContraction(ema, amt);}
-    public boolean emaExpansion(int amt) { return validExpansion(ema, amt);}
+    public boolean MACDCrossover() {
+       return validShortCrossover(calculateCurrentEMA(shortMACDPeriod),
+            calculateCurrentEMA(longerMACDPeriod));
+    }
 
-    public void calculateCurrentEMA() {
-        emaMultiplier = (2 / (double) (priceLonger.size() + 1));
-        if (ema.size() > 0) {
-            this.currentEMA = (currentPrice * emaMultiplier) +
-                (ema.get(ema.size() - 1) * (1 - emaMultiplier));
-            ema.add(currentEMA);
-        }
-        else ema.add(currentPrice);
-    }
    public void dateLimitCheck(int x) {
        if (LocalDateTime.now().compareTo(dateLimit) > 0) {
            priceShorter.remove(priceShorter.size() - x);
@@ -79,8 +79,30 @@ public class Price {
             priceLonger.remove(priceLonger.size()-x);
        }
    }
+   private boolean validShortCrossover(Double mas, Double mal) {
+        if (mas != null &&  mal != null) {
+            return mas > mal;
+        }
+        return false;
+    }
+    private boolean validLongerCrossover(Double mas, Double mal) {
+        if (mas != null &&  mal != null) {
+            return mas < mal;
+        }
+        return false;
+    }
+    public double calculateCurrentEMA(List<Double> ma) {
+        emaMultiplier = (2 / (double) (ma.size() + 1));
+        return (ema.size() > 0) ? (currentPrice * emaMultiplier) +
+                (ema.get(ema.size() - 1) * (1 - emaMultiplier)) : currentEma;
+    }
 
-   private boolean validExpansion(List<Double> ma, int amt) {
+    //what if it kept trying different amts
+    //when there is a valid contraction after a valid sma crossover
+// ?? random idea i had basically will reach a vaLid expansion for a certain amount set
+
+    /*
+    private boolean validExpansion(List<Double> ma, int amt) {
         int counter = 0;
         for (int i = 0; i < ma.size(); i++) {
             if (i > 0 && (ma.get(i) > ma.get(i - 1))) {
@@ -99,12 +121,5 @@ public class Price {
        return counter == amt;
 
    }
-   private boolean validCrossover(Double mas, Double mal) {
-        if (mas != null &&  mal != null) {
-            return mas > mal;
-        }
-        return false;
-    }
-    //what if it kept trying different amts
-    //when there is a valid contraction after a valid sma crossover
+   */
 }
