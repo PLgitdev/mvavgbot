@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.List;
 
 @EqualsAndHashCode
@@ -15,19 +15,15 @@ import java.util.List;
 public class Price {
     private ArrayList<Double> priceShorter;
     private ArrayList<Double> priceLonger;
-    private Double totalShorter;
-    private Double totalLonger;
     private Double currentPrice;
     private LocalDateTime timestamp;
     private LocalDateTime dateLimit;
     private Double avgShorter;
-    private LinkedList<Double> avgShorterList;
     private Double avgLonger;
-    private LinkedList<Double> avgLongerList;
-    private Double emaMultiplier;
-    private Double currentEma;
-    private ArrayList<Double> ema;
-    private List<Double> nineDayMACD;
+    private Double sMACDEMA;
+    private Double lMACDEMA;
+    private List<Double> nineDayMACDA;
+    private List<Double> twentySixDayMACDA;
     private List<Double> shortMACDPeriod;
     private List<Double> longerMACDPeriod;
 
@@ -43,47 +39,45 @@ public class Price {
         this.priceLonger.add(price);
         this.currentPrice = price;
     }
-    public void addShortMACDEma() {
-        calculateCurrentEMA(shortMACDPeriod);
+    public void setSMACDEMA() {
+        if (nineDayMACDA.size() > 0 ) {
+            this.sMACDEMA  = calculateCurrentEMA(shortMACDPeriod, nineDayMACDA);
+            nineDayMACDA.add((this.lMACDEMA));
+        }
+        else nineDayMACDA.add(0.0);
     }
-    public void addLongerMACDEma() {
-        calculateCurrentEMA(longerMACDPeriod);
+    public void setLMACDEMA() {
+        if (twentySixDayMACDA.size() > 0 ) {
+            this.sMACDEMA  = calculateCurrentEMA(shortMACDPeriod, twentySixDayMACDA);
+            twentySixDayMACDA.add((this.lMACDEMA));
+        }
+        else twentySixDayMACDA.add(0.0);
     }
-    public void takeAvg() {
-        totalShorter = 0.0;
-        totalLonger = 0.0;
-        priceShorter.forEach( (p) -> totalShorter = totalShorter + p);
-        priceLonger.forEach((p) -> totalLonger = totalLonger + p);
-        this.avgShorter = totalShorter / priceShorter.size();
-        this.avgLonger = totalLonger / priceLonger.size();
-        avgShorterList.add(avgShorter);
-        avgLongerList.add(avgLonger);
+    public void setSMA() {
+        this.avgShorter = calculateSMA(priceShorter);
+        this.avgLonger =  calculateSMA(priceLonger);
     }
-    //public boolean validMACDCrossover()
     public boolean validSMACrossover() {
         return validShortCrossover(avgShorter,avgLonger);
     }
-    public boolean MACDCrossover() {
-       return validShortCrossover(calculateCurrentEMA(shortMACDPeriod),
-            calculateCurrentEMA(longerMACDPeriod));
+    public boolean validMACDCrossover() {
+       return validShortCrossover(sMACDEMA, lMACDEMA);
     }
-
-   public void dateLimitCheck(int x) {
-       if (LocalDateTime.now().compareTo(dateLimit) > 0) {
-           priceShorter.remove(priceShorter.size() - x);
-       }
-   }
-
-   public void dateLimitCheckLonger(int x) {
-       if (LocalDateTime.now().compareTo(dateLimit) > 0) {
-            priceLonger.remove(priceLonger.size()-x);
-       }
-   }
-   private boolean validShortCrossover(Double mas, Double mal) {
-        if (mas != null &&  mal != null) {
-            return mas > mal;
+    public void dateLimitCheck(int x) {
+        if (LocalDateTime.now().compareTo(dateLimit) > 0) {
+            priceShorter.remove(priceShorter.size() - x);
         }
-        return false;
+    }
+    public void dateLimitCheckLonger(int x) {
+        if (LocalDateTime.now().compareTo(dateLimit) > 0) {
+             priceLonger.remove(priceLonger.size()-x);
+        }
+    }
+    private boolean validShortCrossover(Double mas, Double mal) {
+         if (mas != null &&  mal != null) {
+             return mas > mal;
+         }
+         return false;
     }
     private boolean validLongerCrossover(Double mas, Double mal) {
         if (mas != null &&  mal != null) {
@@ -91,10 +85,18 @@ public class Price {
         }
         return false;
     }
-    public double calculateCurrentEMA(List<Double> ma) {
-        emaMultiplier = (2 / (double) (ma.size() + 1));
-        return (ema.size() > 0) ? (currentPrice * emaMultiplier) +
-                (ema.get(ema.size() - 1) * (1 - emaMultiplier)) : currentEma;
+
+    private double calculateSMA(List<Double> a) {
+        Double sum = 0.0;
+        for(Double x : a) {
+           sum += x;
+        }
+        return sum / a.size();
+    }
+    private double calculateCurrentEMA(List<Double> ma , List<Double> ema) {
+        Double emaMultiplier = (2 / (double) (ma.size() + 1));
+        return (currentPrice * emaMultiplier) +
+                (ema.get(ema.size() - 1) * (1 - emaMultiplier));
     }
 
     //what if it kept trying different amts
