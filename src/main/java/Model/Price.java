@@ -19,7 +19,6 @@ public class Price {
     private Double mACD;
     private Double sMACDEMA;
     private Double lMACDEMA;
-    private Double prev;
     private LocalDateTime timestamp;
     private LocalDateTime dateLimit;
     private ArrayList<Double> priceShorter;
@@ -52,13 +51,12 @@ public class Price {
 
             signalLine.add(); //create a signal line by making a EMA function
         }
-
     }
      */
     public void setSMACDEMA() {
         if(twelveDayMACDA.size() > 0) {
-            prev = twentySixDayMACDA.get(twentySixDayMACDA.size() - 1);
-            this.sMACDEMA = calculateEMA(currentPrice,prev,smoothing, 12);
+            Double prev = twentySixDayMACDA.get(twentySixDayMACDA.size() - 1);
+            this.sMACDEMA = calculateEMA(currentPrice,prev,smoothing,12);
             twelveDayMACDA.add((this.sMACDEMA));
         }
         else {
@@ -67,7 +65,7 @@ public class Price {
     }
     public void setLMACDEMA() {
         if(twentySixDayMACDA.size() > 0) {
-            prev = twentySixDayMACDA.get(twentySixDayMACDA.size() - 1);
+            Double prev = twentySixDayMACDA.get(twentySixDayMACDA.size() - 1);
             this.lMACDEMA  = calculateEMA(currentPrice,prev,smoothing,26);
             twentySixDayMACDA.add((this.lMACDEMA));
         }
@@ -117,7 +115,7 @@ public class Price {
         return false;
     }
     private boolean validLongerCrossover(Double a, Double b) {
-        if (a != null &&  b != null) {
+        if(a != null &&  b != null) {
             return a < b;
         }
         return false;
