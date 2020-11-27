@@ -7,22 +7,24 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.List;
 
 @EqualsAndHashCode
 @Builder
 @Data
 public class Price {
-    private ArrayList<Double> priceShorter;
-    private ArrayList<Double> priceLonger;
+    private int smoothing;
     private Double currentPrice;
-    private LocalDateTime timestamp;
-    private LocalDateTime dateLimit;
     private Double avgShorter;
     private Double avgLonger;
     private Double mACD;
     private Double sMACDEMA;
     private Double lMACDEMA;
+    private Double prev;
+    private LocalDateTime timestamp;
+    private LocalDateTime dateLimit;
+    private ArrayList<Double> priceShorter;
+    private ArrayList<Double> priceLonger;
+    private List<Double> signalLine;
     private List<Double> twelveDayMACDA;
     private List<Double> twentySixDayMACDA;
     private List<Double> shortMACDPeriod;
@@ -41,13 +43,22 @@ public class Price {
         this.currentPrice = price;
     }
     public void setMACD() {
-        if (this.lMACDEMA != null) {
-            this.mACD = this.lMACDEMA - this.sMACDEMA;
+        if(this.lMACDEMA != null) {
+            this.mACD =  this.sMACDEMA - this.lMACDEMA ;
         }
     }
+    /* public void upadateSignalLine() {
+        if(signalLine.size() < 9) {
+
+            signalLine.add(); //create a signal line by making a EMA function
+        }
+
+    }
+     */
     public void setSMACDEMA() {
-        if (twelveDayMACDA.size() > 0) {
-            this.sMACDEMA = calculateCurrentEMA(shortMACDPeriod, twelveDayMACDA, 2);
+        if(twelveDayMACDA.size() > 0) {
+            prev = twentySixDayMACDA.get(twentySixDayMACDA.size() - 1);
+            this.sMACDEMA = calculateEMA(currentPrice,prev,smoothing, 12);
             twelveDayMACDA.add((this.sMACDEMA));
         }
         else {
@@ -56,7 +67,8 @@ public class Price {
     }
     public void setLMACDEMA() {
         if(twentySixDayMACDA.size() > 0) {
-            this.lMACDEMA  = calculateCurrentEMA(longerMACDPeriod, twentySixDayMACDA, 2);
+            prev = twentySixDayMACDA.get(twentySixDayMACDA.size() - 1);
+            this.lMACDEMA  = calculateEMA(currentPrice,prev,smoothing,26);
             twentySixDayMACDA.add((this.lMACDEMA));
         }
         else {
@@ -71,45 +83,44 @@ public class Price {
         return validShortCrossover(avgShorter,avgLonger);
     }
     public boolean validMACDCrossover() {
-       return validShortCrossover(sMACDEMA, lMACDEMA);
+        return validShortCrossover(sMACDEMA, lMACDEMA);
     }
     public void dateLimitCheck(int x) {
-        if (LocalDateTime.now().compareTo(dateLimit) > 0) {
+        if(LocalDateTime.now().compareTo(dateLimit) > 0) {
             priceShorter.remove(priceShorter.size() - x);
         }
     }
     public void dateLimitCheckLonger(int x) {
         if (LocalDateTime.now().compareTo(dateLimit) > 0) {
-             priceLonger.remove(priceLonger.size() - x);
+            priceLonger.remove(priceLonger.size() - x);
         }
-    }
-    private boolean validShortCrossover(Double mas, Double mal) {
-         if (mas != null &&  mal != null) {
-             return mas > mal;
-         }
-         return false;
-    }
-    private boolean validLongerCrossover(Double mas, Double mal) {
-        if (mas != null &&  mal != null) {
-            return mas < mal;
-        }
-        return false;
     }
 
+    private double emaMultiplier(int smoothing, double period) {
+        return (smoothing / (period + 1.0));
+    }
     private double calculateSMA(List<Double> a) {
         Double sum = 0.0;
         for(Double x : a) {
-           sum += x;
+            sum += x;
         }
         return sum / a.size();
     }
-    private double emaMultiplier(List<Double> ma, int smoothing) {
-        return (smoothing / (double) (ma.size() + 1));
+    private double calculateEMA(Double v, Double p, int smoothing, int period) {
+        Double m = emaMultiplier(smoothing, period);
+        return (v * m) + (p * (1 - m));
     }
-    private double calculateCurrentEMA(List<Double> ma , List<Double> ema, int smoothing) {
-        Double emaMultiplier = emaMultiplier(ma, smoothing);
-        return (currentPrice * emaMultiplier) +
-            (ema.get(ema.size() - 1) * (1 - emaMultiplier));
+    private boolean validShortCrossover(Double a, Double b) {
+        if(a != null &&  b != null) {
+            return a > b;
+        }
+        return false;
+    }
+    private boolean validLongerCrossover(Double a, Double b) {
+        if (a != null &&  b != null) {
+            return a < b;
+        }
+        return false;
     }
     //what if it kept trying different amts
     //when there is a valid contraction after a valid sma crossover

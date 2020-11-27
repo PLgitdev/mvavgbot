@@ -93,9 +93,9 @@ public class Main {
                                 ArrayList<Double> longerDaysDataHighD =  new ArrayList<>();
                                 ArrayList<Double> longerDaysDataLowD = new ArrayList<>();
                                 shorterDaysDataHigh.forEach((map) ->
-                                    shorterDaysDataHighD.add(Double.parseDouble((String) map.get("high"))));
+                                    shorterDaysDataHighD.add(Double.valueOf((String) map.get("high"))));
                                 shorterDaysDataLow.forEach((map) ->
-                                    shorterDaysDataLowD.add(Double.parseDouble((String) map.get("low"))));
+                                    shorterDaysDataLowD.add(Double.valueOf((String) map.get("low"))));
                                 longerDaysDataHigh.forEach((map) ->
                                     longerDaysDataHighD.add(Double.valueOf((String) map.get("high"))));
                                 longerDaysDataLow.forEach((map) ->
@@ -129,9 +129,9 @@ public class Main {
                                         "open"
                                     );
                                 shorterDaysDataOpen.forEach((map) ->
-                                    shorterDaysDataOpenD.add(Double.parseDouble((String) map.get("open"))));
+                                    shorterDaysDataOpenD.add(Double.valueOf((String) map.get("open"))));
                                 shorterDaysDataClose.forEach((map) ->
-                                    shorterDaysDataCloseD.add(Double.parseDouble((String) map.get("close"))));
+                                    shorterDaysDataCloseD.add(Double.valueOf((String) map.get("close"))));
                                 longerDaysDataOpen.forEach((map) ->
                                     longerDaysDataOpenD.add(Double.valueOf((String) map.get("open"))));
                                 longerDaysDataClose.forEach((map) ->
@@ -153,9 +153,9 @@ public class Main {
                                         "close"
                                     );
                                 shorterDaysDataClose.forEach((map) ->
-                                    pricesS.add(Double.parseDouble((String) map.get("close"))));
+                                    pricesS.add(Double.valueOf((String) map.get("close"))));
                                 longerDaysDataClose.forEach((map) ->
-                                    pricesL.add(Double.parseDouble((String) map.get("close"))));
+                                    pricesL.add(Double.valueOf((String) map.get("close"))));
                                 break;
 
                         }
@@ -174,10 +174,12 @@ public class Main {
                             longerMacdPeriod.add(Double.parseDouble((String) map.get("close"))));
                         Price priceObj = Price.builder().priceShorter(pricesS)
                             .priceLonger(pricesL)
+                            .smoothing(2)
                             .shortMACDPeriod(shortMacdPeriod)
                             .longerMACDPeriod(longerMacdPeriod)
-                            .twelveDayMACDA(new ArrayList<Double>(0))
-                            .twentySixDayMACDA(new ArrayList<Double>(0))
+                            .twelveDayMACDA(new ArrayList<>(0))
+                            .twentySixDayMACDA(new ArrayList<>(0))
+                            .signalLine(new ArrayList<>(9))
                             .timestamp(LocalDateTime.now())
                             .dateLimit(LocalDateTime.now().plusHours(24))
                             .build();
@@ -205,7 +207,7 @@ public class Main {
                                 if (priceObj.validMACDCrossover()) {
                                     System.out.println("\n" + "BUY at " +
                                         resultM.get("Bid"));
-                                    buyMode = false;
+                                    continue;
                                 }
 
                                 //send a buy request then either scale profits or sell at crossover
