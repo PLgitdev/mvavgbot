@@ -59,6 +59,7 @@ public class Main {
                         ArrayList<Map<?, ?>> longerDaysDataOpen;
                         ArrayList<Double> shortMacdPeriod = new ArrayList<>();
                         ArrayList<Double> longerMacdPeriod = new ArrayList<>();
+                        ArrayList<Double> nineDayMACDPeriod = new ArrayList<>();
                         ArrayList<Double> shorterDaysDataOpenD = new ArrayList<>();
                         ArrayList<Double> shorterDaysDataCloseD = new ArrayList<>();
                         ArrayList<Double> longerDaysDataOpenD = new ArrayList<>();
@@ -160,6 +161,11 @@ public class Main {
 
                         }
                         // fixed macd on a set period. no matter the strategy the macd will be taken from a days period
+
+                        List<Map<?,?>> nineDayPeriod = mongoCRUD.retrieveMarketDataByDays("historicaldata",
+                            9,
+                            "startsAt",
+                            "close" );
                         List<Map<?,?>> twelveDayPeriod = mongoCRUD.retrieveMarketDataByDays("historicaldata",
                             12,
                             "startsAt",
@@ -168,21 +174,25 @@ public class Main {
                             26,
                             "startsAt",
                             "close" );
+                        nineDayPeriod.forEach((map) ->
+                            nineDayMACDPeriod.add(Double.parseDouble((String) map.get("close"))));
                         twelveDayPeriod.forEach((map) ->
                             shortMacdPeriod.add(Double.parseDouble((String) map.get("close"))));
                         twentySixDayPeriod.forEach((map) ->
                             longerMacdPeriod.add(Double.parseDouble((String) map.get("close"))));
                         Price priceObj = Price.builder().priceShorter(pricesS)
                             .priceLonger(pricesL)
-                            .smoothing(2)
+                            .smoothing(2.0)
+                            .nineDaysOfClose(nineDayMACDPeriod)
                             .shortMACDPeriod(shortMacdPeriod)
                             .longerMACDPeriod(longerMacdPeriod)
-                            .twelveDayMACDA(new ArrayList<>(0))
-                            .twentySixDayMACDA(new ArrayList<>(0))
-                            .signalLine(new ArrayList<>(9))
+                            .twelveDayRibbons(new ArrayList<>(0))
+                            .twentySixDayRibbons(new ArrayList<>(0))
+                            .signalLine(new ArrayList<>(0))
                             .timestamp(LocalDateTime.now())
                             .dateLimit(LocalDateTime.now().plusHours(24))
                             .build();
+                        priceObj.initializeSignalLine();
                         while (buyMode) {
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
@@ -192,9 +202,11 @@ public class Main {
                             priceObj.setSMACDEMA();
                             priceObj.setLMACDEMA();
                             priceObj.setMACD();
+                            priceObj.updateSignalLine();
                             mongoCRUD.createMarketData(resultM, "marketsummary");
                             resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                             System.out.println("this is the current MACD: " + priceObj.getMACD());
+                            System.out.println("this is the current signal value: " + priceObj.getSignal());
                             System.out.println("this is the current sMACDavg: " + priceObj.getSMACDEMA());
                             System.out.println("this is the current lMACDavg: " + priceObj.getLMACDEMA());
                             System.out.println(inputL + " day SMA, shorter:" + priceObj.getAvgShorter());

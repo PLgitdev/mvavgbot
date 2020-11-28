@@ -12,20 +12,22 @@ import java.util.List;
 @Builder
 @Data
 public class Price {
-    private int smoothing;
+    private Double smoothing;
     private Double currentPrice;
     private Double avgShorter;
     private Double avgLonger;
     private Double mACD;
     private Double sMACDEMA;
     private Double lMACDEMA;
+    private Double signal;
     private LocalDateTime timestamp;
     private LocalDateTime dateLimit;
     private ArrayList<Double> priceShorter;
     private ArrayList<Double> priceLonger;
     private List<Double> signalLine;
-    private List<Double> twelveDayMACDA;
-    private List<Double> twentySixDayMACDA;
+    private List<Double> nineDaysOfClose;
+    private List<Double> twelveDayRibbons;
+    private List<Double> twentySixDayRibbons;
     private List<Double> shortMACDPeriod;
     private List<Double> longerMACDPeriod;
 
@@ -42,35 +44,44 @@ public class Price {
         this.currentPrice = price;
     }
     public void setMACD() {
-        if(this.lMACDEMA != null) {
-            this.mACD =  this.sMACDEMA - this.lMACDEMA ;
+        if(lMACDEMA != null) {
+            this.mACD =  sMACDEMA - lMACDEMA ;
         }
     }
-    /* public void upadateSignalLine() {
-        if(signalLine.size() < 9) {
-
-            signalLine.add(); //create a signal line by making a EMA function
+    public void updateSignalLine() {
+        if (mACD != null) {
+            int n = signalLine.size();
+            double prev = signalLine.get(n - 1);
+            this.signal = calculateEMA(mACD, prev, smoothing, 9);
+            signalLine.add(signal); //create a signal line by making a EMA function
         }
     }
-     */
+    public void initializeSignalLine() {
+        int n = nineDaysOfClose.size();
+            for(int i = 1; i < n; i++) {
+                 double value = calculateEMA(shortMACDPeriod.get(i),shortMACDPeriod.get(i - 1), smoothing, 12) -
+                     calculateEMA(longerMACDPeriod.get(i), longerMACDPeriod.get(i - 1), smoothing, 26);
+                 signalLine.add(value);
+            }
+        }
     public void setSMACDEMA() {
-        if(twelveDayMACDA.size() > 0) {
-            Double prev = twentySixDayMACDA.get(twentySixDayMACDA.size() - 1);
+        if(twelveDayRibbons.size() > 0) {
+            double prev = twelveDayRibbons.get(twelveDayRibbons.size() - 1);
             this.sMACDEMA = calculateEMA(currentPrice,prev,smoothing,12);
-            twelveDayMACDA.add((this.sMACDEMA));
+            twelveDayRibbons.add((sMACDEMA));
         }
         else {
-            twelveDayMACDA.add(calculateSMA(shortMACDPeriod));
+            twelveDayRibbons.add(calculateSMA(shortMACDPeriod));
         }
     }
     public void setLMACDEMA() {
-        if(twentySixDayMACDA.size() > 0) {
-            Double prev = twentySixDayMACDA.get(twentySixDayMACDA.size() - 1);
+        if(twentySixDayRibbons.size() > 0) {
+            double prev = twentySixDayRibbons.get(twentySixDayRibbons.size() - 1);
             this.lMACDEMA  = calculateEMA(currentPrice,prev,smoothing,26);
-            twentySixDayMACDA.add((this.lMACDEMA));
+            twentySixDayRibbons.add((lMACDEMA));
         }
         else {
-            twentySixDayMACDA.add(calculateSMA(longerMACDPeriod));
+            twentySixDayRibbons.add(calculateSMA(longerMACDPeriod));
         }
     }
     public void setSMA() {
@@ -81,7 +92,7 @@ public class Price {
         return validShortCrossover(avgShorter,avgLonger);
     }
     public boolean validMACDCrossover() {
-        return validShortCrossover(sMACDEMA, lMACDEMA);
+        return validShortCrossover(mACD, signalLine.get(signalLine.size() -1));
     }
     public void dateLimitCheck(int x) {
         if(LocalDateTime.now().compareTo(dateLimit) > 0) {
@@ -94,17 +105,18 @@ public class Price {
         }
     }
 
-    private double emaMultiplier(int smoothing, double period) {
-        return (smoothing / (period + 1.0));
+    private Double emaMultiplier(Double smoothing, int period) {
+        return (smoothing / (period + 1d));
     }
     private double calculateSMA(List<Double> a) {
-        Double sum = 0.0;
+        double n = a.size();
+        double sum = 0.0;
         for(Double x : a) {
             sum += x;
         }
-        return sum / a.size();
+        return sum / n;
     }
-    private double calculateEMA(Double v, Double p, int smoothing, int period) {
+    private double calculateEMA(Double v, Double p, Double smoothing, int period) {
         Double m = emaMultiplier(smoothing, period);
         return (v * m) + (p * (1 - m));
     }
