@@ -205,21 +205,26 @@ public class Main {
                             priceObj.updateSignalLine();
                             mongoCRUD.createMarketData(resultM, "marketsummary");
                             resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
-                            System.out.println("this is the current MACD: " + priceObj.getMACD());
-                            System.out.println("this is the current signal value: " + priceObj.getSignal());
-                            System.out.println("this is the current sMACDavg: " + priceObj.getSMACDEMA());
-                            System.out.println("this is the current lMACDavg: " + priceObj.getLMACDEMA());
-                            System.out.println(inputL + " day SMA, shorter:" + priceObj.getAvgShorter());
-                            System.out.println(inputL2 + " day SMA, longer:" + priceObj.getAvgLonger());
-                            System.out.println(l + " candles");
+                            System.out.println("this is the current MACD: " + priceObj.getMACD() + "\n" +
+                                "this is the current signal value: " + priceObj.getSignal() + "\n" +
+                                "this is the current sMACDavg: " + priceObj.getSMACDEMA() + "\n" +
+                                "this is the current lMACDavg: " + priceObj.getLMACDEMA() + "\n" +
+                                inputL + " day SMA, shorter:" + priceObj.getAvgShorter() + "\n" +
+                                inputL2 + " day SMA, longer:" + priceObj.getAvgLonger() + "\n" +
+                                l + " candles");
 
                             //check average inequality
-                            if (priceObj.validSMACrossover()) {
+                            if(priceObj.validSMACrossover()) {
                                 System.out.println(("valid SMA crossover "));
-                                if (priceObj.validMACDCrossover()) {
+                                if(priceObj.validMACDCrossover()) {
                                     System.out.println("\n" + "BUY at " +
                                         resultM.get("Bid"));
-                                    continue;
+                                    if(priceObj.validMACDBackCross()) {
+                                        if(priceObj.validSMABackCross()){
+                                            System.out.println("\n" + "Sell at " +
+                                                resultM.get("Bid"));
+                                        }
+                                    }continue;
                                 }
 
                                 //send a buy request then either scale profits or sell at crossover

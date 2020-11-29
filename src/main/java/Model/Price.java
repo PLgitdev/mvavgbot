@@ -1,9 +1,7 @@
 package Model;
-
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,21 +47,13 @@ public class Price {
         }
     }
     public void updateSignalLine() {
-        if (mACD != null) {
+        if(this.mACD != null) {
             int n = signalLine.size();
             double prev = signalLine.get(n - 1);
             this.signal = calculateEMA(mACD, prev, smoothing, 9);
             signalLine.add(signal); //create a signal line by making a EMA function
         }
     }
-    public void initializeSignalLine() {
-        int n = nineDaysOfClose.size();
-            for(int i = 1; i < n; i++) {
-                 double value = calculateEMA(shortMACDPeriod.get(i),shortMACDPeriod.get(i - 1), smoothing, 12) -
-                     calculateEMA(longerMACDPeriod.get(i), longerMACDPeriod.get(i - 1), smoothing, 26);
-                 signalLine.add(value);
-            }
-        }
     public void setSMACDEMA() {
         if(twelveDayRibbons.size() > 0) {
             double prev = twelveDayRibbons.get(twelveDayRibbons.size() - 1);
@@ -91,8 +81,12 @@ public class Price {
     public boolean validSMACrossover() {
         return validShortCrossover(avgShorter,avgLonger);
     }
+    public boolean validSMABackCross() { return  validLongerCrossover(avgShorter,avgLonger); }
     public boolean validMACDCrossover() {
-        return validShortCrossover(mACD, signalLine.get(signalLine.size() -1));
+        return validShortCrossover(this.mACD, this.signal);
+    }
+    public boolean validMACDBackCross() {
+        return validLongerCrossover(this.mACD, this.signal);
     }
     public void dateLimitCheck(int x) {
         if(LocalDateTime.now().compareTo(dateLimit) > 0) {
@@ -104,21 +98,35 @@ public class Price {
             priceLonger.remove(priceLonger.size() - x);
         }
     }
+    public void initializeSignalLine() {
+        int n = nineDaysOfClose.size();
+        ArrayList<Double> line = new ArrayList<>();
+        for(int i = 1; i < n; i++) {
+            double value = calculateEMA(shortMACDPeriod.get(i),shortMACDPeriod.get(i - 1), smoothing, 12) -
+                calculateEMA(longerMACDPeriod.get(i), longerMACDPeriod.get(i - 1), smoothing, 26);
+                line.add(value);
+            }
+
+        for(int i = 1; i < line.size(); i++) {
+            Double s = calculateEMA(line.get(i),line.get(i - 1),smoothing,9);
+            signalLine.add(s);
+        }
+    }
 
     private Double emaMultiplier(Double smoothing, int period) {
         return (smoothing / (period + 1d));
     }
     private double calculateSMA(List<Double> a) {
         double n = a.size();
-        double sum = 0.0;
+        double sum = 0d;
         for(Double x : a) {
             sum += x;
         }
         return sum / n;
     }
-    private double calculateEMA(Double v, Double p, Double smoothing, int period) {
+    private double calculateEMA(Double b, Double a, Double smoothing, int period) {
         Double m = emaMultiplier(smoothing, period);
-        return (v * m) + (p * (1 - m));
+        return (b * m) + (a * (1 - m));
     }
     private boolean validShortCrossover(Double a, Double b) {
         if(a != null &&  b != null) {
