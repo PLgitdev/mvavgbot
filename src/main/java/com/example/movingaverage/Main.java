@@ -193,7 +193,7 @@ public class Main {
                             .dateLimit(LocalDateTime.now().plusHours(24))
                             .build();
                         priceObj.initializeSignalLine();
-                        while (buyMode) {
+                        while (!markets.equalsIgnoreCase("clear")) {
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
@@ -216,22 +216,20 @@ public class Main {
                             //check average inequality
                             if(priceObj.validSMACrossover()) {
                                 System.out.println(("valid SMA crossover "));
-                                if(priceObj.validMACDCrossover()) {
+                                if(priceObj.validMACDCrossover() && buyMode) {
                                     System.out.println("\n" + "BUY at " +
                                         resultM.get("Bid"));
-                                    if(priceObj.validMACDBackCross()) {
-                                        if(priceObj.validSMABackCross()){
-                                            System.out.println("\n" + "Sell at " +
-                                                resultM.get("Bid"));
-                                        }
-                                    }continue;
+                                    buyMode = false;
                                 }
-
-                                //send a buy request then either scale profits or sell at crossover
-                                //check out v1 and look at buy request as well as the profit scaling
-                                //make buy order a limit buy that is a little less than the target. (safety)
+                                if(priceObj.validMACDBackCross() && !buyMode) {
+                                    System.out.println("\n" + "Sell at " +
+                                        resultM.get("Bid"));
+                                   buyMode = true;
+                                }
                             }
-
+                            //send a buy request then either scale profits or sell at crossover
+                            //check out v1 and look at buy request as well as the profit scaling
+                            //make buy order a limit buy that is a little less than the target. (safety)
                             //reset the historical data
                             if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL))) {
                                 priceObj.getPriceShorter().clear();

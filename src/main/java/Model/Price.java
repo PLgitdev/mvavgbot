@@ -100,15 +100,15 @@ public class Price {
     }
     public void initializeSignalLine() {
         int n = nineDaysOfClose.size();
-        ArrayList<Double> line = new ArrayList<>();
+        ArrayList<Double> temp = new ArrayList<>();
         for(int i = 1; i < n; i++) {
             double value = calculateEMA(shortMACDPeriod.get(i),shortMACDPeriod.get(i - 1), smoothing, 12) -
                 calculateEMA(longerMACDPeriod.get(i), longerMACDPeriod.get(i - 1), smoothing, 26);
-                line.add(value);
+                temp.add(value);
             }
 
-        for(int i = 1; i < line.size(); i++) {
-            Double s = calculateEMA(line.get(i),line.get(i - 1),smoothing,9);
+        for(int i = 1; i < temp.size(); i++) {
+            Double s = calculateEMA(temp.get(i),temp.get(i - 1),smoothing,9);
             signalLine.add(s);
         }
     }
