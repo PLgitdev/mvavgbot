@@ -3,6 +3,9 @@ package com.example.movingaverage;
 import Controller.MongoCRUD;
 import Live.DataFetch;
 import Model.Price;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -193,6 +196,7 @@ public class Main {
                             .dateLimit(LocalDateTime.now().plusHours(24))
                             .build();
                         priceObj.initializeSignalLine();
+                        BigDecimal buy = new BigDecimal(0);
                         while (!markets.equalsIgnoreCase("clear")) {
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
@@ -205,17 +209,39 @@ public class Main {
                             priceObj.updateSignalLine();
                             mongoCRUD.createMarketData(resultM, "marketsummary");
                             // resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
+                            System.out.println(resultM.get("Last"));
                             //check average inequality
                             if(priceObj.validSMACrossover()) {
                                 System.out.println(("valid SMA crossover "));
                                 if(priceObj.validMACDCrossover() && buyMode) {
-                                    System.out.println("\n" + "BUY at " +
-                                        resultM.get("Bid"));
+                                    buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
+                                    buy = buy.add(BigDecimal.valueOf(0.00000005));
+                                    buy = buy.setScale(8, RoundingMode.HALF_UP);
+                                    // we need to make sure transaction went through to continue to sell mode
+                                    //stoploss at 3%
+                                    System.out.println("BUY at " + buy);
                                     buyMode = false;
+                                    resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                                 }
-                                if(priceObj.validMACDBackCross() && !buyMode || priceObj.validSMABackCross()) {
-                                    System.out.println("\n" + "Sell at " +
-                                        resultM.get("Bid"));
+                                if(priceObj.validMACDBackCross() && !buyMode ||
+                                    priceObj.validSMABackCross() && !buyMode) {
+                                    //and successful buy
+                                    //if MACD crosses without successful buy reset to buy mode
+                                    //does it cancel current buy?
+                                    //scale profits ??? buy object sell object needed
+                                    //grab someones order out of the order book
+                                    //if sell mode and no response after 4 percent increase in price then cancel buy
+                                    BigDecimal sellMultiplier = BigDecimal.valueOf(.03);
+                                    BigDecimal sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
+                                    sell = sell.subtract(BigDecimal.valueOf(0.00000010));
+                                    // send new sells every time sell.subtract(BigDecimal.valueOf(0.00000001));
+                                    //sell multiplier should be related to volume
+                                    //if volume increases more than at the time of buy increase multiplier
+                                    //get out at bid or get out at scale option
+                                    //ask - an amount to try to get off the sale or bid plus amount
+                                    //bid + an amount
+                                    sell = sell.setScale(8, RoundingMode.HALF_UP);
+                                    System.out.println("\n" + "Sell at " + sell);
                                    buyMode = true;
                                 }
                             }
