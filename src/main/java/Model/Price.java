@@ -112,30 +112,6 @@ public class Price {
         }
     }
 
-    @Override
-    public String toString() {
-        return "Price{" +
-            "smoothing=" + smoothing +
-            ", currentPrice=" + currentPrice +
-            ", avgShorter=" + avgShorter +
-            ", avgLonger=" + avgLonger +
-            ", mACD=" + mACD +
-            ", sMACDEMA=" + sMACDEMA +
-            ", lMACDEMA=" + lMACDEMA +
-            ", signal=" + signal +
-            ", timestamp=" + timestamp +
-            ", dateLimit=" + dateLimit +
-            ", priceShorter=" + priceShorter +
-            ", priceLonger=" + priceLonger +
-            ", signalLine=" + signalLine +
-            ", nineDaysOfClose=" + nineDaysOfClose +
-            ", twelveDayRibbons=" + twelveDayRibbons +
-            ", twentySixDayRibbons=" + twentySixDayRibbons +
-            ", shortMACDPeriod=" + shortMACDPeriod +
-            ", longerMACDPeriod=" + longerMACDPeriod +
-            '}';
-    }
-
     private Double emaMultiplier(Double smoothing, int period) {
         return (smoothing / (period + 1d));
     }
@@ -188,4 +164,27 @@ public class Price {
 
    }
    */
+    @Override
+    public String toString() {
+        return "Price{" +
+            "smoothing=" + smoothing +
+            ", currentPrice=" + currentPrice +
+            ", avgShorter=" + avgShorter +
+            ", avgLonger=" + avgLonger +
+            ", mACD=" + mACD +
+            ", sMACDEMA=" + sMACDEMA +
+            ", lMACDEMA=" + lMACDEMA +
+            ", signal=" + signal +
+            ", timestamp=" + timestamp +
+            ", dateLimit=" + dateLimit +
+            ", priceShorter=" + priceShorter +
+            ", priceLonger=" + priceLonger +
+            ", signalLine=" + signalLine +
+            ", nineDaysOfClose=" + nineDaysOfClose +
+            ", twelveDayRibbons=" + twelveDayRibbons +
+            ", twentySixDayRibbons=" + twentySixDayRibbons +
+            ", shortMACDPeriod=" + shortMACDPeriod +
+            ", longerMACDPeriod=" + longerMACDPeriod +
+            '}';
+    }
 }
