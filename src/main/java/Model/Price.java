@@ -106,11 +106,34 @@ public class Price {
                 calculateEMA(longerMACDPeriod.get(i), longerMACDPeriod.get(i - 1), smoothing, 26);
                 temp.add(value);
             }
-
         for(int i = 1; i < temp.size(); i++) {
             Double s = calculateEMA(temp.get(i),temp.get(i - 1),smoothing,9);
             signalLine.add(s);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Price{" +
+            "smoothing=" + smoothing +
+            ", currentPrice=" + currentPrice +
+            ", avgShorter=" + avgShorter +
+            ", avgLonger=" + avgLonger +
+            ", mACD=" + mACD +
+            ", sMACDEMA=" + sMACDEMA +
+            ", lMACDEMA=" + lMACDEMA +
+            ", signal=" + signal +
+            ", timestamp=" + timestamp +
+            ", dateLimit=" + dateLimit +
+            ", priceShorter=" + priceShorter +
+            ", priceLonger=" + priceLonger +
+            ", signalLine=" + signalLine +
+            ", nineDaysOfClose=" + nineDaysOfClose +
+            ", twelveDayRibbons=" + twelveDayRibbons +
+            ", twentySixDayRibbons=" + twentySixDayRibbons +
+            ", shortMACDPeriod=" + shortMACDPeriod +
+            ", longerMACDPeriod=" + longerMACDPeriod +
+            '}';
     }
 
     private Double emaMultiplier(Double smoothing, int period) {

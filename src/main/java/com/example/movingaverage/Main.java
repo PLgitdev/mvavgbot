@@ -204,15 +204,7 @@ public class Main {
                             priceObj.setMACD();
                             priceObj.updateSignalLine();
                             mongoCRUD.createMarketData(resultM, "marketsummary");
-                            resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
-                            System.out.println("this is the current MACD: " + priceObj.getMACD() + "\n" +
-                                "this is the current signal value: " + priceObj.getSignal() + "\n" +
-                                "this is the current sMACDavg: " + priceObj.getSMACDEMA() + "\n" +
-                                "this is the current lMACDavg: " + priceObj.getLMACDEMA() + "\n" +
-                                inputL + " day SMA, shorter:" + priceObj.getAvgShorter() + "\n" +
-                                inputL2 + " day SMA, longer:" + priceObj.getAvgLonger() + "\n" +
-                                l + " candles");
-
+                            // resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                             //check average inequality
                             if(priceObj.validSMACrossover()) {
                                 System.out.println(("valid SMA crossover "));
@@ -221,7 +213,7 @@ public class Main {
                                         resultM.get("Bid"));
                                     buyMode = false;
                                 }
-                                if(priceObj.validMACDBackCross() && !buyMode) {
+                                if(priceObj.validMACDBackCross() && !buyMode || priceObj.validSMABackCross()) {
                                     System.out.println("\n" + "Sell at " +
                                         resultM.get("Bid"));
                                    buyMode = true;
