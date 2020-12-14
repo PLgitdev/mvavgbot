@@ -231,6 +231,8 @@ public class Main {
                                     successfulBuy = true;
                                     System.out.println("Successful BUY");
                                 }
+
+
                                 else if (priceObj.validMACDBackCross() && !successfulBuy && !buyMode) {
                                     buyMode = true;
                                     buy = BigDecimal.valueOf(0.0);
@@ -238,7 +240,8 @@ public class Main {
                                     System.out.println("cancel last buy");
                                 }
                                 if(priceObj.validMACDBackCross() && successfulSell && buyMode) {
-                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.01)));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
+                                    sell = sell.setScale(8, RoundingMode.HALF_UP);
                                     //if no sell successful
                                     System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
                                         resultM.get("Bid"));
@@ -261,12 +264,19 @@ public class Main {
 
                                     //BigDecimal sellMultiplier = BigDecimal.valueOf(.04);
                                     //sell = buy.multiply(sellMultiplier);
-                                    if(buy.doubleValue() < (Double) resultM.get("Bid"))  {
-                                       sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
+
+                                    if((Double) resultM.get("Last") > (Double) resultM.get("Bid"))  {
+                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
+                                        sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
+                                        if(sell.doubleValue() < (Double) resultM.get("Bid")) {
+                                            sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                        }
+                                    }
+                                    else if((Double) resultM.get("Bid") > buy.doubleValue()) {
+                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     }
                                     else {
-                                       sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                       sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.01)));
+                                       sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     }
                                     //if ask is more than last use ask
                                     // ^^ oirg 0.00000010
@@ -277,7 +287,7 @@ public class Main {
                                     //ask - an amount to try to get off the sale or bid plus amount
                                     //bid + an amount
                                     //only sell on a successful buy?
-                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
+                                    //sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
                                     System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
                                     successfulBuy = false;
