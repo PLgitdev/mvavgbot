@@ -198,6 +198,7 @@ public class Main {
                         priceObj.initializeSignalLine();
                         BigDecimal buy = new BigDecimal(0);
                         BigDecimal sell = new BigDecimal(0);
+                        double profitPercentageTotals = 0.0;
                         boolean successfulBuy = false;
                         boolean successfulSell = false;
                         while (!markets.equalsIgnoreCase("clear")) {
@@ -212,7 +213,8 @@ public class Main {
                             priceObj.updateSignalLine();
                             mongoCRUD.createMarketData(resultM, "marketsummary");
                             // resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
-                            System.out.println(resultM.get("Last"));
+                            System.out.println(resultM.get("Last") + "\n" +
+                                "Total percentage gain/loss : " + profitPercentageTotals);
                             //check average inequality
                             if(priceObj.validSMACrossover()) {
                                 System.out.println(("valid SMA crossover "));
@@ -242,15 +244,20 @@ public class Main {
                                 if(priceObj.validMACDBackCross() && successfulSell && buyMode) {
                                     sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
+                                    if(sell.doubleValue() < (Double) resultM.get("Bid")) {
+                                        sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                    }
                                     //if no sell successful
                                     System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
                                         resultM.get("Bid"));
                                     if(sell.doubleValue() <= (Double) resultM.get("Bid")) {
+                                       BigDecimal profit = sell.subtract(buy).divide(buy, RoundingMode.HALF_UP)
+                                           .multiply(BigDecimal.valueOf(100.0));
                                         System.out.println("Sell successful " + "profit percent : " +
-                                            (sell.subtract(buy).divide(buy, RoundingMode.HALF_UP))
-                                                .multiply(BigDecimal.valueOf(100.0)) + "%");
+                                            profit + "%");
                                         sell = BigDecimal.valueOf(500.0);
                                         successfulSell = false;
+                                        profitPercentageTotals += profit.doubleValue();
                                     }
                                 }
                                 if(priceObj.validMACDBackCross() && !buyMode && successfulBuy) {
@@ -288,15 +295,17 @@ public class Main {
                                     //bid + an amount
                                     //only sell on a successful buy?
                                     //sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
+                                    //win loss ration, profit total
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
                                     System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
                                     successfulBuy = false;
                                     buyMode = true;
                                     successfulSell = true;
                                     if(sell.doubleValue() <= (Double) resultM.get("Bid")) {
-                                        System.out.println("Sell successful " + "profit percent : " +
-                                            (sell.subtract(buy).divide(buy, RoundingMode.HALF_UP))
-                                                .multiply(BigDecimal.valueOf(100.0)) + "%");
+                                        BigDecimal profit = sell.subtract(buy).divide(buy, RoundingMode.HALF_UP)
+                                            .multiply(BigDecimal.valueOf(100.0));
+                                        profitPercentageTotals += profit.doubleValue();
+                                        System.out.println("Sell successful " + "profit percent : " + profit + "%");
                                         sell = BigDecimal.valueOf(500.0);
                                         successfulSell = false;
                                         buy = BigDecimal.valueOf(0.0);
