@@ -241,7 +241,7 @@ public class Main {
                                     sell = sell.subtract(BigDecimal.valueOf(0.00000010));
                                     //if no sell successful
                                     System.out.println("\n" + "Cancel last sell and Sell at " + sell);
-                                    if(sell.doubleValue() >= (Double) resultM.get("Ask")) {
+                                    if(sell.doubleValue() <= (Double) resultM.get("Ask")) {
                                         System.out.println("Sell successful");
                                         sell = BigDecimal.valueOf(500.0);
                                         successfulSell = false;
