@@ -227,7 +227,7 @@ public class Main {
                                     resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                                     buyMode = false;
                                 }
-                                if(Double.valueOf(buy.toString()) > (Double) resultM.get("Last") && !buyMode) {
+                                if(Double.valueOf(buy.toString()) > (Double) resultM.get("Bid") && !buyMode) {
                                     successfulBuy = true;
                                     System.out.println("Successful BUY");
                                 }
@@ -238,12 +238,14 @@ public class Main {
                                     System.out.println("cancel last buy");
                                 }
                                 if(priceObj.validMACDBackCross() && successfulSell && buyMode) {
-                                    sell = sell.subtract(BigDecimal.valueOf(0.00000100));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.01)));
                                     //if no sell successful
                                     System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
                                         resultM.get("Bid"));
                                     if(sell.doubleValue() <= (Double) resultM.get("Bid")) {
-                                        System.out.println("Sell successful");
+                                        System.out.println("Sell successful " + "profit percent : " +
+                                            (sell.subtract(buy).divide(buy, RoundingMode.HALF_UP))
+                                                .multiply(BigDecimal.valueOf(100.0)) + "%");
                                         sell = BigDecimal.valueOf(500.0);
                                         successfulSell = false;
                                     }
@@ -259,12 +261,12 @@ public class Main {
 
                                     //BigDecimal sellMultiplier = BigDecimal.valueOf(.04);
                                     //sell = buy.multiply(sellMultiplier);
-                                    if ((Double)resultM.get("Last") < (Double) resultM.get("Bid")) {
+                                    if(buy.doubleValue() < (Double) resultM.get("Bid"))  {
                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     }
                                     else {
                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                       sell = sell.subtract(BigDecimal.valueOf(0.00000100));
+                                       sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.01)));
                                     }
                                     //if ask is more than last use ask
                                     // ^^ oirg 0.00000010
@@ -275,16 +277,19 @@ public class Main {
                                     //ask - an amount to try to get off the sale or bid plus amount
                                     //bid + an amount
                                     //only sell on a successful buy?
+                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
                                     System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
                                     successfulBuy = false;
                                     buyMode = true;
                                     successfulSell = true;
-                                    buy = BigDecimal.valueOf(0.0);
                                     if(sell.doubleValue() <= (Double) resultM.get("Bid")) {
-                                        System.out.println("Sell successful");
+                                        System.out.println("Sell successful " + "profit percent : " +
+                                            (sell.subtract(buy).divide(buy, RoundingMode.HALF_UP))
+                                                .multiply(BigDecimal.valueOf(100.0)) + "%");
                                         sell = BigDecimal.valueOf(500.0);
                                         successfulSell = false;
+                                        buy = BigDecimal.valueOf(0.0);
                                     }
                                     //resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                                 }
