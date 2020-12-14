@@ -241,7 +241,7 @@ public class Main {
                                     sell = sell.subtract(BigDecimal.valueOf(0.00000010));
                                     //if no sell successful
                                     System.out.println("\n" + "Cancel last sell and Sell at " + sell);
-                                    if(sell.doubleValue() <= (Double) resultM.get("Ask")) {
+                                    if(sell.doubleValue() >= (Double) resultM.get("Ask")) {
                                         System.out.println("Sell successful");
                                         sell = BigDecimal.valueOf(500.0);
                                         successfulSell = false;
@@ -253,11 +253,19 @@ public class Main {
                                     //does it cancel current buy?
                                     //scale profits ??? buy object sell object needed
                                     //grab someones order out of the order book
+                                    //ask + 1?
+                                    //if it starts to dig a hole increase quanitity * by how many times it has looped
 
-                                    BigDecimal sellMultiplier = BigDecimal.valueOf(.04);
-                                    sell = buy.multiply(sellMultiplier);
-                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                    sell = sell.subtract(BigDecimal.valueOf(0.00000010));
+                                    //BigDecimal sellMultiplier = BigDecimal.valueOf(.04);
+                                    //sell = buy.multiply(sellMultiplier);
+                                    if ((Double)resultM.get("Last") < (Double) resultM.get("Ask")) {
+                                       sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
+                                    }
+                                    else {
+                                       sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
+                                    }
+                                    //if ask is more than last use ask
+                                    sell = sell.subtract(BigDecimal.valueOf(0.00000100));
                                     // ^^ oirg 0.00000010
                                     // send new sells every time sell.subtract(BigDecimal.valueOf(0.00000001));
                                     //sell multiplier should be related to volume
