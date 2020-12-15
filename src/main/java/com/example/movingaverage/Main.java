@@ -200,7 +200,8 @@ public class Main {
                         BigDecimal sell = new BigDecimal(0);
                         double profitPercentageTotals = 0.0;
                         boolean successfulBuy = false;
-                        boolean successfulSell = false;
+                        boolean sellBidMode = false;
+                        boolean buyBidMode = false;
                         while (!markets.equalsIgnoreCase("clear")) {
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
@@ -216,35 +217,69 @@ public class Main {
                             System.out.println(resultM.get("Last") + "\n" +
                                 "Total percentage gain/loss : " + profitPercentageTotals);
                             //check average inequality
-                            if(priceObj.validSMACrossover()) {
-                                System.out.println(("valid SMA crossover "));
-                                if(priceObj.validMACDCrossover() && buyMode) {
+                            if (priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
+                                if ((Double) resultM.get("Bid") <= (Double) resultM.get("Last")) {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     buy = buy.add(BigDecimal.valueOf(0.00000005));
                                     buy = buy.setScale(8, RoundingMode.HALF_UP);
-                                    //bidding storm increasing slightly every iteration?
-                                    // we need to make sure transaction went through to continue to sell mode
-                                    //stoploss at 3%
-                                    System.out.println("BUY at " + buy);
-                                    resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
-                                    buyMode = false;
-                                }
-                                if(Double.valueOf(buy.toString()) > (Double) resultM.get("Bid") && !buyMode) {
                                     successfulBuy = true;
+                                    buyMode = false;
+                                    buyBidMode = false;
                                     System.out.println("Successful BUY");
+                                } else {
+                                    buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
+                                    buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
+                                    buy = buy.setScale(8, RoundingMode.HALF_UP);
+                                    buyBidMode = true;
                                 }
-
-
-                                else if (priceObj.validMACDBackCross() && !successfulBuy && !buyMode) {
-                                    buyMode = true;
-                                    buy = BigDecimal.valueOf(0.0);
-                                    //cancel last buy
-                                    System.out.println("cancel last buy");
+                                //bidding storm increasing slightly every iteration?
+                                // we need to make sure transaction went through to continue to sell mode
+                                //manual sell button
+                                //profit zone indicator
+                                //stoploss at 3%
+                                System.out.println("BUY at " + buy);
+                                resultM.forEach((key, value) -> System.out.println(key + ":" + value));
+                            }
+                            if (buyBidMode) {
+                                buy = buy.add(buy.multiply(BigDecimal.valueOf(0.001)));
+                                buy = buy.setScale(8, RoundingMode.HALF_UP);
+                                System.out.println("\n" + "Cancel last buy and Buy at " + buy + " bid is " +
+                                    resultM.get("Bid"));
+                                if(buy.doubleValue() > (Double) resultM.get("Bid")) {
+                                    buy = BigDecimal.valueOf((Double) resultM.get("Bid"))
+                                        .add(BigDecimal.valueOf(.00000010));
+                                    successfulBuy = true;
+                                    buyMode = false;
+                                    buyBidMode = false;
+                                    System.out.println("Successful BUY at " + buy);
                                 }
-                                if(priceObj.validMACDBackCross() && successfulSell && buyMode) {
-                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
+                            }
+                            if(buy.doubleValue() > (Double) resultM.get("Bid") && buyMode &&
+                                priceObj.validMACDCrossover()) {
+                                successfulBuy = true;
+                                buyMode = false;
+                                buyBidMode = false;
+                                System.out.println("Successful BUY at " + buy);
+                            }
+                            /*else if (priceObj.validMACDBackCross() && !successfulBuy) {
+                                buyMode = true;
+                                buy = BigDecimal.valueOf(0.0);
+                                //cancel last buy
+                                System.out.println("cancel last buy");
+                            }
+
+                             */
+                            //stop loss for buys
+                                //fixed scaled buys option
+
+                            //if the bid
+
+                                if(priceObj.validMACDBackCross() && sellBidMode  && !buyMode||
+                                    priceObj.validSMABackCross() && sellBidMode && !buyMode ){
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
-                                    if(sell.doubleValue() < (Double) resultM.get("Bid")) {
+                                    if(sell.doubleValue() < (Double) resultM.get("Bid") ||
+                                        (Double) resultM.get("Last") <= (Double) resultM.get("Bid")) {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                     }
                                     //if no sell successful
@@ -256,11 +291,13 @@ public class Main {
                                         System.out.println("Sell successful " + "profit percent : " +
                                             profit + "%");
                                         sell = BigDecimal.valueOf(500.0);
-                                        successfulSell = false;
                                         profitPercentageTotals += profit.doubleValue();
+                                        buyMode = true;
+                                        sellBidMode = false;
+                                        successfulBuy = false;
                                     }
                                 }
-                                if(priceObj.validMACDBackCross() && !buyMode && successfulBuy) {
+                                if(priceObj.validMACDBackCross() && !buyMode && successfulBuy && !sellBidMode) {
                                     //and successful buy
                                     //if MACD crosses without successful buy reset to buy mode
                                     //does it cancel current buy?
@@ -268,16 +305,20 @@ public class Main {
                                     //grab someones order out of the order book
                                     //ask + 1?
                                     //if it starts to dig a hole increase quanitity * by how many times it has looped
+                                    //try to use last as each base for bidding basically subtract from last each time not buy
 
                                     //BigDecimal sellMultiplier = BigDecimal.valueOf(.04);
                                     //sell = buy.multiply(sellMultiplier);
+                                    //if the bid is less than the buy during a sell mode you should respond with buy
 
                                     if((Double) resultM.get("Last") > (Double) resultM.get("Bid"))  {
                                         sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                        sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
+                                        sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
+                                        // ^ big reduction here small during bid
                                         if(sell.doubleValue() < (Double) resultM.get("Bid")) {
                                             sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                         }
+                                        sellBidMode = true;
                                     }
                                     else if((Double) resultM.get("Bid") > buy.doubleValue()) {
                                         sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
@@ -298,17 +339,19 @@ public class Main {
                                     //win loss ration, profit total
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
                                     System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
-                                    successfulBuy = false;
-                                    buyMode = true;
-                                    successfulSell = true;
                                     if(sell.doubleValue() <= (Double) resultM.get("Bid")) {
-                                        BigDecimal profit = sell.subtract(buy).divide(buy, RoundingMode.HALF_UP)
-                                            .multiply(BigDecimal.valueOf(100.0));
+                                        BigDecimal profit = sell.subtract(buy);
+                                        if (!profit.equals(0)) {
+                                            profit = profit.divide(buy, RoundingMode.HALF_UP)
+                                                .multiply(BigDecimal.valueOf(100.0));
+                                        }
                                         profitPercentageTotals += profit.doubleValue();
                                         System.out.println("Sell successful " + "profit percent : " + profit + "%");
                                         sell = BigDecimal.valueOf(500.0);
-                                        successfulSell = false;
                                         buy = BigDecimal.valueOf(0.0);
+                                        sellBidMode = false;
+                                        buyMode = true;
+                                        successfulBuy = false;
                                     }
                                     //resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                                 }
@@ -318,7 +361,12 @@ public class Main {
                                     System.out.println("Sucessfull SELL");
                                 }
                                 */
+                            /*else if (!priceObj.validSMACrossover() && successfulBuy) {
+
+
                             }
+                            else if (!priceObj.validSMACrossover() && successfulSell
+                             */
                             //send a buy request then either scale profits or sell at crossover
                             //check out v1 and look at buy request as well as the profit scaling
                             //make buy order a limit buy that is a little less than the target. (safety)
