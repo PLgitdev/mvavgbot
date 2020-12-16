@@ -256,31 +256,16 @@ public class Main {
 
                                 */
                                else {
-                                    buy = buy.add(buy.multiply(BigDecimal.valueOf(0.00001)));
+                                    buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
                                 }
 
                                 buy = buy.setScale(8, RoundingMode.HALF_UP);
                                 System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
                                     resultM.get("Ask"));
-                                if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
-                                    buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
-                                    successfulBuy = true;
-                                    //buyMode = false;
-                                    buyBidMode = false;
-                                    System.out.println("Successful BUY at " + buy);
-                                }
                                 if(buy.doubleValue() > (Double) resultM.get("Last") ) {
                                     buy = BigDecimal.valueOf((Double)resultM.get("Last"))
                                         .add(BigDecimal.valueOf(0.0000005));
                                 }
-                                if (buy.doubleValue() >= (Double) resultM.get("Ask")) {
-                                    buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
-                                    successfulBuy = true;
-                                    //buyMode = false;
-                                    buyBidMode = false;
-                                    System.out.println("Successful BUY at " + buy);
-                                }
-
                             }
                             if (priceObj.validMACDBackCross() && !buyBidMode && !successfulBuy) {
                                 buyBidMode = false;
@@ -332,17 +317,21 @@ public class Main {
                                  */
                                 else if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0015)));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
+                                }
+                                else {
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
                                 // ^ big reduction here small during bid
-                                else if (sell.doubleValue() < (Double) resultM.get("Bid")) {
+                                if (sell.doubleValue() < (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
                                 sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
-                                if ((Double) resultM.get("Bid") >= sell.doubleValue()) {
+                                /*if ((Double) resultM.get("Bid") >= sell.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
+                                 */
                                 /*if ((Double) resultM.get("Last") < sell.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Last"));
                                 }
