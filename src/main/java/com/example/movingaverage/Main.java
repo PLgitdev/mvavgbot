@@ -255,11 +255,13 @@ public class Main {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Last"));
                                     buy = buy.subtract(buy.multiply(BigDecimal.valueOf(0.00001)));
                                 }
-                                buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
-                                buy = buy.setScale(8, RoundingMode.HALF_UP);
-                                if (buy.doubleValue() != 0) {
-                                    System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
-                                        resultM.get("Ask"));
+                                else {
+                                    buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
+                                    buy = buy.setScale(8, RoundingMode.HALF_UP);
+                                    if (buy.doubleValue() != 0) {
+                                        System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
+                                            resultM.get("Ask"));
+                                    }
                                 }
                                 if((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
@@ -330,7 +332,7 @@ public class Main {
                                     }
                                     sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
-                                    if((Double) resultM.get("Last") > buy.doubleValue()) {
+                                    if((Double) resultM.get("Last") > sell.doubleValue()) {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Last"));
                                     }
                                     if(sell.doubleValue() < (Double) resultM.get("Bid") ||
