@@ -23,6 +23,7 @@ public class Main {
          String inputS;
          LocalDateTime start = LocalDateTime.now();
          boolean buyMode = true;
+         double quant = 100.0;
 
         System.out.println("Please enter markets separated by comma, or clear");
         while (!"clear".equalsIgnoreCase(markets)) {
@@ -215,7 +216,8 @@ public class Main {
                             mongoCRUD.createMarketData(resultM, "marketsummary");
                             // resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                             System.out.println(resultM.get("Last") + "\n" +
-                                "Total percentage gain/loss : " + profitPercentageTotals);
+                                "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
+                                + (quant + (quant * profitPercentageTotals)));
                             //check average inequality
                             if (priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
                                 if((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
