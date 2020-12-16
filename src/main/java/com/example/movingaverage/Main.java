@@ -331,18 +331,15 @@ public class Main {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
                                  */
-                                /*else if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
+                                else if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
                                     sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
                                 }
-                                 */
                                 // ^ big reduction here small during bid
                                 else if (sell.doubleValue() < (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
-                                else {
-                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
-                                }
+                                sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 if ((Double) resultM.get("Bid") >= sell.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
