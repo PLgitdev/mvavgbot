@@ -40,13 +40,17 @@ public class Main {
                         int len = sc.nextInt();
                         String l = "";
                         switch (len % 10) {
-                            case 0: l = "MINUTE_1";
+                            case 0:
+                                l = "MINUTE_1";
                                 break;
-                            case 1: l = "MINUTE_5";
+                            case 1:
+                                l = "MINUTE_5";
                                 break;
-                            case 2: l = "HOUR_1";
+                            case 2:
+                                l = "HOUR_1";
                                 break;
-                            case 3: l = "DAY_1";
+                            case 3:
+                                l = "DAY_1";
                                 break;
                         }
                         ArrayList<Map<?, ?>> historicalData = fetcher.historicalDataFetcher(l);
@@ -71,7 +75,7 @@ public class Main {
                         ArrayList<Double> pricesS = new ArrayList<>();
                         ArrayList<Double> pricesL = new ArrayList<>();
 
-                        switch (inputS){
+                        switch (inputS) {
                             case "0":
                                 ArrayList<Map<?, ?>> shorterDaysDataHigh = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
@@ -93,9 +97,9 @@ public class Main {
                                         inputL2 - 1,
                                         "startsAt",
                                         "low");
-                                ArrayList<Double> shorterDaysDataHighD =  new ArrayList<>();
+                                ArrayList<Double> shorterDaysDataHighD = new ArrayList<>();
                                 ArrayList<Double> shorterDaysDataLowD = new ArrayList<>();
-                                ArrayList<Double> longerDaysDataHighD =  new ArrayList<>();
+                                ArrayList<Double> longerDaysDataHighD = new ArrayList<>();
                                 ArrayList<Double> longerDaysDataLowD = new ArrayList<>();
                                 shorterDaysDataHigh.forEach((map) ->
                                     shorterDaysDataHighD.add(Double.valueOf((String) map.get("high"))));
@@ -105,31 +109,31 @@ public class Main {
                                     longerDaysDataHighD.add(Double.valueOf((String) map.get("high"))));
                                 longerDaysDataLow.forEach((map) ->
                                     longerDaysDataLowD.add(Double.valueOf((String) map.get("low"))));
-                                takeAvg(shorterDaysDataHigh,shorterDaysDataHighD,shorterDaysDataLowD,pricesS);
-                                takeAvg(longerDaysDataHigh,longerDaysDataHighD,longerDaysDataLowD, pricesL);
+                                takeAvg(shorterDaysDataHigh, shorterDaysDataHighD, shorterDaysDataLowD, pricesS);
+                                takeAvg(longerDaysDataHigh, longerDaysDataHighD, longerDaysDataLowD, pricesL);
                                 break;
                             case "1":
                                 shorterDaysDataClose = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
-                                        inputL-1,
+                                        inputL - 1,
                                         "startsAt",
                                         "close"
                                     );
-                                 shorterDaysDataOpen = mongoCRUD
+                                shorterDaysDataOpen = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
-                                        inputL-1,
+                                        inputL - 1,
                                         "startsAt",
                                         "open"
                                     );
                                 longerDaysDataClose = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
-                                        inputL2-1,
+                                        inputL2 - 1,
                                         "startsAt",
                                         "close"
                                     );
                                 longerDaysDataOpen = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
-                                        inputL2-1,
+                                        inputL2 - 1,
                                         "startsAt",
                                         "open"
                                     );
@@ -141,19 +145,19 @@ public class Main {
                                     longerDaysDataOpenD.add(Double.valueOf((String) map.get("open"))));
                                 longerDaysDataClose.forEach((map) ->
                                     longerDaysDataCloseD.add(Double.valueOf((String) map.get("close"))));
-                                takeAvg(shorterDaysDataOpen,shorterDaysDataOpenD,shorterDaysDataCloseD,pricesS);
-                                takeAvg(longerDaysDataOpen,longerDaysDataOpenD,longerDaysDataCloseD,pricesL);
+                                takeAvg(shorterDaysDataOpen, shorterDaysDataOpenD, shorterDaysDataCloseD, pricesS);
+                                takeAvg(longerDaysDataOpen, longerDaysDataOpenD, longerDaysDataCloseD, pricesL);
                                 break;
                             case "2":
                                 shorterDaysDataClose = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
-                                        inputL-1,
+                                        inputL - 1,
                                         "startsAt",
                                         "close"
                                     );
                                 longerDaysDataClose = mongoCRUD
                                     .retrieveMarketDataByDays("historicaldata",
-                                        inputL2-1,
+                                        inputL2 - 1,
                                         "startsAt",
                                         "close"
                                     );
@@ -166,18 +170,18 @@ public class Main {
                         }
                         // fixed macd on a set period. no matter the strategy the macd will be taken from a days period
 
-                        List<Map<?,?>> nineDayPeriod = mongoCRUD.retrieveMarketDataByDays("historicaldata",
+                        List<Map<?, ?>> nineDayPeriod = mongoCRUD.retrieveMarketDataByDays("historicaldata",
                             9,
                             "startsAt",
-                            "close" );
-                        List<Map<?,?>> twelveDayPeriod = mongoCRUD.retrieveMarketDataByDays("historicaldata",
+                            "close");
+                        List<Map<?, ?>> twelveDayPeriod = mongoCRUD.retrieveMarketDataByDays("historicaldata",
                             12,
                             "startsAt",
-                            "close" );
-                        List<Map<?,?>> twentySixDayPeriod = mongoCRUD.retrieveMarketDataByDays("historicaldata",
+                            "close");
+                        List<Map<?, ?>> twentySixDayPeriod = mongoCRUD.retrieveMarketDataByDays("historicaldata",
                             26,
                             "startsAt",
-                            "close" );
+                            "close");
                         nineDayPeriod.forEach((map) ->
                             nineDayMACDPeriod.add(Double.parseDouble((String) map.get("close"))));
                         twelveDayPeriod.forEach((map) ->
@@ -217,10 +221,10 @@ public class Main {
                             // resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                             System.out.println(resultM.get("Last") + "\n" +
                                 "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
-                                + (quant + (quant *(profitPercentageTotals)/100d)));
+                                + (quant + (quant * (profitPercentageTotals) / 100d)));
                             //check average inequality
                             if (priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
-                                if((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
+                                if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                                     successfulBuy = true;
                                     buyMode = false;
@@ -250,8 +254,7 @@ public class Main {
                                     buyBidMode = false;
                                     //cancel last buy
                                     System.out.println("cancel last buy");
-                                }
-                                else if ((Double) resultM.get("Last") > buy.doubleValue() &&
+                                } else if ((Double) resultM.get("Last") > buy.doubleValue() &&
                                     (Double) resultM.get("Ask") > buy.doubleValue()) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Last"));
                                     buy = buy.subtract(buy.multiply(BigDecimal.valueOf(0.00001)));
@@ -260,19 +263,18 @@ public class Main {
                                 }
                                  */
                                 else {
-                                    buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
+                                    buy = buy.add(buy.multiply(BigDecimal.valueOf(0.00001)));
                                 }
                                 buy = buy.setScale(8, RoundingMode.HALF_UP);
                                 System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
                                     resultM.get("Ask"));
-                                if((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
+                                if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                                     successfulBuy = true;
                                     //buyMode = false;
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
-                                }
-                                else if (buy.doubleValue() > (Double) resultM.get("Ask")) {
+                                } else if (buy.doubleValue() > (Double) resultM.get("Ask")) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
                                     successfulBuy = true;
                                     //buyMode = false;
@@ -280,14 +282,14 @@ public class Main {
                                     System.out.println("Successful BUY at " + buy);
                                 }
                             }
-                            if(priceObj.validMACDBackCross() && !buyBidMode && !successfulBuy) {
+                            if (priceObj.validMACDBackCross() && !buyBidMode && !successfulBuy) {
                                 buyBidMode = false;
                                 buy = BigDecimal.valueOf(0.0);
                                 //cancel last buy
                                 System.out.println("no buys / cancel ur buy");
                             }
 
-                            if(buy.doubleValue() >= (Double) resultM.get("Ask") && buyMode &&
+                            if (buy.doubleValue() >= (Double) resultM.get("Ask") && buyMode &&
                                 priceObj.validMACDCrossover()) {
                                 successfulBuy = true;
                                 //buyMode = false;
@@ -296,70 +298,60 @@ public class Main {
                             }
 
 
-
                             //stop loss for buys
-                                //fixed scaled buys option
+                            //fixed scaled buys option
                             //what to do if buy is more than last but less than ask during buy
 
                             //if the bid
 
-                                if(priceObj.validMACDBackCross() && sellBidMode){
-                                    if((Double) resultM.get("Bid") > buy.doubleValue()) {
-                                        sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                    }
-                                    if((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
-                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                        sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
-                                        // ^ big reduction here small during bid
-                                        if (sell.doubleValue() < (Double) resultM.get("Bid")) {
-                                            sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                        }
-                                    }
-                                    if((Double) resultM.get("Bid") > buy.doubleValue()) {
-                                        sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                        BigDecimal profit = sell.subtract(buy);
-                                        if (!profit.equals(BigDecimal.valueOf(0.0)) &&
-                                            sell.doubleValue() != 0 && buy.doubleValue() != 0) {
-                                            profit = profit.divide(buy, RoundingMode.HALF_UP)
-                                                .multiply(BigDecimal.valueOf(100.0));
-                                        }
-
-                                        System.out.println("Sell successful " + "profit percent : " +
-                                            profit + "%");
-                                        sell = BigDecimal.valueOf(500.0);
-                                        profitPercentageTotals += profit.doubleValue();
-                                        buyMode = true;
-                                        sellBidMode = false;
-                                        successfulBuy = false;
-                                    }
-                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
-                                    sell = sell.setScale(8, RoundingMode.HALF_UP);
-                                    if((Double) resultM.get("Last") < sell.doubleValue()) {
-                                        sell = BigDecimal.valueOf((Double) resultM.get("Last"));
-                                    }
-                                    if(sell.doubleValue() < (Double) resultM.get("Bid") ||
-                                        (Double) resultM.get("Last") <= (Double) resultM.get("Bid")) {
-                                        sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                    }
-                                    //if no sell successful
-                                    System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
-                                        resultM.get("Bid"));
-                                    if(sell.doubleValue() <= (Double) resultM.get("Bid")) {
-                                        BigDecimal profit = sell.subtract(buy);
-                                        if (!profit.equals(BigDecimal.valueOf(0.0))) {
-                                            profit = profit.divide(buy, RoundingMode.HALF_UP)
-                                                .multiply(BigDecimal.valueOf(100.0));
-                                        }
-
-                                        System.out.println("Sell successful " + "profit percent : " +
-                                            profit + "%");
-                                        sell = BigDecimal.valueOf(500.0);
-                                        profitPercentageTotals += profit.doubleValue();
-                                        buyMode = true;
-                                        sellBidMode = false;
-                                        successfulBuy = false;
-                                    }
+                            if (sellBidMode) {
+                                if (priceObj.validMACDCrossover()) {
+                                    sell = BigDecimal.valueOf((Double) resultM.get("bid"));
+                                    sell = sell.add(BigDecimal.valueOf(0.00000010));
+                                } else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                } else if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
+                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
                                 }
+                                // ^ big reduction here small during bid
+                                else if (sell.doubleValue() < (Double) resultM.get("Bid")) {
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                }
+                                if ((Double) resultM.get("Bid") >= sell.doubleValue()) {
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                }
+                                sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
+                                sell = sell.setScale(8, RoundingMode.HALF_UP);
+                                /*if ((Double) resultM.get("Last") < sell.doubleValue()) {
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Last"));
+                                }
+                                 */
+                                if (sell.doubleValue() < (Double) resultM.get("Bid") ||
+                                    (Double) resultM.get("Last") <= (Double) resultM.get("Bid")) {
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                }
+                                //if no sell successful
+                                System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
+                                    resultM.get("Bid"));
+                                if (sell.doubleValue() <= (Double) resultM.get("Bid")) {
+                                    BigDecimal profit = sell.subtract(buy);
+                                    if (!profit.equals(BigDecimal.valueOf(0.0))) {
+                                        profit = profit.divide(buy, RoundingMode.HALF_UP)
+                                            .multiply(BigDecimal.valueOf(100.0));
+                                    }
+
+                                    System.out.println("Sell successful " + "profit percent : " +
+                                        profit + "%");
+                                    sell = BigDecimal.valueOf(500.0);
+                                    profitPercentageTotals += profit.doubleValue();
+                                    buyMode = true;
+                                    sellBidMode = false;
+                                    successfulBuy = false;
+                                }
+                            }
+
+
                                 if(priceObj.validMACDBackCross() && successfulBuy && !sellBidMode) {
                                     //and successful buy
                                     //if MACD crosses without successful buy reset to buy mode
