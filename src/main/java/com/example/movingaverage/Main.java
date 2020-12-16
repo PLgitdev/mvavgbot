@@ -304,7 +304,7 @@ public class Main {
                                 buyMode = false;
                                 if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0015)));
                                     // ^ big reduction here small during bid
                                     if (sell.doubleValue() < (Double) resultM.get("Bid")) {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
@@ -320,20 +320,6 @@ public class Main {
                                 }
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
-                                if (sell.doubleValue() <= (Double) resultM.get("Bid") && successfulBuy) {
-                                    BigDecimal profit = sell.subtract(buy);
-                                    if (!profit.equals(0.0)) {
-                                        profit = profit.divide(buy, RoundingMode.HALF_UP)
-                                            .multiply(BigDecimal.valueOf(100.0));
-                                    }
-                                    profitPercentageTotals += profit.doubleValue();
-                                    System.out.println("Sell successful " + "profit percent : " + profit + "%");
-                                    sell = BigDecimal.valueOf(500.0);
-                                    buy = BigDecimal.valueOf(0.0);
-                                    sellBidMode = false;
-                                    buyMode = true;
-                                    successfulBuy = false;
-                                }
                             }
                             if (sellBidMode) {
                                 if (priceObj.validMACDCrossover()) {
@@ -369,20 +355,20 @@ r                                */
                                 //if no sell successful
                                 System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
                                     resultM.get("Bid"));
-                                if (sell.doubleValue() <= (Double) resultM.get("Bid")) {
-                                    BigDecimal profit = sell.subtract(buy);
-                                    if (!profit.equals(BigDecimal.valueOf(0.0))) {
-                                        profit = profit.divide(buy, RoundingMode.HALF_UP)
-                                            .multiply(BigDecimal.valueOf(100.0));
-                                    }
-                                    System.out.println("Sell successful " + "profit percent : " +
-                                        profit + "%");
-                                    sell = BigDecimal.valueOf(500.0);
-                                    profitPercentageTotals += profit.doubleValue();
-                                    buyMode = true;
-                                    sellBidMode = false;
-                                    successfulBuy = false;
+                            }
+                            if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode) {
+                                BigDecimal profit = sell.subtract(buy);
+                                if (!profit.equals(BigDecimal.valueOf(0.0))) {
+                                    profit = profit.divide(buy, RoundingMode.HALF_UP)
+                                        .multiply(BigDecimal.valueOf(100.0));
                                 }
+                                profitPercentageTotals += profit.doubleValue();
+                                System.out.println("Sell successful " + "profit percent : " + profit + "%");
+                                sell = BigDecimal.valueOf(500.0);
+                                buy = BigDecimal.valueOf(0.0);
+                                sellBidMode = false;
+                                buyMode = true;
+                                successfulBuy = false;
                             }
                             //reset the historical data
                             if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL))) {
