@@ -241,7 +241,7 @@ public class Main {
                                 resultM.forEach((key, value) -> System.out.println(key + ":" + value));
                             }
                             if (buyBidMode) {
-                                if (priceObj.validMACDBackCross() || priceObj.validSMABackCross()) {
+                                if (priceObj.validMACDBackCross()) {
                                     buyBidMode = false;
                                     buy = BigDecimal.valueOf(0.0);
                                     //cancel last buy
@@ -264,13 +264,15 @@ public class Main {
                                     System.out.println("Successful BUY at " + buy);
                                 }
                             }
-                            if (priceObj.validMACDBackCross() || priceObj.validSMABackCross() && !buyBidMode
+                            /*if (priceObj.validMACDBackCross() || priceObj.validSMABackCross() && !buyBidMode
                                 && buyMode) {
                                 buyBidMode = false;
                                 buy = BigDecimal.valueOf(0.0);
                                 //cancel last buy
                                 System.out.println("no buys / cancel ur buy");
                             }
+
+                             */
 
                             if(buy.doubleValue() >= (Double) resultM.get("Ask") && buyMode &&
                                 priceObj.validMACDCrossover()) {
