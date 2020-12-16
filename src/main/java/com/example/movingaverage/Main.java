@@ -269,7 +269,11 @@ public class Main {
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
                                 }
-                                if (buy.doubleValue() > (Double) resultM.get("Ask")) {
+                                if(buy.doubleValue() > (Double) resultM.get("Last") ) {
+                                    buy = BigDecimal.valueOf((Double)resultM.get("Last"))
+                                        .add(BigDecimal.valueOf(0.0000005));
+                                }
+                                if (buy.doubleValue() >= (Double) resultM.get("Ask")) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
                                     successfulBuy = true;
                                     //buyMode = false;
