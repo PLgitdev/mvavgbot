@@ -330,6 +330,9 @@ public class Main {
                                     }
                                     sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
+                                    if((Double) resultM.get("Last") < sell.doubleValue()) {
+                                        sell = BigDecimal.valueOf((Double) resultM.get("Last"));
+                                    }
                                     if(sell.doubleValue() < (Double) resultM.get("Bid") ||
                                         (Double) resultM.get("Last") <= (Double) resultM.get("Bid")) {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
