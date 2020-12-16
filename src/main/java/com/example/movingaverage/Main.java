@@ -235,6 +235,7 @@ public class Main {
                                 // we need to make sure transaction went through to continue to sell mode
                                 //manual sell button
                                 //profit zone indicator
+                                // if its in sell mode and encounters a crossover it should sell?
                                 //stoploss at 3%
                                 //less quantitiy at the beining more as time progresses to a point
                                 System.out.println("BUY at " + buy);
@@ -264,7 +265,7 @@ public class Main {
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
                                 }
-                                if (buy.doubleValue() > (Double) resultM.get("Ask")) {
+                                else if (buy.doubleValue() > (Double) resultM.get("Ask")) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
                                     successfulBuy = true;
                                     buyMode = false;
@@ -291,6 +292,7 @@ public class Main {
 
                             //stop loss for buys
                                 //fixed scaled buys option
+                            //what to do if buy is more than last but less than ask during buy
 
                             //if the bid
 
@@ -404,7 +406,7 @@ public class Main {
                                     //win loss ration, profit total
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
                                     System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
-                                    if(sell.doubleValue() <= (Double) resultM.get("Bid")) {
+                                    if(sell.doubleValue() <= (Double) resultM.get("Bid") && successfulBuy) {
                                         BigDecimal profit = sell.subtract(buy);
                                         if (!profit.equals(0)) {
                                             profit = profit.divide(buy, RoundingMode.HALF_UP)
