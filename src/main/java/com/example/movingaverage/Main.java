@@ -324,17 +324,18 @@ public class Main {
                             }
                             if (sellBidMode) {
                                 if (priceObj.validMACDCrossover()) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("bid"));
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                     sell = sell.add(BigDecimal.valueOf(0.00000010));
                                 }
                                 /*else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
                                  */
-                                else if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
+                                /*else if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
                                     sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
                                 }
+                                 */
                                 // ^ big reduction here small during bid
                                 else if (sell.doubleValue() < (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
