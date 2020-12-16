@@ -249,12 +249,16 @@ public class Main {
                                 } else if ((Double) resultM.get("Last") > buy.doubleValue() &&
                                     (Double) resultM.get("Ask") > buy.doubleValue()) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Last"));
-                                    buy = buy.subtract(buy.multiply(BigDecimal.valueOf(0.0001)));
+                                    buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
                                 }
-                                /*else if (buy.doubleValue() < (Double) resultM.get("Last")) {
+                               /* else if (buy.doubleValue() < (Double) resultM.get("Last")) {
                                 }
-                                 */
-                                buy = buy.add(buy.multiply(BigDecimal.valueOf(0.00001)));
+
+                                */
+                               else {
+                                    buy = buy.add(buy.multiply(BigDecimal.valueOf(0.00001)));
+                                }
+
                                 buy = buy.setScale(8, RoundingMode.HALF_UP);
                                 System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
                                     resultM.get("Ask"));
@@ -264,13 +268,15 @@ public class Main {
                                     //buyMode = false;
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
-                                } else if (buy.doubleValue() > (Double) resultM.get("Ask")) {
+                                }
+                                if (buy.doubleValue() > (Double) resultM.get("Ask")) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
                                     successfulBuy = true;
                                     //buyMode = false;
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
                                 }
+
                             }
                             if (priceObj.validMACDBackCross() && !buyBidMode && !successfulBuy) {
                                 buyBidMode = false;
@@ -300,9 +306,12 @@ public class Main {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                     }
                                     sellBidMode = true;
-                                } else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
+                                }
+                                /*else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
-                                } else {
+                                }
+                                 */
+                                else {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                 }
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
@@ -352,7 +361,7 @@ public class Main {
                                     (Double) resultM.get("Last") <= (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
-                                 */
+r                                */
                                 //if no sell successful
                                 System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
                                     resultM.get("Bid"));
