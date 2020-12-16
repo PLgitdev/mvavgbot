@@ -223,7 +223,7 @@ public class Main {
                                     successfulBuy = true;
                                     buyMode = false;
                                     buyBidMode = false;
-                                    System.out.println("Successful BUY");
+                                    System.out.println("Successful BUY at " + buy);
                                 } else {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
@@ -302,6 +302,22 @@ public class Main {
                                         if (sell.doubleValue() < (Double) resultM.get("Bid")) {
                                             sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                         }
+                                    }
+                                    if((Double) resultM.get("Bid") > buy.doubleValue()) {
+                                        sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                        BigDecimal profit = sell.subtract(buy);
+                                        if (!profit.equals(0)) {
+                                            profit = profit.divide(buy, RoundingMode.HALF_UP)
+                                                .multiply(BigDecimal.valueOf(100.0));
+                                        }
+
+                                        System.out.println("Sell successful " + "profit percent : " +
+                                            profit + "%");
+                                        sell = BigDecimal.valueOf(500.0);
+                                        profitPercentageTotals += profit.doubleValue();
+                                        buyMode = true;
+                                        sellBidMode = false;
+                                        successfulBuy = false;
                                     }
                                     sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
