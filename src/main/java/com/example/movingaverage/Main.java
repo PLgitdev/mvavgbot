@@ -310,7 +310,8 @@ public class Main {
                                     if((Double) resultM.get("Bid") > buy.doubleValue()) {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                         BigDecimal profit = sell.subtract(buy);
-                                        if (!profit.equals(0) && sell.doubleValue() != 0 && buy.doubleValue() != 0) {
+                                        if (!profit.equals(BigDecimal.valueOf(0.0)) &&
+                                            sell.doubleValue() != 0 && buy.doubleValue() != 0) {
                                             profit = profit.divide(buy, RoundingMode.HALF_UP)
                                                 .multiply(BigDecimal.valueOf(100.0));
                                         }
@@ -337,7 +338,7 @@ public class Main {
                                         resultM.get("Bid"));
                                     if(sell.doubleValue() <= (Double) resultM.get("Bid")) {
                                         BigDecimal profit = sell.subtract(buy);
-                                        if (!profit.equals(0)) {
+                                        if (!profit.equals(BigDecimal.valueOf(0.0))) {
                                             profit = profit.divide(buy, RoundingMode.HALF_UP)
                                                 .multiply(BigDecimal.valueOf(100.0));
                                         }
@@ -369,7 +370,7 @@ public class Main {
                                     if((Double) resultM.get("Bid") > buy.doubleValue()) {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                         BigDecimal profit = sell.subtract(buy);
-                                        if (!profit.equals(0.0)) {
+                                        if (!profit.equals(BigDecimal.valueOf(0.0))) {
                                             profit = profit.divide(buy, RoundingMode.HALF_UP)
                                                 .multiply(BigDecimal.valueOf(100.0));
                                         }
