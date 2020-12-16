@@ -251,7 +251,7 @@ public class Main {
                                     //cancel last buy
                                     System.out.println("cancel last buy");
                                 }
-                                else if ((Double) resultM.get("last") > buy.doubleValue() &&
+                                else if ((Double) resultM.get("Last") > buy.doubleValue() &&
                                     (Double) resultM.get("Ask") > buy.doubleValue()) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Last"));
                                     buy = buy.subtract(buy.multiply(BigDecimal.valueOf(0.00001)));
