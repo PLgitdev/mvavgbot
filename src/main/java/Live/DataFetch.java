@@ -57,7 +57,7 @@ public class DataFetch {
              data.append(inputLine);
              //both requests are received as a single line
         }
-        Thread.sleep(5000);
+        Thread.sleep(3000);
         return data;
     }
     public boolean valid() {
