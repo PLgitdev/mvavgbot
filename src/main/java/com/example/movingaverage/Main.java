@@ -262,7 +262,7 @@ public class Main {
                                     successfulBuy = true;
                                     buyMode = false;
                                     buyBidMode = false;
-                                    System.out.println("Successful BUY");
+                                    System.out.println("Successful BUY at " + buy);
                                 }
                                 if (buy.doubleValue() > (Double) resultM.get("Ask")) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
@@ -306,7 +306,7 @@ public class Main {
                                     if((Double) resultM.get("Bid") > buy.doubleValue()) {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                         BigDecimal profit = sell.subtract(buy);
-                                        if (!profit.equals(0)) {
+                                        if (!profit.equals(0) && sell.doubleValue() != 0 && buy.doubleValue() != 0) {
                                             profit = profit.divide(buy, RoundingMode.HALF_UP)
                                                 .multiply(BigDecimal.valueOf(100.0));
                                         }
@@ -361,7 +361,21 @@ public class Main {
                                     //sell = buy.multiply(sellMultiplier);
                                     //if the bid is less than the buy during a sell mode you should respond with buy
                                     //if bid is lower than price meet price
-
+                                    if((Double) resultM.get("Bid") > buy.doubleValue()) {
+                                        sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                        BigDecimal profit = sell.subtract(buy);
+                                        if (!profit.equals(0)) {
+                                            profit = profit.divide(buy, RoundingMode.HALF_UP)
+                                                .multiply(BigDecimal.valueOf(100.0));
+                                        }
+                                        System.out.println("Sell successful " + "profit percent : " +
+                                            profit + "%");
+                                        sell = BigDecimal.valueOf(500.0);
+                                        profitPercentageTotals += profit.doubleValue();
+                                        buyMode = true;
+                                        sellBidMode = false;
+                                        successfulBuy = false;
+                                    }
                                     if((Double) resultM.get("Last") > (Double) resultM.get("Bid"))  {
                                         sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
                                         sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
