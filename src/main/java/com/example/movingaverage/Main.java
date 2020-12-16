@@ -348,10 +348,11 @@ public class Main {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Last"));
                                 }
                                  */
-                                if (sell.doubleValue() < (Double) resultM.get("Bid") ||
+                                /*if (sell.doubleValue() < (Double) resultM.get("Bid") ||
                                     (Double) resultM.get("Last") <= (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
+                                 */
                                 //if no sell successful
                                 System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
                                     resultM.get("Bid"));
