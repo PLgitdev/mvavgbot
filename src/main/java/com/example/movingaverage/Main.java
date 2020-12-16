@@ -218,17 +218,15 @@ public class Main {
                                 "Total percentage gain/loss : " + profitPercentageTotals);
                             //check average inequality
                             if (priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
-                                if ((Double) resultM.get("Bid") <= (Double) resultM.get("Last")) {
-                                    buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
-                                    buy = buy.add(BigDecimal.valueOf(0.00000005));
-                                    buy = buy.setScale(8, RoundingMode.HALF_UP);
+                                if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
+                                    buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                                     successfulBuy = true;
                                     buyMode = false;
                                     buyBidMode = false;
                                     System.out.println("Successful BUY");
                                 } else {
-                                    buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                    buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
+                                    buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
+                                    buy = buy.subtract(buy.multiply(BigDecimal.valueOf(0.00001)));
                                     buy = buy.setScale(8, RoundingMode.HALF_UP);
                                     buyBidMode = true;
                                 }
@@ -241,20 +239,19 @@ public class Main {
                                 resultM.forEach((key, value) -> System.out.println(key + ":" + value));
                             }
                             if (buyBidMode) {
-                                buy = buy.add(buy.multiply(BigDecimal.valueOf(0.001)));
+                                buy = buy.subtract(buy.multiply(BigDecimal.valueOf(0.00001)));
                                 buy = buy.setScale(8, RoundingMode.HALF_UP);
                                 System.out.println("\n" + "Cancel last buy and Buy at " + buy + " bid is " +
                                     resultM.get("Bid"));
-                                if(buy.doubleValue() > (Double) resultM.get("Bid")) {
-                                    buy = BigDecimal.valueOf((Double) resultM.get("Bid"))
-                                        .add(BigDecimal.valueOf(.00000010));
+                                if(buy.doubleValue() > (Double) resultM.get("Ask")) {
+                                    buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
                                     successfulBuy = true;
                                     buyMode = false;
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
                                 }
                             }
-                            if(buy.doubleValue() > (Double) resultM.get("Bid") && buyMode &&
+                            if(buy.doubleValue() >= (Double) resultM.get("Ask") && buyMode &&
                                 priceObj.validMACDCrossover()) {
                                 successfulBuy = true;
                                 buyMode = false;
