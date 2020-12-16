@@ -217,7 +217,7 @@ public class Main {
                             // resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                             System.out.println(resultM.get("Last") + "\n" +
                                 "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
-                                + (quant + (quant * profitPercentageTotals)));
+                                + (quant + (quant *(profitPercentageTotals)/100d)));
                             //check average inequality
                             if (priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
                                 if((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
@@ -245,7 +245,7 @@ public class Main {
                             }
                             if (buyBidMode) {
                                 if (priceObj.validMACDBackCross()) {
-                                    buyBidMode = false;
+                                    //buyBidMode = false;
                                     buy = BigDecimal.valueOf(0.0);
                                     //cancel last buy
                                     System.out.println("cancel last buy");
@@ -263,14 +263,14 @@ public class Main {
                                 if((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                                     successfulBuy = true;
-                                    buyMode = false;
+                                    //buyMode = false;
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
                                 }
                                 else if (buy.doubleValue() > (Double) resultM.get("Ask")) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
                                     successfulBuy = true;
-                                    buyMode = false;
+                                    //buyMode = false;
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
                                 }
@@ -285,7 +285,7 @@ public class Main {
                             if(buy.doubleValue() >= (Double) resultM.get("Ask") && buyMode &&
                                 priceObj.validMACDCrossover()) {
                                 successfulBuy = true;
-                                buyMode = false;
+                                //buyMode = false;
                                 buyBidMode = false;
                                 System.out.println("Successful BUY at " + buy);
                             }
@@ -351,7 +351,7 @@ public class Main {
                                         successfulBuy = false;
                                     }
                                 }
-                                if(priceObj.validMACDBackCross() && !buyMode && successfulBuy && !sellBidMode) {
+                                if(priceObj.validMACDBackCross() && successfulBuy && !sellBidMode) {
                                     //and successful buy
                                     //if MACD crosses without successful buy reset to buy mode
                                     //does it cancel current buy?
@@ -365,10 +365,11 @@ public class Main {
                                     //sell = buy.multiply(sellMultiplier);
                                     //if the bid is less than the buy during a sell mode you should respond with buy
                                     //if bid is lower than price meet price
+                                    buyMode = false;
                                     if((Double) resultM.get("Bid") > buy.doubleValue()) {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                         BigDecimal profit = sell.subtract(buy);
-                                        if (!profit.equals(0)) {
+                                        if (!profit.equals(0.0)) {
                                             profit = profit.divide(buy, RoundingMode.HALF_UP)
                                                 .multiply(BigDecimal.valueOf(100.0));
                                         }
@@ -410,7 +411,7 @@ public class Main {
                                     System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
                                     if(sell.doubleValue() <= (Double) resultM.get("Bid") && successfulBuy) {
                                         BigDecimal profit = sell.subtract(buy);
-                                        if (!profit.equals(0)) {
+                                        if (!profit.equals(0.0)) {
                                             profit = profit.divide(buy, RoundingMode.HALF_UP)
                                                 .multiply(BigDecimal.valueOf(100.0));
                                         }
