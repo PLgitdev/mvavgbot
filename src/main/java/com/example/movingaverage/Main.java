@@ -257,12 +257,10 @@ public class Main {
                                 }
                                 else {
                                     buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
-                                    buy = buy.setScale(8, RoundingMode.HALF_UP);
-                                    if (buy.doubleValue() != 0) {
-                                        System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
-                                            resultM.get("Ask"));
-                                    }
                                 }
+                                buy = buy.setScale(8, RoundingMode.HALF_UP);
+                                System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
+                                    resultM.get("Ask"));
                                 if((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                                     successfulBuy = true;
@@ -278,7 +276,7 @@ public class Main {
                                     System.out.println("Successful BUY at " + buy);
                                 }
                             }
-                            if (priceObj.validMACDBackCross() && !buyBidMode && !successfulBuy) {
+                            if(priceObj.validMACDBackCross() && !buyBidMode && !successfulBuy) {
                                 buyBidMode = false;
                                 buy = BigDecimal.valueOf(0.0);
                                 //cancel last buy
