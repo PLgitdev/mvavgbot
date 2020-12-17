@@ -320,7 +320,7 @@ public class Main {
                                     sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
                                 }
                                 else {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Ask"))
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
                                         .subtract(sell.multiply(BigDecimal.valueOf(.0001)));
                                 }
                                 // ^ big reduction here small during bid
