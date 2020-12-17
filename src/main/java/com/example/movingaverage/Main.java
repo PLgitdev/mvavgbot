@@ -276,7 +276,8 @@ public class Main {
                                 //cancel last buy
                                 System.out.println("no buys / cancel ur buy");
                             }
-                            if ((Double) resultM.get("Last") > buy.add(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
+                            if ((Double) resultM.get("Last") >=
+                                buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
                                 sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                             }
 
@@ -300,8 +301,8 @@ public class Main {
                                 }
                                 else if((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
                                     sell =
-                                        BigDecimal.valueOf((Double) resultM.get("Bid"))
-                                            .add(BigDecimal.valueOf((Double)(resultM.get("Bid")))
+                                        BigDecimal.valueOf((Double) resultM.get("Ask"))
+                                            .subtract(BigDecimal.valueOf((Double)(resultM.get("Ask")))
                                                 .multiply(BigDecimal.valueOf(0.0001)));
                                     System.out.println("Sell is replaced with percentage of bid");
                                 }
