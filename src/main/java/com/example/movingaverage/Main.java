@@ -227,13 +227,10 @@ public class Main {
                                 if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                                     successfulBuy = true;
-                                    buyMode = false;
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
                                 } else {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
-                                    buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
-                                    buy = buy.setScale(8, RoundingMode.HALF_UP);
                                     buyBidMode = true;
                                 }
                                 System.out.println("BUY at " + buy);
@@ -246,11 +243,13 @@ public class Main {
                                     buyBidMode = false;
                                     //cancel last buy
                                     System.out.println("cancel last buy");
-                                } else if ((Double) resultM.get("Last") > buy.doubleValue() &&
+                                }
+                                /*else if ((Double) resultM.get("Last") > buy.doubleValue() &&
                                     (Double) resultM.get("Ask") > buy.doubleValue()) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Last"));
                                     buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
                                 }
+                                 */
                                /* else if (buy.doubleValue() < (Double) resultM.get("Last")) {
                                 }
 
