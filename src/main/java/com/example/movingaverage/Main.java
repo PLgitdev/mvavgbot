@@ -315,14 +315,15 @@ public class Main {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
                                  */
+                                else if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
+                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
+                                }
                                 else {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Ask"))
                                         .subtract(sell.multiply(BigDecimal.valueOf(.0001)));
                                 }
                                 // ^ big reduction here small during bid
-                                if (sell.doubleValue() < (Double) resultM.get("Bid")) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                }
                                 sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 /*if ((Double) resultM.get("Bid") >= sell.doubleValue()) {
@@ -342,7 +343,7 @@ r                                */
                                 System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
                                     resultM.get("Bid"));
                             }
-                            if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode) {
+                            if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode && successfulBuy) {
                                 BigDecimal profit = sell.subtract(buy);
                                 if (!profit.equals(BigDecimal.valueOf(0.0))) {
                                     profit = profit.divide(buy, RoundingMode.HALF_UP)
