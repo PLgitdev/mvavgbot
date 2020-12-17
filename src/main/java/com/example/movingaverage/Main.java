@@ -348,7 +348,7 @@ r                                */
                                 buyMode = false;
                                 if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0015)));
                                     // ^ big reduction here small during bid
                                     if (sell.doubleValue() < (Double) resultM.get("Bid")) {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
