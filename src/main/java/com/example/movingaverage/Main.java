@@ -285,7 +285,7 @@ public class Main {
                                 System.out.println("Successful BUY at " + buy);
                             }
                             if (sellBidMode) {
-                                if (priceObj.validMACDBackCross()) {
+                                if (priceObj.validMACDCrossover()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                     sell = sell.subtract(BigDecimal.valueOf(0.0000005));
                                     System.out.println("Sell exited due to shift in MACD");
