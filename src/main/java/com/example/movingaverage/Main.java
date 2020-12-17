@@ -299,12 +299,6 @@ public class Main {
                                     sell = sell.subtract(BigDecimal.valueOf(0.0000005));
                                     System.out.println("Sell exited due to shift in MACD");
                                 }
-                                else if((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
-                                    sell =
-                                        BigDecimal.valueOf((Double) resultM.get("Ask"))
-                                            .subtract(BigDecimal.valueOf(0.00000010));
-                                    System.out.println("Sell is replaced with percentage of bid");
-                                }
                                 /*else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
@@ -370,6 +364,12 @@ r                                */
                                 }
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
+                            }
+                            if((Double) resultM.get("Bid") < (Double) resultM.get("Last") && !buyMode) {
+                                sell =
+                                    BigDecimal.valueOf((Double) resultM.get("Ask"))
+                                        .subtract(BigDecimal.valueOf(0.00000100));
+                                System.out.println("Sell is replaced with percentage of bid");
                             }
                             if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode && successfulBuy) {
                                 BigDecimal profit = sell.subtract(buy);
