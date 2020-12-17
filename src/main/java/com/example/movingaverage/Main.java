@@ -307,24 +307,24 @@ public class Main {
                                 System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
                             }
                             if (sellBidMode) {
-                                if (priceObj.validMACDCrossover()) {
+                                if (priceObj.validMACDBackCross()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                    sell = sell.add(BigDecimal.valueOf(0.00000010));
+                                    sell = sell.subtract(BigDecimal.valueOf(0.00000010));
                                 }
                                 /*else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
                                  */
-                                else if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
+                                /*else if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
                                     sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
                                 }
+
+                                 */
                                 else {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
-                                        .subtract(sell.multiply(BigDecimal.valueOf(.0001)));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
                                 }
                                 // ^ big reduction here small during bid
-                                sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 /*if ((Double) resultM.get("Bid") >= sell.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
