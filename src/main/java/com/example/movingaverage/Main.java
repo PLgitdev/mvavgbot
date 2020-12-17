@@ -298,9 +298,9 @@ public class Main {
                                 else if((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
                                     sell =
                                         BigDecimal.valueOf((Double) resultM.get("Ask"))
-                                            .subtract(BigDecimal.valueOf((Double)(resultM.get("Ask")))
+                                            .add(BigDecimal.valueOf((Double)(resultM.get("Bid")))
                                                 .multiply(BigDecimal.valueOf(0.0001)));
-                                    System.out.println("Sell is replaced with percentage of ask");
+                                    System.out.println("Sell is replaced with percentage of bid");
                                 }
                                 /*else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
