@@ -326,7 +326,7 @@ public class Main {
                                 if (sell.doubleValue() < (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
-                                sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
+                                sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 /*if ((Double) resultM.get("Bid") >= sell.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
