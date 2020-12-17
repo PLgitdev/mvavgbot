@@ -345,7 +345,7 @@ r                                */
                             //if the bid
                             if(priceObj.validMACDBackCross() && successfulBuy && !sellBidMode) {
                                 buyMode = false;
-                                if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
+                                if ((Double) resultM.get("Last") > (Double) resultM.get("Ask")) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
                                     sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
                                     // ^ big reduction here small during bid
