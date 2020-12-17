@@ -283,6 +283,11 @@ public class Main {
                                 //buyMode = false;
                                 buyBidMode = false;
                                 System.out.println("Successful BUY at " + buy);
+                                /*if(buy.doubleValue() < buy.subtract(buy.multiply(BigDecimal.valueOf(0.01)))
+                                    .doubleValue()) {
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                }
+                                 */
                             }
                             if (sellBidMode) {
                                 if (priceObj.validMACDCrossover()) {
