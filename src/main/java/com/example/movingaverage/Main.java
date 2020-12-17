@@ -315,10 +315,6 @@ public class Main {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
                                  */
-                                else if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
-                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
-                                }
                                 else {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Ask"))
                                         .subtract(sell.multiply(BigDecimal.valueOf(.0001)));
