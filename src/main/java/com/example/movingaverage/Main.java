@@ -300,6 +300,11 @@ public class Main {
                                     System.out.println("Sell exited due to shift in MACD in real life " +
                                         "you could hold instead of sell");
                                 }
+                                else if((Double) resultM.get("Last") > sell.doubleValue() ) {
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Ask"))
+                                        .subtract(BigDecimal.valueOf((Double)(resultM.get("Ask")))
+                                            .multiply(BigDecimal.valueOf(0.0001)));
+                                }
                                 /*else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
@@ -365,6 +370,9 @@ r                                */
                                     sellBidMode = true;
                                 }
                                 System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
+                            }
+                            if((Double) resultM.get("Last") > sell.doubleValue() ) {
+                                sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                             }
                             if((Double) resultM.get("Bid") > (Double) resultM.get("Last") && !buyMode) {
                                 sell =
