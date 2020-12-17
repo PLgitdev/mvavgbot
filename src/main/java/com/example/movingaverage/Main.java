@@ -366,10 +366,10 @@ r                                */
                                 }
                                 System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
                             }
-                            if((Double) resultM.get("Bid") < (Double) resultM.get("Last") && !buyMode) {
+                            if((Double) resultM.get("Bid") > (Double) resultM.get("Last") && !buyMode) {
                                 sell =
-                                    BigDecimal.valueOf((Double) resultM.get("Ask"))
-                                        .subtract(BigDecimal.valueOf(0.00000100));
+                                    BigDecimal.valueOf((Double) resultM.get("Bid"))
+                                        .subtract(BigDecimal.valueOf(0.00000005));
                                 System.out.println("Sell is replaced with percentage of ask");
                             }
                             if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode && successfulBuy) {
