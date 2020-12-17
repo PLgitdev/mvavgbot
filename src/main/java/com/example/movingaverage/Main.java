@@ -285,9 +285,15 @@ public class Main {
                             }
                             if (sellBidMode) {
                                 if (priceObj.validMACDBackCross()) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Ask"));
-                                    sell = sell.subtract(BigDecimal.valueOf(0.001));
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                    sell = sell.subtract(BigDecimal.valueOf(0.00000005));
                                     System.out.println("Sell exited due to shift in MACD");
+                                }
+                                if((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
+                                    sell =
+                                        BigDecimal.valueOf((Double) resultM.get("Ask"))
+                                            .subtract(BigDecimal.valueOf((Double)(resultM.get("Ask")))
+                                                .multiply(BigDecimal.valueOf(0.0001)));
                                 }
                                 /*else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
