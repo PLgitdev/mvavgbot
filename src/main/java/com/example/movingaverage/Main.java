@@ -244,6 +244,7 @@ public class Main {
                                     //cancel last buy
                                     System.out.println("cancel last buy");
                                 }
+                                // buy less than price and less than ask good barder
                                 /*else if ((Double) resultM.get("Last") > buy.doubleValue() &&
                                     (Double) resultM.get("Ask") > buy.doubleValue()) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Last"));
@@ -286,14 +287,15 @@ public class Main {
                             if (sellBidMode) {
                                 if (priceObj.validMACDBackCross()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                    sell = sell.subtract(BigDecimal.valueOf(0.00000005));
+                                    sell = sell.subtract(BigDecimal.valueOf(0.0000005));
                                     System.out.println("Sell exited due to shift in MACD");
                                 }
-                                if((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
+                                else if((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
                                     sell =
                                         BigDecimal.valueOf((Double) resultM.get("Ask"))
                                             .subtract(BigDecimal.valueOf((Double)(resultM.get("Ask")))
                                                 .multiply(BigDecimal.valueOf(0.0001)));
+                                    System.out.println("Sell is replaced with percentage of ask");
                                 }
                                 /*else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
