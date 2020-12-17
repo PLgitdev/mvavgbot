@@ -334,10 +334,12 @@ r                                */
                                 System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
                                     resultM.get("Bid"));
                             }
-                            if(!sellBidMode && successfulBuy && buy.doubleValue() < buy
+                            /*if(!sellBidMode && successfulBuy && buy.doubleValue() < buy
                                 .subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
                                 sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                System.out.println("Sell replaced with bid");
                             }
+                             */
                             //stop loss for buys
                             //fixed scaled buys option
                             //what to do if buy is more than last but less than ask during buy
