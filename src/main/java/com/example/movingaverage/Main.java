@@ -223,7 +223,7 @@ public class Main {
                                 "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
                                 + (quant + (quant * (profitPercentageTotals) / 100d)));
                             //check average inequality
-                            if (priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
+                            if(priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
                                 if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                                     successfulBuy = true;
@@ -257,8 +257,11 @@ public class Main {
                                else {
                                     buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
                                 }
-
                                 buy = buy.setScale(8, RoundingMode.HALF_UP);
+                                if(buy.doubleValue() >= (Double) resultM.get("Ask")) {
+                                    buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
+                                }
+
                                 System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
                                     resultM.get("Ask"));
                                 if(buy.doubleValue() > (Double) resultM.get("Last") ) {
@@ -280,6 +283,10 @@ public class Main {
                                 buyBidMode = false;
                                 System.out.println("Successful BUY at " + buy);
                             }
+                            if(!sellBidMode && successfulBuy && buy.doubleValue() < buy
+                                .subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
+                                sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                            }
                             //stop loss for buys
                             //fixed scaled buys option
                             //what to do if buy is more than last but less than ask during buy
@@ -288,7 +295,7 @@ public class Main {
                                 buyMode = false;
                                 if ((Double) resultM.get("Last") > (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0015)));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00015)));
                                     // ^ big reduction here small during bid
                                     if (sell.doubleValue() < (Double) resultM.get("Bid")) {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
