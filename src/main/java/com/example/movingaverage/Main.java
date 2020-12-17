@@ -373,6 +373,7 @@ r                                */
                                 System.out.println("Sell is replaced with percentage of ask");
                             }
                             if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode && successfulBuy) {
+                                sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 if(sell.doubleValue() < (Double) resultM.get("Bid")) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
                                         .add(BigDecimal.valueOf(0.00000005));
