@@ -296,14 +296,9 @@ public class Main {
                             if (sellBidMode) {
                                 if (priceObj.validMACDCrossover()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                    sell = sell.subtract(BigDecimal.valueOf(0.0000005));
+                                    sell = sell.add(BigDecimal.valueOf(0.0000005));
                                     System.out.println("Sell exited due to shift in MACD in real life " +
                                         "you could hold instead of sell");
-                                }
-                                else if((Double) resultM.get("Last") > sell.doubleValue() ) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Ask"))
-                                        .subtract(BigDecimal.valueOf((Double)(resultM.get("Ask")))
-                                            .multiply(BigDecimal.valueOf(0.0001)));
                                 }
                                 /*else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
@@ -316,10 +311,19 @@ public class Main {
 
                                  */
                                 else {
-                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
-                                }
+                                    if((Double) resultM.get("Last") > sell.doubleValue()) {
+                                        sell = BigDecimal.valueOf((Double) resultM.get("Ask"))
+                                            .subtract(BigDecimal.valueOf((Double) (resultM.get("Ask")))
+                                                .multiply(BigDecimal.valueOf(0.0001)));
+                                    }
+                                    else {
+                                        buy = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
+                                    }
                                 // ^ big reduction here small during bid
+                                        // sell = sell.setScale(8, RoundingMode.HALF_UP);
+                                }
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
+
                                 /*if ((Double) resultM.get("Bid") >= sell.doubleValue()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                 }
