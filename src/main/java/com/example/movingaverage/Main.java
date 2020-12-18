@@ -289,7 +289,7 @@ public class Main {
                                         if ((Double) resultM.get("Ask") > sell.doubleValue()) {
                                             sell = BigDecimal.valueOf((Double) resultM.get("Ask"))
                                                 .subtract(BigDecimal.valueOf((Double) (resultM.get("Ask")))
-                                                    .multiply(BigDecimal.valueOf(0.0001)));
+                                                    .multiply(BigDecimal.valueOf(0.00001)));
                                             System.out.println("Sell is less than the Last " +
                                                 "and ask is more than the sell replacing with percentage of ask ");
                                         }
