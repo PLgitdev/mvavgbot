@@ -229,7 +229,8 @@ public class Main {
                                     successfulBuy = true;
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
-                                } else {
+                                }
+                                else {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     buyBidMode = true;
                                 }
@@ -299,10 +300,8 @@ public class Main {
                                             System.out.println("Sell will be subtracted by a multiple of .0001");
                                         }
                                     }
-                                    else {
-                                        sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
-                                        System.out.println("Sell will be subtracted by a multiple of .0001");
-                                    }
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
+                                    System.out.println("Sell will be subtracted by a multiple of .0001");
                                 // ^ big reduction here small during bid
                                         // sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 }
