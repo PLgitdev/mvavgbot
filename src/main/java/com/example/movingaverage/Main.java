@@ -296,7 +296,7 @@ public class Main {
                             if (sellBidMode) {
                                 if (priceObj.validMACDCrossover()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                    sell = sell.add(BigDecimal.valueOf(0.0000005));
+                                    sell = sell.subtract(BigDecimal.valueOf(0.0000005));
                                     System.out.println("Sell exited due to shift in MACD in real life " +
                                         "you could hold instead of sell");
                                 }
