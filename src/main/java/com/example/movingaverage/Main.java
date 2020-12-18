@@ -297,7 +297,6 @@ public class Main {
                                             sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
                                             System.out.println("Sell will be subtracted by a multiple of .0001");
                                         }
-
                                     }
                                     else {
                                         sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
