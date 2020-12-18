@@ -320,8 +320,14 @@ public class Main {
                                     else {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
                                                 .subtract(BigDecimal.valueOf(0.00000005));
+                                        System.out.println("Bid higher than buy and Bid lower than last");
                                     }
 
+                                }
+                                else if(sell.doubleValue() < buy.doubleValue()) {
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Ask"))
+                                        .subtract(BigDecimal.valueOf(0.00000005));
+                                    sellBidMode = true;
                                 }
                                 else if ((Double) resultM.get("Last") > (Double) resultM.get("Ask")) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
