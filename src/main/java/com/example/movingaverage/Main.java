@@ -294,12 +294,12 @@ public class Main {
                                                 "and ask is more than the sell replacing with percentage of ask ");
                                         }
                                         else {
-                                            sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
+                                            sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
                                             System.out.println("Sell will be subtracted by a multiple of .0001");
                                         }
                                     }
                                     else {
-                                        sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
+                                        sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
                                         System.out.println("Sell will be subtracted by a multiple of .0001");
                                     }
                                 // ^ big reduction here small during bid
