@@ -294,6 +294,7 @@ public class Main {
                                                 "and ask is more than the sell replacing with percentage of ask ");
                                         }
                                         else {
+                                            sell = BigDecimal.valueOf((Double) resultM.get("Last"));
                                             sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
                                             System.out.println("Sell will be subtracted by a multiple of .0001");
                                         }
