@@ -334,8 +334,8 @@ public class Main {
                                     System.out.println("Sell bid mode is turned on the sell has been missed");
                                     sellBidMode = true;
                                 }
-                                else if(buy.doubleValue() < buy.subtract(buy.multiply(BigDecimal.valueOf(0.001)))
-                                    .doubleValue()) {
+                                else if((Double) resultM.get("Last") > buy.subtract(buy
+                                    .multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                      sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
                                         .subtract(BigDecimal.valueOf(0.00000005));
                                 }
