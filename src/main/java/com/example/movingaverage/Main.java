@@ -286,13 +286,21 @@ public class Main {
                                 }
                                 else {
                                     if((Double) resultM.get("Last") > sell.doubleValue()) {
-                                        sell = BigDecimal.valueOf((Double) resultM.get("Ask"))
-                                            .subtract(BigDecimal.valueOf((Double) (resultM.get("Ask")))
-                                                .multiply(BigDecimal.valueOf(0.0001)));
-                                       System.out.println("Sell is less than the Las replacing with percentage of ask ");
+                                        if ((Double) resultM.get("Ask") > sell.doubleValue()) {
+                                            sell = BigDecimal.valueOf((Double) resultM.get("Ask"))
+                                                .subtract(BigDecimal.valueOf((Double) (resultM.get("Ask")))
+                                                    .multiply(BigDecimal.valueOf(0.0001)));
+                                            System.out.println("Sell is less than the Last " +
+                                                "and ask is more than the sell replacing with percentage of ask ");
+                                        }
+                                        else {
+                                            sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
+                                            System.out.println("Sell will be subtracted by a multiple of .0001");
+                                        }
+
                                     }
                                     else {
-                                        buy = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
+                                        sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
                                         System.out.println("Sell will be subtracted by a multiple of .0001");
                                     }
                                 // ^ big reduction here small during bid
