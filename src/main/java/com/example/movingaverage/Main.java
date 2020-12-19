@@ -257,7 +257,7 @@ public class Main {
                                     resultM.get("Ask"));
                                 if(buy.doubleValue() > (Double) resultM.get("Last") ) {
                                     buy = BigDecimal.valueOf((Double)resultM.get("Last"))
-                                        .add(BigDecimal.valueOf(0.0000005));
+                                        .add(BigDecimal.valueOf(0.00000002));
                                 }
                             }
                             if (priceObj.validMACDBackCross() && !buyBidMode && !successfulBuy) {
@@ -281,7 +281,7 @@ public class Main {
                             if (sellBidMode) {
                                 if (priceObj.validMACDCrossover()) {
                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                    sell = sell.subtract(BigDecimal.valueOf(0.0000005));
+                                    sell = sell.subtract(BigDecimal.valueOf(0.00000002));
                                     System.out.println("Sell exited due to shift in MACD in real life " +
                                         "you could hold instead of sell");
                                 }
@@ -302,7 +302,7 @@ public class Main {
                                     }
 
                                  */
-                                sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
+                                sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0000001)));
                                 System.out.println("Sell will be subtracted by a multiple of .0001");
                                 // ^ big reduction here small during bid
                                         // sell = sell.setScale(8, RoundingMode.HALF_UP);
@@ -333,19 +333,20 @@ public class Main {
                                  */
                                 if ((Double) resultM.get("Last") > (Double) resultM.get("Ask")) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0001)));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0000001)));
                                     // ^ big reduction here small during bid
                                     if (sell.doubleValue() < (Double) resultM.get("Bid")) {
                                         sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                                         System.out.println("Bid has been taken over buy because buy fell below bid");
                                     }
                                     System.out.println("Sell bid mode is turned on the sell has been missed");
-                                    sellBidMode = true;
+                                    //sellBidMode = true;
                                 }
-                                else if((Double) resultM.get("Last") > buy.subtract(buy
+                                //bid mode can be off
+                                /*else if((Double) resultM.get("Last") > buy.subtract(buy
                                     .multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                      sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
-                                        .subtract(BigDecimal.valueOf(0.00000005));
+                                        .subtract(BigDecimal.valueOf(0.00000001));
                                 }
                                 /*else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
@@ -353,11 +354,11 @@ public class Main {
                                  */
                                 else {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
-                                    sellBidMode = true;
+                                    //sellBidMode = true;
                                 }
                                 System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
                             }
-                            if((Double) resultM.get("Bid") > (Double) resultM.get("Last") &&
+                            /*if((Double) resultM.get("Bid") > (Double) resultM.get("Last") &&
                                 sell.doubleValue() < (Double) resultM.get("Last") &&
                                 !buyMode && sellBidMode && priceObj.validMACDCrossover()) {
                                 sell =
@@ -365,9 +366,13 @@ public class Main {
                                         .subtract(BigDecimal.valueOf(0.00000005));
                                 System.out.println("Sell is replaced with percentage of ask " + sell);
                             }
-                            if(sell.doubleValue() > (Double) resultM.get("Last") && sellBidMode) {
+
+                             */
+                            /*if(sell.doubleValue() > (Double) resultM.get("Last") && sellBidMode) {
                                 sell = BigDecimal.valueOf((Double) resultM.get("Last"));
                             }
+
+                             */
                             if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode && successfulBuy) {
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 if(sell.doubleValue() < (Double) resultM.get("Bid")) {
