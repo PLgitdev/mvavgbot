@@ -59,7 +59,8 @@ public class Main {
                         inputL = sc.nextInt();
                         System.out.println("Please enter day count for the int moving avg up to one year, 365 days");
                         inputL2 = sc.nextInt();
-                        System.out.println("Please enter a calculation strategy high-low = 0, open-close = 1, close = 2");
+                        System.out.println("Please enter a calculation strategy high-low = 0, open-close = 1, " +
+                            "close = 2");
                         inputS = sc.next();
                         ArrayList<Map<?, ?>> shorterDaysDataClose;
                         ArrayList<Map<?, ?>> shorterDaysDataOpen;
@@ -285,6 +286,12 @@ public class Main {
                                     System.out.println("Sell exited due to shift in MACD in real life " +
                                         "you could hold instead of sell");
                                 }
+                                else if ((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
+                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00000001)));
+                                    // ^ big reduction here small during bid
+                                    sellBidMode = true;
+                                }
                                 //sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0000001)));
                                 //System.out.println("Sell will be subtracted by a multiple of .0001");
                                 // ^ big reduction here small during bid
@@ -296,17 +303,16 @@ public class Main {
                             }
                             if(priceObj.validMACDBackCross() && successfulBuy && !sellBidMode) {
                                 buyMode = false;
-                                if ((Double) resultM.get("Ask") < (Double) resultM.get("Last")) {
+                                if ((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                    sell = sell.add(sell.multiply(BigDecimal.valueOf(.00000001)));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00000001)));
                                     // ^ big reduction here small during bid
-                                    System.out.println("Sell bid mode is turned on the sell has been missed");
                                     sellBidMode = true;
                                 }
                                 else {
-                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
-                                    sell = sell.add(sell.multiply(BigDecimal.valueOf(.00000001)));
-                                    System.out.println("A little over the ask");
+                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
+                                    sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00000001)));
+                                    System.out.println("A little under the bid");
                                     sellBidMode = true;
                                 }
                                 System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
@@ -325,7 +331,8 @@ public class Main {
                                         .multiply(BigDecimal.valueOf(100.0));
                                 }
                                 profitPercentageTotals += profit.doubleValue();
-                                System.out.println("Sell successful at " + sell + " " + "profit percent : " + profit + "%");
+                                System.out.println("Sell successful at " + sell + " " + "profit percent : " +
+                                    profit + "%");
                                 sell = BigDecimal.valueOf(500.0);
                                 buy = BigDecimal.valueOf(0.0);
                                 sellBidMode = false;
