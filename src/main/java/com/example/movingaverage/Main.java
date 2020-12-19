@@ -300,10 +300,6 @@ public class Main {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
                                     sell = sell.add(sell.multiply(BigDecimal.valueOf(.00000001)));
                                     // ^ big reduction here small during bid
-                                    if (sell.doubleValue() < (Double) resultM.get("Bid")) {
-                                        sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                        System.out.println("Bid has been taken over buy because buy fell below bid");
-                                    }
                                     System.out.println("Sell bid mode is turned on the sell has been missed");
                                     sellBidMode = true;
                                 }
