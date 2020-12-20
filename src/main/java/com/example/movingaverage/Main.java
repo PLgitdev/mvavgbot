@@ -209,6 +209,7 @@ public class Main {
                         boolean sellGate = false;
                         boolean sellBidMode = false;
                         boolean buyBidMode = false;
+                        boolean hold = false;
                         while (!markets.equalsIgnoreCase("clear")) {
                             liveMarketData = fetcher.marketDataFetcher();
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
@@ -288,21 +289,25 @@ public class Main {
                                 if (!priceObj.validMACDBackCross() ||
                                     sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.00001)))
                                         .doubleValue()) {
+                                    hold = true;
                                     System.out.println("Hold missed sell wait");
                                 }
                                 else if ((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
+                                    hold = false;
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
                                     sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                     sellBidMode = true;
                                     System.out.println("Last was chosen then subtracted from");
                                 }
                                 else if ((Double) resultM.get("Bid") > (Double) resultM.get("Ask")) {
+                                    hold = false;
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                     sellBidMode = true;
                                     System.out.println("Bid was chosen then subtracted from");
                                 }
                                 else {
+                                    hold = false;
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                                     sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                     sellBidMode = true;
@@ -320,7 +325,7 @@ public class Main {
                                 System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
                                     resultM.get("Bid"));
                             }
-                            if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode && successfulBuy ||
+                            if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode && successfulBuy  && !hold||
                                 sellBidMode && sell.doubleValue() <= (Double) resultM.get("Bid")) {
                                 //? and valid MACDCrossover?
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
