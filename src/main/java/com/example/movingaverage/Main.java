@@ -286,18 +286,20 @@ public class Main {
                                 sellGate = true;
                             }
                             if(sellGate && successfulBuy) {
-                                if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.01)))
+                                if ((Double) resultM.get("Last") <
+                                    //sensitivity
+                                    //if it hits a new low quantity up!
+                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
+                                    hold = false;
+                                    System.out.println("Sell exited because last price dropped to low");
+                                }
+                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.01)))
                                         .doubleValue()) {
                                     hold = true;
                                     //back to buy mode and threading?
                                     // if its about to pop only take big ones if its flat take small ones
                                     // if bid is a certian percent above last then take it..
                                     System.out.println("Hold missed sell wait due to not enuf profit");
-                                }
-                                else if ((Double) resultM.get("Last") <
-                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
-                                    hold = false;
-                                    System.out.println("Sell exited because last price dropped to low");
                                 }
                                 else if ((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
                                     hold = false;
