@@ -290,11 +290,9 @@ public class Main {
                                         .doubleValue()) {
                                     hold = true;
                                     //back to buy mode and threading?
+                                    // if its about to pop only take big ones if its flat take small ones
+                                    // if bid is a certian percent above last then take it..
                                     System.out.println("Hold missed sell wait due to not enuf profit");
-                                }
-                                else if (!priceObj.validMACDBackCross()) {
-                                    hold = true;
-                                    System.out.println("Hold missed sell wait due to MACD says so");
                                 }
                                 else if ((Double) resultM.get("Last") <
                                     buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
