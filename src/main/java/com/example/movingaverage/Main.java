@@ -286,12 +286,15 @@ public class Main {
                                 sellGate = true;
                             }
                             if(sellGate && successfulBuy) {
-                                if (!priceObj.validMACDBackCross() ||
-                                    sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.01)))
+                                if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.01)))
                                         .doubleValue()) {
                                     hold = true;
                                     //back to buy mode and threading?
-                                    System.out.println("Hold missed sell wait");
+                                    System.out.println("Hold missed sell wait due to not enuf profit");
+                                }
+                                else if (!priceObj.validMACDBackCross()) {
+                                    hold = true;
+                                    System.out.println("Hold missed sell wait due to MACD says so");
                                 }
                                 else if ((Double) resultM.get("Last") <
                                     buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
