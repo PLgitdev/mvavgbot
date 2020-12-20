@@ -287,7 +287,7 @@ public class Main {
                             if(sellGate && successfulBuy) {
                                 if ((Double) resultM.get("Last") <
                                     //sensitivity
-                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
+                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                     hold = false;
@@ -304,7 +304,7 @@ public class Main {
                                 //MACD gaurd hits early you need to keep ir from premptivly cutting you out
                                 //if it hits a new low quantity up!
                                 //new 24 hour low this multiplier below up!
-                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.000001)))
+                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.00001)))
                                         .doubleValue()) {
                                     hold = true;
                                     //back to buy mode and threading?
