@@ -293,6 +293,14 @@ public class Main {
                                     hold = false;
                                     System.out.println("Sell exited because last price dropped to low");
                                 }
+                                //MACD gaurd on  off capability
+                                /*else if (priceObj.validMACDBackCross()) {
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                    sell = sell.subtract(BigDecimal.valueOf(0.00000002));
+                                    System.out.println("Sell exited due to shift in MACD in real life " +
+                                        "you could hold instead of sell");
+                                }
+                                 */
                                 //if it hits a new low quantity up!
                                 //new 24 hour low this multiplier below up!
                                 else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
