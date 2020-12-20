@@ -263,12 +263,6 @@ public class Main {
                                         .add(BigDecimal.valueOf(0.00000002));
                                 }
                             }
-                            if (priceObj.validMACDBackCross() && !buyBidMode && !successfulBuy) {
-                                buyBidMode = false;
-                                buy = BigDecimal.valueOf(0.0);
-                                //cancel last buy
-                                System.out.println("no buys / cancel ur buy");
-                            }
                             if ((Double) resultM.get("Last") >=
                                 buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
                                 sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
@@ -304,6 +298,8 @@ public class Main {
                                 //MACD gaurd hits early you need to keep ir from premptivly cutting you out
                                 //if it hits a new low quantity up!
                                 //new 24 hour low this multiplier below up!
+                                //quanitity tied to overall score
+                                //.00001 might be too sensitive
                                 else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.00001)))
                                         .doubleValue()) {
                                     hold = true;
