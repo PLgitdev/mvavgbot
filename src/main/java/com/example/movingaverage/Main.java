@@ -273,13 +273,21 @@ public class Main {
                                 buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
                                 sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                             }
-
                             if (buy.doubleValue() >= (Double) resultM.get("Ask") && buyMode &&
                                 priceObj.validMACDCrossover()) {
                                 successfulBuy = true;
                                 //buyMode = false;
                                 buyBidMode = false;
                                 System.out.println("Successful BUY at " + buy);
+                            }
+                            if (sellBidMode) {
+                                // if the Bid is more than the last use the Last
+                                sellGate = false;
+                                sell = sell.subtract(BigDecimal.valueOf(.00000001));
+                                sell = sell.setScale(8, RoundingMode.HALF_UP);
+                                //if no sell successful
+                                System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
+                                    resultM.get("Bid"));
                             }
                             if(priceObj.validMACDBackCross() && successfulBuy && !sellBidMode && !sellGate ) {
                                 buyMode = false;
@@ -324,15 +332,6 @@ public class Main {
                                 }
                                 System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
 
-                            }
-                            if (sellBidMode) {
-                                // if the Bid is more than the last use the Last
-                                sellGate = false;
-                                sell = sell.subtract(BigDecimal.valueOf(.00000001));
-                                sell = sell.setScale(8, RoundingMode.HALF_UP);
-                                //if no sell successful
-                                System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
-                                    resultM.get("Bid"));
                             }
                             if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode && successfulBuy &&
                                 !hold || sellBidMode && sell.doubleValue() <= (Double) resultM.get("Bid")) {
