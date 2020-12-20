@@ -289,7 +289,7 @@ public class Main {
                                     //sensitivity
                                     buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
-                                    sell = sell.add(BigDecimal.valueOf(.00000005));
+                                    sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                     hold = false;
                                     System.out.println("Sell exited because last price dropped to low");
                                 }
@@ -301,9 +301,10 @@ public class Main {
                                         "you could hold instead of sell");
                                 }
                                  */
+                                //MACD gaurd hits early you need to keep ir from premptivly cutting you out
                                 //if it hits a new low quantity up!
                                 //new 24 hour low this multiplier below up!
-                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
+                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.000001)))
                                         .doubleValue()) {
                                     hold = true;
                                     //back to buy mode and threading?
