@@ -287,10 +287,15 @@ public class Main {
                             }
                             if(sellGate && successfulBuy) {
                                 if (!priceObj.validMACDBackCross() ||
-                                    sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.00001)))
+                                    sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.01)))
                                         .doubleValue()) {
                                     hold = true;
+                                    //back to buy mode and threading?
                                     System.out.println("Hold missed sell wait");
+                                }
+                                else if ((Double) resultM.get("Last") <
+                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
+                                    hold = false;
                                 }
                                 else if ((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
                                     hold = false;
@@ -325,8 +330,8 @@ public class Main {
                                 System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
                                     resultM.get("Bid"));
                             }
-                            if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode && successfulBuy  && !hold||
-                                sellBidMode && sell.doubleValue() <= (Double) resultM.get("Bid")) {
+                            if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode && successfulBuy &&
+                                !hold || sellBidMode && sell.doubleValue() <= (Double) resultM.get("Bid")) {
                                 //? and valid MACDCrossover?
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 if(sell.doubleValue() < (Double) resultM.get("Bid")) {
