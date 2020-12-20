@@ -280,15 +280,6 @@ public class Main {
                                 buyBidMode = false;
                                 System.out.println("Successful BUY at " + buy);
                             }
-                            if (sellBidMode) {
-                                // if the Bid is more than the last use the Last
-                                sellGate = false;
-                                sell = sell.subtract(BigDecimal.valueOf(.00000001));
-                                sell = sell.setScale(8, RoundingMode.HALF_UP);
-                                //if no sell successful
-                                System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
-                                    resultM.get("Bid"));
-                            }
                             if(priceObj.validMACDBackCross() && successfulBuy && !sellBidMode && !sellGate ) {
                                 buyMode = false;
                                 sellGate = true;
@@ -296,12 +287,13 @@ public class Main {
                             if(sellGate && successfulBuy) {
                                 if ((Double) resultM.get("Last") <
                                     //sensitivity
-                                    //if it hits a new low quantity up!
                                     buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                     hold = false;
                                     System.out.println("Sell exited because last price dropped to low");
                                 }
-                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.01)))
+                                //if it hits a new low quantity up!
+                                //new 24 hour low this multiplier below up!
+                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
                                         .doubleValue()) {
                                     hold = true;
                                     //back to buy mode and threading?
@@ -356,6 +348,15 @@ public class Main {
                                 sellBidMode = false;
                                 buyMode = true;
                                 successfulBuy = false;
+                            }
+                            if (sellBidMode) {
+                                // if the Bid is more than the last use the Last
+                                sellGate = false;
+                                sell = sell.subtract(BigDecimal.valueOf(.00000001));
+                                sell = sell.setScale(8, RoundingMode.HALF_UP);
+                                //if no sell successful
+                                System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
+                                    resultM.get("Bid"));
                             }
                             //reset the historical data
                             if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL))) {
