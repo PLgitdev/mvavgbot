@@ -294,8 +294,9 @@ public class Main {
                                     System.out.println("Hold missed sell wait");
                                 }
                                 else if ((Double) resultM.get("Last") <
-                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
+                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                     hold = false;
+                                    System.out.println("Sell exited because last price dropped to low");
                                 }
                                 else if ((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
                                     hold = false;
