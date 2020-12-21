@@ -287,10 +287,12 @@ public class Main {
                                     sellGate = false;
                                     System.out.println("Sell exited because last price dropped to low");
                                 }
-                                else if (priceObj.validMACDCrossover()) {
+                                /*else if (priceObj.validMACDCrossover()) {
                                     hold = true;
                                     System.out.println("Sell on hold due to MACD");
                                 }
+
+                                 */
                                 //MACD gaurd on  off capability
                                 //MACD gaurd hits early you need to keep ir from premptivly cutting you out
                                 //if it hits a new low quantity up!
