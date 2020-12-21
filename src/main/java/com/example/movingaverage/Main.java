@@ -241,31 +241,19 @@ public class Main {
                                 resultM.forEach((key, value) -> System.out.println(key + ":" + value));
                             }
                             if (buyBidMode) {
-                                if (priceObj.validMACDBackCross()) {
-                                    //buyBidMode = false;
-                                    buy = BigDecimal.valueOf(0.0);
-                                    buyBidMode = false;
-                                    //cancel last buy
-                                    System.out.println("cancel last buy");
-                                }
-                               else {
-                                    buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
-                                }
                                 buy = buy.setScale(8, RoundingMode.HALF_UP);
                                 if(buy.doubleValue() >= (Double) resultM.get("Ask")) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
                                 }
-
-                                System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
-                                    resultM.get("Ask"));
-                                if(buy.doubleValue() > (Double) resultM.get("Last") ) {
+                                else if (buy.doubleValue() > (Double) resultM.get("Last") ) {
                                     buy = BigDecimal.valueOf((Double)resultM.get("Last"))
                                         .add(BigDecimal.valueOf(0.00000002));
                                 }
+                                System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
+                                    resultM.get("Ask"));
                             }
                             //mayb take the below if statement out
-                            if (priceObj.validMACDCrossover() && !buyBidMode && !successfulBuy) {
-                                buy = BigDecimal.valueOf(0.0);
+                             else if (priceObj.validMACDBackCross()){
                                 //cancel last buy
                                 System.out.println("no buys / cancel ur buy");
                             }
@@ -289,18 +277,14 @@ public class Main {
                                     //sensitivity
                                     buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
-                                    sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                     hold = false;
                                     System.out.println("Sell exited because last price dropped to low");
                                 }
-                                //MACD gaurd on  off capability
-                                /*else if (priceObj.validMACDBackCross()) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                    sell = sell.subtract(BigDecimal.valueOf(0.00000002));
-                                    System.out.println("Sell exited due to shift in MACD in real life " +
-                                        "you could hold instead of sell");
+                                else if (priceObj.validMACDCrossover()) {
+                                    hold = true;
+                                    System.out.println("Sell on hold due to MACD");
                                 }
-                                 */
+                                //MACD gaurd on  off capability
                                 //MACD gaurd hits early you need to keep ir from premptivly cutting you out
                                 //if it hits a new low quantity up!
                                 //new 24 hour low this multiplier below up!
@@ -336,10 +320,11 @@ public class Main {
                                     System.out.println("Ask was chosen then subtracted from");
                                 }
                                 System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
-
                             }
                             if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode && successfulBuy &&
-                                !hold || sellBidMode && sell.doubleValue() <= (Double) resultM.get("Bid")) {
+                                !hold && priceObj.validMACDBackCross() ||
+                                sellBidMode && sell.doubleValue() <= (Double) resultM.get("Bid") &&
+                            priceObj.validMACDBackCross()) {
                                 //? and valid MACDCrossover?
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 if(sell.doubleValue() < (Double) resultM.get("Bid")) {
@@ -349,7 +334,7 @@ public class Main {
                                         "sell : " + sell);
                                 }
                                 BigDecimal profit = sell.subtract(buy);
-                                if (!profit.equals(BigDecimal.valueOf(0.0))) {
+                                if (profit.doubleValue() > 0d) {
                                     profit = profit.divide(buy, RoundingMode.HALF_UP)
                                         .multiply(BigDecimal.valueOf(100.0));
                                 }
@@ -357,7 +342,6 @@ public class Main {
                                 System.out.println("Sell successful at " + sell + " " + "profit percent : " +
                                     profit + "%");
                                 sell = BigDecimal.valueOf(500.0);
-                                buy = BigDecimal.valueOf(0.0);
                                 sellBidMode = false;
                                 buyMode = true;
                                 successfulBuy = false;
