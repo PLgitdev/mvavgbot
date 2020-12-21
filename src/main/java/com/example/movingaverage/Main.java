@@ -287,7 +287,7 @@ public class Main {
                             if(sellGate && successfulBuy) {
                                 if ((Double) resultM.get("Last") <
                                     //sensitivity
-                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.0001))).doubleValue()) {
+                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                     hold = false;
