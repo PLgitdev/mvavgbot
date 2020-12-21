@@ -287,7 +287,7 @@ public class Main {
                             if(sellGate && successfulBuy) {
                                 if ((Double) resultM.get("Last") <
                                     //sensitivity
-                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.00001))).doubleValue()) {
+                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.0001))).doubleValue()) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                     hold = false;
@@ -306,7 +306,7 @@ public class Main {
                                 //new 24 hour low this multiplier below up!
                                 //quanitity tied to overall score
                                 //.00001 might be too sensitive
-                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.000001)))
+                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
                                         .doubleValue()) {
                                     hold = true;
                                     //back to buy mode and threading?
