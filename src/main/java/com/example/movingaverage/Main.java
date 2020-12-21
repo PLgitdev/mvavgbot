@@ -263,8 +263,8 @@ public class Main {
                                         .add(BigDecimal.valueOf(0.00000002));
                                 }
                             }
-                            if (priceObj.validMACDBackCross() && !buyBidMode && !successfulBuy) {
-                                buyBidMode = false;
+                            //mayb take the below if statement out
+                            if (priceObj.validMACDCrossover() && !buyBidMode && !successfulBuy) {
                                 buy = BigDecimal.valueOf(0.0);
                                 //cancel last buy
                                 System.out.println("no buys / cancel ur buy");
@@ -306,7 +306,7 @@ public class Main {
                                 //new 24 hour low this multiplier below up!
                                 //quanitity tied to overall score
                                 //.00001 might be too sensitive
-                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
+                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.00001)))
                                         .doubleValue()) {
                                     hold = true;
                                     //back to buy mode and threading?
