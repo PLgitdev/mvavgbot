@@ -263,6 +263,12 @@ public class Main {
                                         .add(BigDecimal.valueOf(0.00000002));
                                 }
                             }
+                            if (priceObj.validMACDBackCross() && !buyBidMode && !successfulBuy) {
+                                buyBidMode = false;
+                                buy = BigDecimal.valueOf(0.0);
+                                //cancel last buy
+                                System.out.println("no buys / cancel ur buy");
+                            }
                             if ((Double) resultM.get("Last") >=
                                 buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
                                 sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
@@ -281,7 +287,7 @@ public class Main {
                             if(sellGate && successfulBuy) {
                                 if ((Double) resultM.get("Last") <
                                     //sensitivity
-                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
+                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                     hold = false;
@@ -300,7 +306,7 @@ public class Main {
                                 //new 24 hour low this multiplier below up!
                                 //quanitity tied to overall score
                                 //.00001 might be too sensitive
-                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.00001)))
+                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
                                         .doubleValue()) {
                                     hold = true;
                                     //back to buy mode and threading?
