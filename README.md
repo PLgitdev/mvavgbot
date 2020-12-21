@@ -19,7 +19,6 @@ If you do not complete a buy or you stop the program without a command you will 
 
 This is for use with MongoDB.
 
-(This project has reached a point in which it has enterd testing and is entering final testing stages  before using the MACD to high frequency trade on Bittrex. If you are interested in becoming a part of this project please email me plyssikatos@gmail.com)
 
 
 ![buy](https://github.com/PLgitdev/images/blob/master/buy.PNG)
