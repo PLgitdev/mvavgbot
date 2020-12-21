@@ -245,11 +245,16 @@ public class Main {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
                                     System.out.println("Take the ask at " + buy);
                                 }
-                                else if (buy.doubleValue() > (Double) resultM.get("Last") ) {
+                                if (buy.doubleValue() > (Double) resultM.get("Last") ) {
                                     buy = BigDecimal.valueOf((Double)resultM.get("Last"))
                                         .add(BigDecimal.valueOf(0.00000002));
                                     System.out.println("Take the last at " + buy);
                                 }
+                                else {
+                                    buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
+                                System.out.println("Take the ask at " + buy);
+
+                            }
                                 System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
                                     resultM.get("Ask"));
                             }
@@ -279,6 +284,7 @@ public class Main {
                                     buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     hold = false;
+                                    sellGate = false;
                                     System.out.println("Sell exited because last price dropped to low");
                                 }
                                 else if (priceObj.validMACDCrossover()) {
