@@ -229,7 +229,6 @@ public class Main {
                             if(priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
                                 if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
-                                    successfulBuy = true;
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
                                 }
@@ -244,10 +243,12 @@ public class Main {
                                 buy = buy.setScale(8, RoundingMode.HALF_UP);
                                 if(buy.doubleValue() >= (Double) resultM.get("Ask")) {
                                     buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
+                                    System.out.println("Take the ask at " + buy);
                                 }
                                 else if (buy.doubleValue() > (Double) resultM.get("Last") ) {
                                     buy = BigDecimal.valueOf((Double)resultM.get("Last"))
                                         .add(BigDecimal.valueOf(0.00000002));
+                                    System.out.println("Take the last at " + buy);
                                 }
                                 System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
                                     resultM.get("Ask"));
