@@ -259,10 +259,11 @@ public class Main {
                                     resultM.get("Ask"));
                             }
                             //mayb take the below if statement out
-                             else if (priceObj.validMACDBackCross()){
+                             /*else if (priceObj.validMACDBackCross()){
                                 //cancel last buy
                                 System.out.println("no buys / cancel ur buy");
                             }
+                              */
                             if ((Double) resultM.get("Last") >=
                                 buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
                                 sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
