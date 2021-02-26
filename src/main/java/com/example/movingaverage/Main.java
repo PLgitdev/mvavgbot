@@ -1,7 +1,9 @@
 package com.example.movingaverage;
 
 import Controller.MongoCRUD;
+import Live.Buy;
 import Live.DataFetch;
+import Live.Transaction;
 import Model.Price;
 
 import java.math.BigDecimal;
