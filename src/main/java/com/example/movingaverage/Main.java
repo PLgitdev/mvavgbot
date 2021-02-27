@@ -223,6 +223,7 @@ public class Main {
                             priceObj.setMACD();
                             priceObj.updateSignalLine();
                             mongoCRUD.createMarketData(resultM, "marketsummary");
+                            //set the transaction obj
                             // resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                             System.out.println(resultM.get("Last") + "\n" +
                                 "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
@@ -231,6 +232,7 @@ public class Main {
                             if(priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
                                 if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
+                                    Transaction outgoingBuy = new Buy.getInstance(quant,mOne,mTwo,"LIMIT",buy,"FILL_OR_KILL");
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
                                 }
