@@ -6,9 +6,11 @@ import java.io.IOException;
 import java.net.*;
 
 public class Buy extends Transaction {
+    private Double quant;
     private Buy(Double quant, String mOne, String mTwo, String type,
-               Double limit, String timeInForce, String direction) {
+                 Double limit, String timeInForce, String direction) {
         super();
+        this.quant = quant;
     }
 
     public static Buy getInstance(Double quant, String mOne, String mTwo, String type,
