@@ -8,8 +8,9 @@ public abstract class Transaction {
     protected String type;
     protected Double limit;
     protected String timeInForce;
+    protected String direction;
 
-    abstract int fillOrKill() throws IOException;
+    public abstract int fillOrKill() throws IOException;
 
 }
 

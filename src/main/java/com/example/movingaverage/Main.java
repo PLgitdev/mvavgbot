@@ -3,6 +3,7 @@ package com.example.movingaverage;
 import Controller.MongoCRUD;
 import Live.Buy;
 import Live.DataFetch;
+import Live.Sell;
 import Live.Transaction;
 import Model.Price;
 
@@ -235,7 +236,8 @@ public class Main {
                                     if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                         try {
                                             buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
-                                            response = createFOKBuy(quant, mOne, mTwo, buy.doubleValue());
+                                            response =
+                                                createFOKOrder(quant, mOne, mTwo, buy.doubleValue(), "BUY");
                                         }
                                         catch(Exception e) {
                                             System.out.println("Exception : " + e);
@@ -247,23 +249,27 @@ public class Main {
                                     }
                                     System.out.println("BUY at " + buy);
                                     resultM.forEach((key, value) -> System.out.println(key + ":" + value));
+                                    //maybe use response = 0?
                                     if (buyBidMode) {
                                         buy = buy.setScale(8, RoundingMode.HALF_UP);
                                         try {
                                            if (buy.doubleValue() >= (Double) resultM.get("Ask")) {
                                                buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
-                                               response = createFOKBuy(quant, mOne, mTwo, buy.doubleValue());
+                                               response =
+                                                   createFOKOrder(quant, mOne, mTwo, buy.doubleValue(),"BUY");
                                                System.out.println("Take the ask at " + buy);
                                            }
                                            if (buy.doubleValue() > (Double) resultM.get("Last")) {
                                                buy = BigDecimal.valueOf((Double) resultM.get("Last"))
                                                    .add(BigDecimal.valueOf(0.00000002));
-                                               response = createFOKBuy(quant, mOne, mTwo, buy.doubleValue());
+                                               response =
+                                                   createFOKOrder(quant, mOne, mTwo, buy.doubleValue(), "Buy");
                                                System.out.println("Take the last at " + buy);
                                            }
                                            else {
                                                buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
-                                                response = createFOKBuy(quant, mOne, mTwo, buy.doubleValue());
+                                                response =
+                                                    createFOKOrder(quant, mOne, mTwo, buy.doubleValue(), "BUY");
                                                System.out.println("Take the ask at " + buy);
                                            }
                                            System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
@@ -429,12 +435,15 @@ public class Main {
         }
     }
 
-    public static int createFOKBuy(Double quant, String mOne,String mTwo,Double buy) throws InterruptedException, IOException {
-        Buy outgoingBuy = Buy.getInstance(quant, mOne, mTwo, "LIMIT",
-            Double.valueOf(buy.toString()), "FILL_OR_KILL");
-            int response = outgoingBuy.fillOrKill();
+    public static int createFOKOrder(Double quant, String mOne,String mTwo,Double limit, String direction) throws InterruptedException, IOException {
+        Transaction order = direction.equalsIgnoreCase("Buy") ?
+            Buy.getInstance(quant, mOne, mTwo, "LIMIT",
+            Double.valueOf(limit.toString()), "FILL_OR_KILL", direction) :
+            Sell.getInstance(quant, mOne, mTwo, "LIMIT", Double.valueOf(limit.toString()),
+                "FILL_OR_KILL",direction);
+            int response = order.fillOrKill();
             if (response == 201) {
-                System.out.println("Successful BUY at " + buy);
+                System.out.println("Successful " + direction + " at " + limit);
             } else {
                 System.out.println("Response not 201");
             }
