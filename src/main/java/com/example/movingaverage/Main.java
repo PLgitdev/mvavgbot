@@ -230,38 +230,48 @@ public class Main {
                                 "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
                                 + (quant + (quant * (profitPercentageTotals) / 100d)));
                             //check average inequality
+                            int response = 0;
                             if(priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
-                                try {
                                     if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
-                                        buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
-                                        createFOKBuy(quant, mOne, mTwo, buy.doubleValue());
-                                    } else {
+                                        try {
+                                            buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
+                                            response = createFOKBuy(quant, mOne, mTwo, buy.doubleValue());
+                                        }
+                                        catch(Exception e) {
+                                            System.out.println("Exception : " + e);
+                                        }
+                                    }
+                                    else {
                                         buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                         buyBidMode = true;
                                     }
                                     System.out.println("BUY at " + buy);
                                     resultM.forEach((key, value) -> System.out.println(key + ":" + value));
-                                    int response = 0;
                                     if (buyBidMode) {
                                         buy = buy.setScale(8, RoundingMode.HALF_UP);
-                                        if (buy.doubleValue() >= (Double) resultM.get("Ask")) {
-                                            buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
-                                            response = createFOKBuy(quant, mOne, mTwo, buy.doubleValue());
-                                            System.out.println("Take the ask at " + buy);
+                                        try {
+                                           if (buy.doubleValue() >= (Double) resultM.get("Ask")) {
+                                               buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
+                                               response = createFOKBuy(quant, mOne, mTwo, buy.doubleValue());
+                                               System.out.println("Take the ask at " + buy);
+                                           }
+                                           if (buy.doubleValue() > (Double) resultM.get("Last")) {
+                                               buy = BigDecimal.valueOf((Double) resultM.get("Last"))
+                                                   .add(BigDecimal.valueOf(0.00000002));
+                                               response = createFOKBuy(quant, mOne, mTwo, buy.doubleValue());
+                                               System.out.println("Take the last at " + buy);
+                                           }
+                                           else {
+                                               buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
+                                                response = createFOKBuy(quant, mOne, mTwo, buy.doubleValue());
+                                               System.out.println("Take the ask at " + buy);
+                                           }
+                                           System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
+                                               resultM.get("Ask"));
                                         }
-                                        if (buy.doubleValue() > (Double) resultM.get("Last")) {
-                                            buy = BigDecimal.valueOf((Double) resultM.get("Last"))
-                                                .add(BigDecimal.valueOf(0.00000002));
-                                            response = createFOKBuy(quant, mOne, mTwo, buy.doubleValue());
-                                            System.out.println("Take the last at " + buy);
-                                        } else {
-                                            buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
-                                             response = createFOKBuy(quant, mOne, mTwo, buy.doubleValue());
-                                            System.out.println("Take the ask at " + buy);
+                                        catch (Exception e) {
+                                            System.out.print("There was an exception " + e);
                                         }
-                                        System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
-                                            resultM.get("Ask"));
-                                    }
                                     if (response == 201) {
                                         successfulBuy = true;
                                         //buyMode = false;
@@ -269,16 +279,7 @@ public class Main {
                                         System.out.println("Successful 201 at " + buy);
                                     }
                                 }
-                                catch (Exception e) {
-                                    System.out.print("There was an exception " + e);
-                                }
                             }
-                            //mayb take the below if statement out
-                             /*else if (priceObj.validMACDBackCross()){
-                                //cancel last buy
-                                System.out.println("no buys / cancel ur buy");
-                            }
-                              */
                             if ((Double) resultM.get("Last") >=
                                 buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
                                 sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
@@ -609,3 +610,9 @@ r                                */
                                 }
 
                                  */
+//mayb take the below if statement out
+                             /*else if (priceObj.validMACDBackCross()){
+                                //cancel last buy
+                                System.out.println("no buys / cancel ur buy");
+                            }
+                              */
