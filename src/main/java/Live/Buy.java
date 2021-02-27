@@ -16,7 +16,7 @@ public class Buy extends Transaction {
         return new Buy(quant,mOne,mTwo,type,limit,timeInForce);
     }
     @Override
-    void fillOrKill() throws IOException {
+    public void fillOrKill() throws IOException {
         URL fOKURL = new URL ("https://api.bittrex.com/v3/orders?marketSymbol="
                 + mTwo + "-" + mOne +"?direction=BUY?quantity=" +
                 quant + "?limit="+ limit + "?timeInForce="+ timeInForce + "?type=" + type);
