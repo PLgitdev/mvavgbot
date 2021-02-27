@@ -232,7 +232,8 @@ public class Main {
                             if(priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
                                 if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
-                                    Transaction outgoingBuy = new Buy.getInstance(quant,mOne,mTwo,"LIMIT",buy,"FILL_OR_KILL");
+                                    Transaction outgoingBuy = Buy.getInstance(quant,mOne,mTwo,"LIMIT",
+                                        Double.valueOf(buy.toString()),"FILL_OR_KILL")
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
                                 }
