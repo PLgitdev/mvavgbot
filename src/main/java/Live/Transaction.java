@@ -9,7 +9,8 @@ public abstract class Transaction {
     protected Double limit;
     protected String timeInForce;
 
-    abstract void fillOrKill() throws IOException;
+    abstract int fillOrKill() throws IOException;
+
 }
 
 
