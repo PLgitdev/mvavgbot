@@ -233,7 +233,7 @@ public class Main {
                                 if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                     buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                                     Transaction outgoingBuy = Buy.getInstance(quant,mOne,mTwo,"LIMIT",
-                                        Double.valueOf(buy.toString()),"FILL_OR_KILL")
+                                        Double.valueOf(buy.toString()),"FILL_OR_KILL");
                                     buyBidMode = false;
                                     System.out.println("Successful BUY at " + buy);
                                 }
