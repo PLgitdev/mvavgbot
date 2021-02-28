@@ -1,6 +1,7 @@
 package Live;
 
 
+import com.example.movingaverage.Global;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -21,15 +22,15 @@ public class DataFetch {
     private String mTwo;
     private static  DataFetch soleInstanceDataFetch;
 
-    private DataFetch(String mOne, String mTwo) {
+    private DataFetch() {
         this.objectMapper = new ObjectMapper();
-        this.mOne = mOne;
-        this.mTwo = mTwo;
+        this.mOne = Global.mOne;
+        this.mTwo = Global.mTwo;
     }
 
-    public static DataFetch getInstance(String mOne, String mTwo) {
+    public static DataFetch getInstance() {
         if (soleInstanceDataFetch == null) {
-            soleInstanceDataFetch = new DataFetch(mOne,mTwo);
+            soleInstanceDataFetch = new DataFetch();
         }
         return soleInstanceDataFetch;
     }

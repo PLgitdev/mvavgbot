@@ -27,16 +27,16 @@ public class Main {
          String inputS;
          LocalDateTime start = LocalDateTime.now();
          boolean buyMode = true;
-         double quant = 100.0;
+         Global.quant = 100.0;
 
         System.out.println("Please enter markets separated by comma, or clear");
         while (!"clear".equalsIgnoreCase(markets)) {
             markets = sc.next();
             try {
                 marketSplit = markets.split(",");
-                String mOne = marketSplit[0].toUpperCase();
-                String mTwo = marketSplit[1].toUpperCase();
-                fetcher = DataFetch.getInstance(mOne,mTwo);
+                Global.mOne = marketSplit[0].toUpperCase();
+                Global.mTwo = marketSplit[1].toUpperCase();
+                fetcher = DataFetch.getInstance();
                 if (fetcher.valid()) {
                     try {
                         System.out.println("Welcome please enter a candle length" +
@@ -229,7 +229,7 @@ public class Main {
                             // resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
                             System.out.println(resultM.get("Last") + "\n" +
                                 "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
-                                + (quant + (quant * (profitPercentageTotals) / 100d)));
+                                + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
                             //check average inequality
                             int response = 0;
                             if(priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
