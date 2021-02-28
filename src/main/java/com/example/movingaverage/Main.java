@@ -236,8 +236,7 @@ public class Main {
                                     if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                         buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                                         try {
-                                            response =
-                                                createFOKOrder(buy.doubleValue(), "BUY");
+                                            response = createFOKOrder(buy.doubleValue(), "BUY");
                                         }
                                         catch(Exception e) {
                                             System.out.println("Exception : " + e);
@@ -255,21 +254,18 @@ public class Main {
                                         try {
                                            if (buy.doubleValue() >= (Double) resultM.get("Ask")) {
                                                buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
-                                               response =
-                                                   createFOKOrder(buy.doubleValue(),"BUY");
+                                               response = createFOKOrder(buy.doubleValue(),"BUY");
                                                System.out.println("Take the ask at " + buy);
                                            }
                                            if (buy.doubleValue() > (Double) resultM.get("Last")) {
                                                buy = BigDecimal.valueOf((Double) resultM.get("Last"))
                                                    .add(BigDecimal.valueOf(0.00000002));
-                                               response =
-                                                   createFOKOrder(buy.doubleValue(), "Buy");
+                                               response = createFOKOrder(buy.doubleValue(), "Buy");
                                                System.out.println("Take the last at " + buy);
                                            }
                                            else {
                                                buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
-                                                response =
-                                                    createFOKOrder(buy.doubleValue(), "BUY");
+                                                response = createFOKOrder(buy.doubleValue(), "BUY");
                                                System.out.println("Take the ask at " + buy);
                                            }
                                            System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
