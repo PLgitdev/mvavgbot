@@ -1,22 +1,19 @@
 package Live;
 
-import lombok.Builder;
+import com.example.movingaverage.Global;
 
 import java.io.IOException;
 import java.net.*;
 
-@Builder
 public class Sell extends Transaction {
     private Double ceiling;
-    private Sell(Double ceiling, String mOne, String mTwo, String type,
-                Double limit, String timeInForce, String direction) {
+    private Sell(String type,Double limit, String timeInForce, String direction) {
         super();
-        this.ceiling = ceiling;
+        this.ceiling = Global.quant;
     }
 
-    public static Sell getInstance(Double ceiling, String mOne, String mTwo, String type,
-                                  Double limit, String timeInForce, String direction) {
-        return new Sell(ceiling, mOne, mTwo, type, limit, timeInForce, direction);
+    public static Sell getInstance(String type,Double limit, String timeInForce, String direction) {
+        return new Sell(type, limit, timeInForce, direction);
     }
     @Override
     public int fillOrKill() throws IOException {

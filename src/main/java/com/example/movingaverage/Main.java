@@ -234,10 +234,10 @@ public class Main {
                             int response = 0;
                             if(priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
                                     if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
+                                        buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                                         try {
-                                            buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
                                             response =
-                                                createFOKOrder(quant, mOne, mTwo, buy.doubleValue(), "BUY");
+                                                createFOKOrder(buy.doubleValue(), "BUY");
                                         }
                                         catch(Exception e) {
                                             System.out.println("Exception : " + e);
@@ -256,20 +256,20 @@ public class Main {
                                            if (buy.doubleValue() >= (Double) resultM.get("Ask")) {
                                                buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
                                                response =
-                                                   createFOKOrder(quant, mOne, mTwo, buy.doubleValue(),"BUY");
+                                                   createFOKOrder(buy.doubleValue(),"BUY");
                                                System.out.println("Take the ask at " + buy);
                                            }
                                            if (buy.doubleValue() > (Double) resultM.get("Last")) {
                                                buy = BigDecimal.valueOf((Double) resultM.get("Last"))
                                                    .add(BigDecimal.valueOf(0.00000002));
                                                response =
-                                                   createFOKOrder(quant, mOne, mTwo, buy.doubleValue(), "Buy");
+                                                   createFOKOrder(buy.doubleValue(), "Buy");
                                                System.out.println("Take the last at " + buy);
                                            }
                                            else {
                                                buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
                                                 response =
-                                                    createFOKOrder(quant, mOne, mTwo, buy.doubleValue(), "BUY");
+                                                    createFOKOrder(buy.doubleValue(), "BUY");
                                                System.out.println("Take the ask at " + buy);
                                            }
                                            System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
@@ -278,7 +278,7 @@ public class Main {
                                         catch (Exception e) {
                                             System.out.print("There was an exception " + e);
                                         }
-                                    if (response == 201) {
+                                    if(response == 201) {
                                         successfulBuy = true;
                                         //buyMode = false;
                                         buyBidMode = false;
@@ -287,7 +287,7 @@ public class Main {
                                     }
                                 }
                             }
-                            if ((Double) resultM.get("Last") >=
+                            if((Double) resultM.get("Last") >=
                                 buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
                                 sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
                             }
@@ -300,16 +300,12 @@ public class Main {
                                     //sensitivity
                                     buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
-                                    if(sell.doubleValue() < (Double) resultM.get("Bid")) {
-                                        sell = checkSell(sell, resultM);
-                                    }
                                     try {
-                                        response = createFOKOrder(quant,mOne,mTwo,Double.valueOf(sell.toString()), "SELL");
+                                        response = sellRoutine(sell, resultM);
                                     }
-                                    catch(Exception e) {
-                                        System.out.print("There was an exception " + e);
+                                    catch (Exception e) {
+                                        System.out.println("Exception e :" + e);
                                     }
-
                                     hold = false;
                                     sellGate = false;
                                     System.out.println("Sell exited because last price dropped to low");
@@ -351,16 +347,16 @@ public class Main {
                                 sell = sell.subtract(BigDecimal.valueOf(.00000001));
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 //if no sell successful
-                                if(sell.doubleValue() < (Double) resultM.get("Bid")) {
-                                    sell = checkSell(sell, resultM);
+                                try {
+                                    response = sellRoutine(sell, resultM);
                                 }
-                                sell = sell.setScale(8, RoundingMode.HALF_UP);
-                                response =
-                                    createFOKOrder(quant,mOne,mTwo,Double.valueOf(sell.toString()), "SELL");
+                                catch (Exception e) {
+                                    System.out.println("Exception e :" + e);
+                                }
                                 System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
                                     resultM.get("Bid"));
                             }
-                            if(response == 201) {
+                            if(response == 201 && !buyMode) {
                                 //? and valid MACDCrossover?
                                 BigDecimal profit = sell.subtract(buy);
                                 if(profit.doubleValue() > 0d) {
@@ -374,7 +370,6 @@ public class Main {
                                 sellBidMode = false;
                                 buyMode = true;
                                 successfulBuy = false;
-                                response = 0;
                             }
                             //reset the historical data
                             if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL))) {
@@ -431,12 +426,10 @@ public class Main {
         }
     }
 
-    public static int createFOKOrder(Double quant, String mOne,String mTwo,Double limit, String direction) throws InterruptedException, IOException {
+    public static int createFOKOrder(Double limit, String direction) throws InterruptedException, IOException {
         Transaction order = direction.equalsIgnoreCase("Buy") ?
-            Buy.getInstance(quant, mOne, mTwo, "LIMIT",
-            Double.valueOf(limit.toString()), "FILL_OR_KILL", direction) :
-            Sell.getInstance(quant, mOne, mTwo, "LIMIT", Double.valueOf(limit.toString()),
-                "FILL_OR_KILL",direction);
+            Buy.getInstance("LIMIT", limit,"FILL_OR_KILL", direction) :
+            Sell.getInstance("LIMIT", limit,"FILL_OR_KILL",direction);
             int response = order.fillOrKill();
             if (response == 201) {
                 System.out.println("Successful " + direction + " at " + limit);
@@ -448,12 +441,21 @@ public class Main {
     }
 
     public static BigDecimal checkSell(BigDecimal sell, Map<?,?> resultM) {
-            sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
-                .add(BigDecimal.valueOf(0.00000005));
-            System.out.println("The sell was calculated lower than the bid, " + "\n" +
-                "sell : " + sell);
-            return sell;
+        sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
+            .add(BigDecimal.valueOf(0.00000005));
+        System.out.println("The sell was calculated lower than the bid, " + "\n" +
+            "sell : " + sell);
+        return sell;
+    }
+
+    public static int sellRoutine(BigDecimal sell, Map<?,?> resultM) throws IOException, InterruptedException {
+        if (sell.doubleValue() < (Double) resultM.get("Bid")) {
+            sell = checkSell(sell, resultM);
         }
+        sell = sell.setScale(8, RoundingMode.HALF_UP);
+            return createFOKOrder(sell.doubleValue(),
+                "SELL");
+    }
 }
 //take the avg of open and close
                                 /*for (int i = 0; i < shorterDaysDataOpen.size(); i++) {

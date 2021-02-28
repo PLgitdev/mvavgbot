@@ -1,5 +1,6 @@
 package Live;
 
+import com.example.movingaverage.Global;
 import net.bytebuddy.implementation.bind.annotation.Super;
 
 import java.io.IOException;
@@ -7,15 +8,15 @@ import java.net.*;
 
 public class Buy extends Transaction {
     private Double quant;
-    private Buy(Double quant, String mOne, String mTwo, String type,
+    private Buy(String type,
                  Double limit, String timeInForce, String direction) {
         super();
-        this.quant = quant;
+        this.quant = Global.quant;
     }
 
-    public static Buy getInstance(Double quant, String mOne, String mTwo, String type,
+    public static Buy getInstance(String type,
                                   Double limit, String timeInForce, String direction) {
-        return new Buy(quant,mOne,mTwo,type,limit,timeInForce, direction);
+        return new Buy(type,limit,timeInForce, direction);
     }
     @Override
     public int fillOrKill() throws IOException {
