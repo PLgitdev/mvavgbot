@@ -283,6 +283,7 @@ public class Main {
                                         //buyMode = false;
                                         buyBidMode = false;
                                         System.out.println("Successful 201 at " + buy);
+                                        response = 0;
                                     }
                                 }
                             }
@@ -295,27 +296,25 @@ public class Main {
                                 sellGate = true;
                             }
                             if(sellGate && successfulBuy) {
-                                if ((Double) resultM.get("Last") <
+                                if((Double) resultM.get("Last") <
                                     //sensitivity
                                     buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
+                                    if(sell.doubleValue() < (Double) resultM.get("Bid")) {
+                                        sell = checkSell(sell, resultM);
+                                    }
+                                    try {
+                                        response = createFOKOrder(quant,mOne,mTwo,Double.valueOf(sell.toString()), "SELL");
+                                    }
+                                    catch(Exception e) {
+                                        System.out.print("There was an exception " + e);
+                                    }
+
                                     hold = false;
                                     sellGate = false;
                                     System.out.println("Sell exited because last price dropped to low");
                                 }
-                                /*else if (priceObj.validMACDCrossover()) {
-                                    hold = true;
-                                    System.out.println("Sell on hold due to MACD");
-                                }
-
-                                 */
-                                //MACD gaurd on  off capability
-                                //MACD gaurd hits early you need to keep ir from premptivly cutting you out
-                                //if it hits a new low quantity up!
-                                //new 24 hour low this multiplier below up!
-                                //quanitity tied to overall score
-                                //.00001 might be too sensitive
-                                else if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
+                                else if(sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
                                         .doubleValue()) {
                                     hold = true;
                                     //back to buy mode and threading?
@@ -323,14 +322,14 @@ public class Main {
                                     // if bid is a certian percent above last then take it..
                                     System.out.println("Hold missed sell wait due to not enuf profit");
                                 }
-                                else if ((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
+                                else if((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
                                     hold = false;
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
                                     sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                     sellBidMode = true;
                                     System.out.println("Last was chosen then subtracted from");
                                 }
-                                else if ((Double) resultM.get("Bid") > (Double) resultM.get("Ask")) {
+                                else if((Double) resultM.get("Bid") > (Double) resultM.get("Ask")) {
                                     hold = false;
                                     sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                     sell = sell.subtract(BigDecimal.valueOf(.00000005));
@@ -346,20 +345,25 @@ public class Main {
                                 }
                                 System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
                             }
-                            if (sell.doubleValue() <= (Double) resultM.get("Bid") && !buyMode && successfulBuy &&
-                                !hold && priceObj.validMACDBackCross() ||
-                                sellBidMode && sell.doubleValue() <= (Double) resultM.get("Bid") &&
-                            priceObj.validMACDBackCross()) {
-                                //? and valid MACDCrossover?
+                            if(sellBidMode && !hold) {
+                                // if the Bid is more than the last use the Last
+                                sellGate = false;
+                                sell = sell.subtract(BigDecimal.valueOf(.00000001));
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
+                                //if no sell successful
                                 if(sell.doubleValue() < (Double) resultM.get("Bid")) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
-                                        .add(BigDecimal.valueOf(0.00000005));
-                                    System.out.println("The sell was calculated lower than the bid, "+ "\n" +
-                                        "sell : " + sell);
+                                    sell = checkSell(sell, resultM);
                                 }
+                                sell = sell.setScale(8, RoundingMode.HALF_UP);
+                                response =
+                                    createFOKOrder(quant,mOne,mTwo,Double.valueOf(sell.toString()), "SELL");
+                                System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
+                                    resultM.get("Bid"));
+                            }
+                            if(response == 201) {
+                                //? and valid MACDCrossover?
                                 BigDecimal profit = sell.subtract(buy);
-                                if (profit.doubleValue() > 0d) {
+                                if(profit.doubleValue() > 0d) {
                                     profit = profit.divide(buy, RoundingMode.HALF_UP)
                                         .multiply(BigDecimal.valueOf(100.0));
                                 }
@@ -370,15 +374,7 @@ public class Main {
                                 sellBidMode = false;
                                 buyMode = true;
                                 successfulBuy = false;
-                            }
-                            if (sellBidMode) {
-                                // if the Bid is more than the last use the Last
-                                sellGate = false;
-                                sell = sell.subtract(BigDecimal.valueOf(.00000001));
-                                sell = sell.setScale(8, RoundingMode.HALF_UP);
-                                //if no sell successful
-                                System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
-                                    resultM.get("Bid"));
+                                response = 0;
                             }
                             //reset the historical data
                             if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL))) {
@@ -450,6 +446,14 @@ public class Main {
         Thread.sleep(800);
         return response;
     }
+
+    public static BigDecimal checkSell(BigDecimal sell, Map<?,?> resultM) {
+            sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
+                .add(BigDecimal.valueOf(0.00000005));
+            System.out.println("The sell was calculated lower than the bid, " + "\n" +
+                "sell : " + sell);
+            return sell;
+        }
 }
 //take the avg of open and close
                                 /*for (int i = 0; i < shorterDaysDataOpen.size(); i++) {
@@ -625,3 +629,15 @@ r                                */
                                 System.out.println("no buys / cancel ur buy");
                             }
                               */
+                                /*else if (priceObj.validMACDCrossover()) {
+                                    hold = true;
+                                    System.out.println("Sell on hold due to MACD");
+                                }
+
+                                 */
+//MACD gaurd on  off capability
+//MACD gaurd hits early you need to keep ir from premptivly cutting you out
+//if it hits a new low quantity up!
+//new 24 hour low this multiplier below up!
+//quanitity tied to overall score
+//.00001 might be too sensitive
