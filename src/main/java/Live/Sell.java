@@ -33,30 +33,10 @@ public class Sell extends Transaction {
             ceiling + "?limit="+ limit + "?timeInForce="+ timeInForce + "?type=" + type);
         URLConnection con = fOKURL.openConnection();
         HttpURLConnection http = (HttpURLConnection)con;
-        String contentH = contentHash();
-        setHeaders(http, contentH);
+        setContentHash();
+        setHeaders(http);
         http.setRequestMethod("POST");
         http.setDoOutput(true);
         return http.getResponseCode();
-    }
-
-    @Override
-    public void setHeaders(HttpURLConnection http, String contentH) {
-        http.setRequestProperty("Api-Key","API-KEY");
-        http.setRequestProperty("Api-Timestamp", timestamp.toString());
-        http.setRequestProperty("Api-Content-Hash",contentH);
-        http.setRequestProperty("Api-Signature","API-SIGNATURE");
-    }
-
-    @Override
-    public String contentHash() throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-512");
-        byte[] messageDigest = md.digest(content.toString().getBytes());
-        BigInteger signumRep = new BigInteger(1, messageDigest);
-        StringBuilder hash = new StringBuilder(signumRep.toString(16));
-        while(hash.length() < 32)  {
-            hash.insert(0, "0");
-        }
-        return hash.toString();
     }
 }

@@ -4,7 +4,9 @@ import jdk.jfr.Timestamp;
 
 import javax.json.Json;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -18,13 +20,28 @@ public abstract class Transaction {
     protected String timeInForce;
     protected String direction;
     protected Map<Object,Object> content;
+    protected String contentH;
     protected LocalDateTime timestamp;
 
     public abstract int fillOrKill() throws IOException, NoSuchAlgorithmException;
 
-    public abstract void setHeaders(HttpURLConnection http, String hash);
+    public final void setHeaders(HttpURLConnection http) {
+        http.setRequestProperty("Api-Key","API-KEY");
+        http.setRequestProperty("Api-Timestamp", timestamp.toString());
+        http.setRequestProperty("Api-Content-Hash",contentH);
+        http.setRequestProperty("Api-Signature","API-SIGNATURE");
+    }
 
-    public abstract String contentHash() throws NoSuchAlgorithmException;
+    public final void setContentHash() throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-512");
+        byte[] messageDigest = md.digest(content.toString().getBytes());
+        BigInteger signumRep = new BigInteger(1, messageDigest);
+        StringBuilder hash = new StringBuilder(signumRep.toString(16));
+        while(hash.length() < 32)  {
+            hash.insert(0, "0");
+        }
+        this.contentH = hash.toString();
+    }
 }
 
 
