@@ -1,15 +1,13 @@
 package Live;
 import com.example.movingaverage.Global;
-import jdk.jfr.Timestamp;
-
-import javax.json.Json;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Map;
 
 public abstract class Transaction {
@@ -22,6 +20,7 @@ public abstract class Transaction {
     protected Map<Object,Object> content;
     protected String contentH;
     protected LocalDateTime timestamp;
+    protected URL uri;
 
     public abstract int fillOrKill() throws IOException, NoSuchAlgorithmException;
 

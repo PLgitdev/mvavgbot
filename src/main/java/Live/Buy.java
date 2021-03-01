@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class Buy extends Transaction {
     private Double quant;
     private Buy(String type,
-                 Double limit, String timeInForce, String direction) {
+                 Double limit, String timeInForce, String direction) throws MalformedURLException {
         super();
         this.quant = Global.quant;
         this.timestamp = LocalDateTime.now();
@@ -24,17 +24,18 @@ public class Buy extends Transaction {
         this.content.put("limit", limit);
         this.content.put("timeInForce", timeInForce);
         this.content.put("type", type);
+        this.uri = new URL ("https://api.bittrex.com/v3/orders?marketSymbol="
+            + mTwo + "-" + mOne +"?direction=" + direction + "?quantity=" +
+            quant + "?limit="+ limit + "?timeInForce="+ timeInForce + "?type=" + type);
     }
 
-    public static Buy getInstance(String type, Double limit, String timeInForce, String direction) {
+    public static Buy getInstance(String type, Double limit, String timeInForce, String direction) throws MalformedURLException {
         return new Buy(type,limit,timeInForce, direction);
     }
+
     @Override
     public int fillOrKill() throws IOException, NoSuchAlgorithmException {
-        URL fOKURL = new URL ("https://api.bittrex.com/v3/orders?marketSymbol="
-                + mTwo + "-" + mOne +"?direction=" + direction + "?quantity=" +
-                quant + "?limit="+ limit + "?timeInForce="+ timeInForce + "?type=" + type);
-        URLConnection con = fOKURL.openConnection();
+        URLConnection con = uri.openConnection();
         HttpURLConnection http = (HttpURLConnection)con;
         setContentHash();
         setHeaders(http);
