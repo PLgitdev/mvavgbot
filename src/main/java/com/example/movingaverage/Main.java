@@ -429,15 +429,16 @@ public class Main {
             int response = order.fillOrKill();
             if (response == 201) {
                 System.out.println("Successful " + direction + " at " + limit);
-            } else {
+            }
+            else {
                 System.out.println("Response not 201");
             }
         Thread.sleep(800);
         return response;
     }
 
-    public static BigDecimal checkSell(BigDecimal sell, Map<?,?> resultM) {
-        sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
+    public static BigDecimal fixSell(Map<?,?> resultM) {
+        BigDecimal sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
             .add(BigDecimal.valueOf(0.00000005));
         System.out.println("The sell was calculated lower than the bid, " + "\n" +
             "sell : " + sell);
@@ -446,11 +447,10 @@ public class Main {
 
     public static int sellRoutine(BigDecimal sell, Map<?,?> resultM) throws IOException, InterruptedException {
         if (sell.doubleValue() < (Double) resultM.get("Bid")) {
-            sell = checkSell(sell, resultM);
+            BigDecimal fixedSell = fixSell(resultM).setScale(8, RoundingMode.HALF_UP);
+            return createFOKOrder(fixedSell.doubleValue(), "SELL");
         }
-        sell = sell.setScale(8, RoundingMode.HALF_UP);
-            return createFOKOrder(sell.doubleValue(),
-                "SELL");
+        return createFOKOrder(sell.doubleValue(), "SELL");
     }
 }
 //take the avg of open and close
