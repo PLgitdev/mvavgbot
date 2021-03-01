@@ -2,8 +2,10 @@ package Model;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @EqualsAndHashCode
@@ -105,7 +107,7 @@ public class Price {
             double value = calculateEMA(shortMACDPeriod.get(i),shortMACDPeriod.get(i - 1), smoothing, 12) -
                 calculateEMA(longerMACDPeriod.get(i), longerMACDPeriod.get(i - 1), smoothing, 26);
                 temp.add(value);
-            }
+        }
         for(int i = 1; i < temp.size(); i++) {
             Double s = calculateEMA(temp.get(i),temp.get(i - 1),smoothing,9);
             signalLine.add(s);
@@ -115,8 +117,10 @@ public class Price {
     private Double emaMultiplier(Double smoothing, int period) {
         return (smoothing / (period + 1d));
     }
+    //sma is off be cause it is doing int division
     private double calculateSMA(List<Double> a) {
-        double n = a.size();
+        int n = a.size();
+        //binarySum(a, a[], a[n])
         double sum = 0d;
         for(Double x : a) {
             sum += x;
@@ -138,6 +142,19 @@ public class Price {
             return a < b;
         }
         return false;
+    }
+    private Double binarySum(Double[] data, int b, int e) {
+        Arrays.sort(data);
+        if(b > e) {
+            throw new IllegalArgumentException();
+        }
+        else if(b == e) {
+            return data[b];
+        }
+        else {
+            int m = (b + e) / 2;
+            return binarySum(data, b, m) + binarySum(data, m + 1, e);
+        }
     }
     //what if it kept trying different amts
     //when there is a valid contraction after a valid sma crossover
