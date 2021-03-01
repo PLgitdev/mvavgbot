@@ -10,6 +10,7 @@ import Model.Price;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -260,7 +261,7 @@ public class Main {
                                            if (buy.doubleValue() > (Double) resultM.get("Last")) {
                                                buy = BigDecimal.valueOf((Double) resultM.get("Last"))
                                                    .add(BigDecimal.valueOf(0.00000002));
-                                               response = createFOKOrder(buy.doubleValue(), "Buy");
+                                               response = createFOKOrder(buy.doubleValue(), "BUY");
                                                System.out.println("Take the last at " + buy);
                                            }
                                            else {
@@ -422,7 +423,8 @@ public class Main {
         }
     }
 
-    public static int createFOKOrder(Double limit, String direction) throws InterruptedException, IOException {
+    public static int createFOKOrder(Double limit, String direction) throws InterruptedException, IOException,
+        NoSuchAlgorithmException {
         Transaction order = direction.equalsIgnoreCase("Buy") ?
             Buy.getInstance("LIMIT", limit,"FILL_OR_KILL", direction) :
             Sell.getInstance("CEILING_LIMIT", limit,"FILL_OR_KILL",direction);
@@ -445,7 +447,8 @@ public class Main {
         return sell;
     }
 
-    public static int sellRoutine(BigDecimal sell, Map<?,?> resultM) throws IOException, InterruptedException {
+    public static int sellRoutine(BigDecimal sell, Map<?,?> resultM) throws IOException,
+        InterruptedException, NoSuchAlgorithmException {
         if (sell.doubleValue() < (Double) resultM.get("Bid")) {
             BigDecimal fixedSell = fixSell(resultM).setScale(8, RoundingMode.HALF_UP);
             return createFOKOrder(fixedSell.doubleValue(), "SELL");
