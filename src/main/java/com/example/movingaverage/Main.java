@@ -425,7 +425,7 @@ public class Main {
     public static int createFOKOrder(Double limit, String direction) throws InterruptedException, IOException {
         Transaction order = direction.equalsIgnoreCase("Buy") ?
             Buy.getInstance("LIMIT", limit,"FILL_OR_KILL", direction) :
-            Sell.getInstance("LIMIT", limit,"FILL_OR_KILL",direction);
+            Sell.getInstance("CEILING_LIMIT", limit,"FILL_OR_KILL",direction);
             int response = order.fillOrKill();
             if (response == 201) {
                 System.out.println("Successful " + direction + " at " + limit);
