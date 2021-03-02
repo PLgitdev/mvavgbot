@@ -26,11 +26,11 @@ public class Sell extends Transaction {
             ceiling + "?limit="+ limit + "?timeInForce="+ timeInForce + "?type=" + type);
     }
 
-    public static Sell getInstance(String type,Double limit, String timeInForce, String direction) throws MalformedURLException {
+    public static Sell getInstance(String type, Double limit, String timeInForce, String direction) throws MalformedURLException {
         return new Sell(type, limit, timeInForce, direction);
     }
     @Override
-    public int fillOrKill() throws IOException, NoSuchAlgorithmException {
+    public int send() throws IOException, NoSuchAlgorithmException {
         URLConnection con = uri.openConnection();
         HttpURLConnection http = (HttpURLConnection)con;
         setContentHash();

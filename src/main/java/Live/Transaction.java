@@ -22,7 +22,7 @@ public abstract class Transaction {
     protected LocalDateTime timestamp;
     protected URL uri;
 
-    public abstract int fillOrKill() throws IOException, NoSuchAlgorithmException;
+    public abstract int send() throws IOException, NoSuchAlgorithmException;
 
     public final void setHeaders(HttpURLConnection http) {
         http.setRequestProperty("Api-Key","API-KEY");

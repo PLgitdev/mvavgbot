@@ -1,13 +1,9 @@
 package Live;
 
 import com.example.movingaverage.Global;
-import org.aspectj.bridge.Message;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.net.*;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 
@@ -34,7 +30,7 @@ public class Buy extends Transaction {
     }
 
     @Override
-    public int fillOrKill() throws IOException, NoSuchAlgorithmException {
+    public int send() throws IOException, NoSuchAlgorithmException {
         URLConnection con = uri.openConnection();
         HttpURLConnection http = (HttpURLConnection)con;
         setContentHash();
