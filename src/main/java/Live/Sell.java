@@ -10,12 +10,7 @@ public class Sell extends Transaction {
         super();
         this.ceiling = Global.quant;
         this.timestamp = LocalDateTime.now();
-        this.content.put("marketSymbol", mOne + "-" + mTwo );
-        this.content.put("direction", direction);
-        this.content.put("ceiling", ceiling);
-        this.content.put("limit", limit);
-        this.content.put("timeInForce", timeInForce);
-        this.content.put("type", type);
+        setContent();;
         this.uri = new URL ("https://api.bittrex.com/v3/orders?marketSymbol="
             + mTwo + "-" + mOne +"?direction="+ direction + "?ceiling=" +
             ceiling + "?limit="+ limit + "?timeInForce="+ timeInForce + "?type=" + type);
@@ -23,5 +18,13 @@ public class Sell extends Transaction {
 
     public static Sell getInstance(String type, Double limit, String timeInForce, String direction) throws MalformedURLException {
         return new Sell(type, limit, timeInForce, direction);
+    }
+    private void setContent() {
+        this.content.put("marketSymbol", mOne + "-" + mTwo);
+        this.content.put("direction", direction);
+        this.content.put("ceiling", ceiling);
+        this.content.put("limit", limit);
+        this.content.put("timeInForce", timeInForce);
+        this.content.put("type", type);
     }
 }
