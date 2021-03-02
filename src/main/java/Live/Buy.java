@@ -12,6 +12,7 @@ public class Buy extends Transaction {
         this.quant = Global.quant;
         this.timestamp = LocalDateTime.now();
         setContent();
+        this.content.put("quantity", quant);
         this.uri = new URL ("https://api.bittrex.com/v3/orders?marketSymbol="
             + mTwo + "-" + mOne +"?direction=" + direction + "?quantity=" +
             quant + "?limit="+ limit + "?timeInForce="+ timeInForce + "?type=" + type);
@@ -19,13 +20,5 @@ public class Buy extends Transaction {
 
     public static Buy getInstance(String type, Double limit, String timeInForce, String direction) throws MalformedURLException {
         return new Buy(type,limit,timeInForce, direction);
-    }
-    private void setContent() {
-        this.content.put("marketSymbol", mOne + "-" + mTwo);
-        this.content.put("direction", direction);
-        this.content.put("quantity", quant);
-        this.content.put("limit", limit);
-        this.content.put("timeInForce", timeInForce);
-        this.content.put("type", type);
     }
 }

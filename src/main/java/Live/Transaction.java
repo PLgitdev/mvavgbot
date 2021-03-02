@@ -102,6 +102,13 @@ public abstract class Transaction implements Encryption, Communication{
     private void setSignatureH() throws NoSuchAlgorithmException, InvalidKeyException {
         this.signatureH = createSecureHash();
     }
+    void setContent() {
+        this.content.put("marketSymbol", mOne + "-" + mTwo);
+        this.content.put("direction", direction);
+        this.content.put("limit", limit);
+        this.content.put("timeInForce", timeInForce);
+        this.content.put("type", type);
+    }
 }
 
 
