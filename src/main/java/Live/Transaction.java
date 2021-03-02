@@ -21,6 +21,8 @@ public abstract class Transaction implements Encryption {
     protected Double limit;
     protected String timeInForce;
     protected String direction;
+    protected String signatureH;
+    protected String subAccountId = "";
     protected Map<Object, Object> content;
     protected String contentH;
     protected LocalDateTime timestamp;
@@ -32,11 +34,15 @@ public abstract class Transaction implements Encryption {
         http.setRequestProperty("Api-Key", "API-KEY");
         http.setRequestProperty("Api-Timestamp", timestamp.toString());
         http.setRequestProperty("Api-Content-Hash", contentH);
-        http.setRequestProperty("Api-Signature", "API-SIGNATURE");
+        http.setRequestProperty("Api-Signature", signatureH);
+        http.setRequestProperty("Api-Subaccount-Id", subAccountId);
     }
 
     public final void setContentHash() throws NoSuchAlgorithmException {
         this.contentH = createHash(this.content);
+    }
+    public final void setSignatureH() throws NoSuchAlgorithmException, InvalidKeyException {
+        this.signatureH = createSecureHash();
     }
 
     public final String createHash(Object content) throws NoSuchAlgorithmException {
@@ -45,12 +51,13 @@ public abstract class Transaction implements Encryption {
         return zeroPad(convertBytes(messageDigest), 32).toString();
     }
 
-    public final String createSecureHash(Object content) throws NoSuchAlgorithmException, InvalidKeyException {
+    public final String createSecureHash() throws NoSuchAlgorithmException, InvalidKeyException {
+        String signature = timestamp.toString() + uri.toString() + "POST" + contentH + subAccountId;
         final byte[] secretKey = KEYS.SECRET_API_KEY.getBytes(StandardCharsets.UTF_8);
         Mac sha512Hmac = Mac.getInstance(HMAC_SHA512);
         SecretKeySpec kSpec = new SecretKeySpec(secretKey, HMAC_SHA512);
         sha512Hmac.init(kSpec);
-        byte[] macData = sha512Hmac.doFinal(content.toString().getBytes(StandardCharsets.UTF_8));
+        byte[] macData = sha512Hmac.doFinal(signature.getBytes(StandardCharsets.UTF_8));
         return zeroPad(convertBytes(macData), 32).toString();
     }
     public final StringBuilder convertBytes(byte[] message) {
