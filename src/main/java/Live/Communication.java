@@ -6,7 +6,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 public interface Communication {
-     int send() throws IOException, NoSuchAlgorithmException, InvalidKeyException;
+     int send() throws IOException;
      HttpURLConnection connect() throws IOException;
      void setHeaders(HttpURLConnection http);
 }

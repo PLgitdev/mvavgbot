@@ -1,11 +1,7 @@
 package Live;
 
 import com.example.movingaverage.Global;
-
-import java.io.IOException;
 import java.net.*;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 
 public class Sell extends Transaction {
@@ -27,16 +23,5 @@ public class Sell extends Transaction {
 
     public static Sell getInstance(String type, Double limit, String timeInForce, String direction) throws MalformedURLException {
         return new Sell(type, limit, timeInForce, direction);
-    }
-    @Override
-    public int send() throws IOException, NoSuchAlgorithmException, InvalidKeyException {
-        URLConnection con = uri.openConnection();
-        HttpURLConnection http = (HttpURLConnection)con;
-        setContentHash();
-        setSignatureH();
-        setHeaders(http);
-        http.setRequestMethod("POST");
-        http.setDoOutput(true);
-        return http.getResponseCode();
     }
 }

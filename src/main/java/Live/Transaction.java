@@ -29,10 +29,20 @@ public abstract class Transaction implements Encryption, Communication{
     protected LocalDateTime timestamp;
     protected URL uri;
 
-    public final int send() throws IOException, NoSuchAlgorithmException, InvalidKeyException {
+    public final int send() throws IOException {
         HttpURLConnection http = connect();
-        setContentHash();
-        setSignatureH();
+        try {
+            setContentHash();
+        }
+        catch (NoSuchAlgorithmException e){
+            System.out.println("invalid algorithm " + e );
+        }
+        try {
+            setSignatureH();
+        }
+        catch (InvalidKeyException | NoSuchAlgorithmException e) {
+            System.out.println("invalid algorithm or key " + e );
+        }
         setHeaders(http);
         http.setRequestMethod("POST");
         http.setDoOutput(true);
