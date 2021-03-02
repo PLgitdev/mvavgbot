@@ -11,7 +11,8 @@ public interface Encryption {
      Keys KEYS = new Keys();
      String SHA512 = "SHA512";
      String createHash(Object content) throws NoSuchAlgorithmException;
-     String createSecureHash(Object content) throws NoSuchAlgorithmException, InvalidKeyException;
+     String createSecureHash(Object signature) throws NoSuchAlgorithmException, InvalidKeyException;
+     String createSignature();
      StringBuilder convertBytes(byte[] message);
      StringBuilder zeroPad(StringBuilder s, int totalBits);
 

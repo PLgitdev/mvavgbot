@@ -5,6 +5,7 @@ import com.example.movingaverage.Global;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.*;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
@@ -30,10 +31,11 @@ public class Sell extends Transaction {
         return new Sell(type, limit, timeInForce, direction);
     }
     @Override
-    public int send() throws IOException, NoSuchAlgorithmException {
+    public int send() throws IOException, NoSuchAlgorithmException, InvalidKeyException {
         URLConnection con = uri.openConnection();
         HttpURLConnection http = (HttpURLConnection)con;
         setContentHash();
+        setSignatureH();
         setHeaders(http);
         http.setRequestMethod("POST");
         http.setDoOutput(true);

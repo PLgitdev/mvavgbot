@@ -28,7 +28,7 @@ public abstract class Transaction implements Encryption {
     protected LocalDateTime timestamp;
     protected URL uri;
 
-    public abstract int send() throws IOException, NoSuchAlgorithmException;
+    public abstract int send() throws IOException, NoSuchAlgorithmException, InvalidKeyException;
 
     public final void setHeaders(HttpURLConnection http) {
         http.setRequestProperty("Api-Key", "API-KEY");
@@ -52,14 +52,19 @@ public abstract class Transaction implements Encryption {
     }
 
     public final String createSecureHash() throws NoSuchAlgorithmException, InvalidKeyException {
-        String signature = timestamp.toString() + uri.toString() + "POST" + contentH + subAccountId;
         final byte[] secretKey = KEYS.SECRET_API_KEY.getBytes(StandardCharsets.UTF_8);
         Mac sha512Hmac = Mac.getInstance(HMAC_SHA512);
         SecretKeySpec kSpec = new SecretKeySpec(secretKey, HMAC_SHA512);
         sha512Hmac.init(kSpec);
+        String signature = createSignature();
         byte[] macData = sha512Hmac.doFinal(signature.getBytes(StandardCharsets.UTF_8));
         return zeroPad(convertBytes(macData), 32).toString();
     }
+
+    public final String createSignature() {
+        return timestamp.toString() + uri.toString() + "POST" + contentH + subAccountId;
+    }
+
     public final StringBuilder convertBytes(byte[] message) {
         BigInteger signumRep = new BigInteger(1, message);
         return new StringBuilder(signumRep.toString(16));
