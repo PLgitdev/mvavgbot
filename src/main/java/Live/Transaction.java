@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -14,7 +15,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-public abstract class Transaction implements Encryption {
+public abstract class Transaction implements Encryption, Communication{
     protected String mOne = Global.mOne;
     protected String mTwo = Global.mTwo;
     protected String type;
@@ -28,30 +29,23 @@ public abstract class Transaction implements Encryption {
     protected LocalDateTime timestamp;
     protected URL uri;
 
-    public abstract int send() throws IOException, NoSuchAlgorithmException, InvalidKeyException;
-
-    public final void setHeaders(HttpURLConnection http) {
-        http.setRequestProperty("Api-Key", "API-KEY");
-        http.setRequestProperty("Api-Timestamp", timestamp.toString());
-        http.setRequestProperty("Api-Content-Hash", contentH);
-        http.setRequestProperty("Api-Signature", signatureH);
-        http.setRequestProperty("Api-Subaccount-Id", subAccountId);
+    public final int send() throws IOException, NoSuchAlgorithmException, InvalidKeyException {
+        HttpURLConnection http = connect();
+        setContentHash();
+        setSignatureH();
+        setHeaders(http);
+        http.setRequestMethod("POST");
+        http.setDoOutput(true);
+        return http.getResponseCode();
     }
 
-    public final void setContentHash() throws NoSuchAlgorithmException {
-        this.contentH = createHash(this.content);
-    }
-    public final void setSignatureH() throws NoSuchAlgorithmException, InvalidKeyException {
-        this.signatureH = createSecureHash();
-    }
-
-    public final String createHash(Object content) throws NoSuchAlgorithmException {
+    final public String createHash(Object content) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(SHA512);
         byte[] messageDigest = md.digest(content.toString().getBytes());
         return zeroPad(convertBytes(messageDigest), 32).toString();
     }
 
-    public final String createSecureHash() throws NoSuchAlgorithmException, InvalidKeyException {
+    final public String createSecureHash() throws NoSuchAlgorithmException, InvalidKeyException {
         final byte[] secretKey = KEYS.SECRET_API_KEY.getBytes(StandardCharsets.UTF_8);
         Mac sha512Hmac = Mac.getInstance(HMAC_SHA512);
         SecretKeySpec kSpec = new SecretKeySpec(secretKey, HMAC_SHA512);
@@ -61,20 +55,42 @@ public abstract class Transaction implements Encryption {
         return zeroPad(convertBytes(macData), 32).toString();
     }
 
-    public final String createSignature() {
-        return timestamp.toString() + uri.toString() + "POST" + contentH + subAccountId;
-    }
-
-    public final StringBuilder convertBytes(byte[] message) {
+    final public StringBuilder convertBytes(byte[] message) {
         BigInteger signumRep = new BigInteger(1, message);
         return new StringBuilder(signumRep.toString(16));
     }
 
-    public final StringBuilder zeroPad(StringBuilder hash, int totalBits) {
+    final public StringBuilder zeroPad(StringBuilder hash, int totalBits) {
         while (hash.length() < 32) {
             hash.insert(0, "0");
         }
         return hash;
+    }
+
+    private String createSignature() {
+        return timestamp.toString() + uri.toString() + "POST" + contentH + subAccountId;
+    }
+
+
+    final public HttpURLConnection connect() throws IOException {
+        URLConnection con = uri.openConnection();
+        return (HttpURLConnection) con;
+    }
+
+    final public void setHeaders(HttpURLConnection http) {
+        http.setRequestProperty("Api-Key", "API-KEY");
+        http.setRequestProperty("Api-Timestamp", timestamp.toString());
+        http.setRequestProperty("Api-Content-Hash", contentH);
+        http.setRequestProperty("Api-Signature", signatureH);
+        http.setRequestProperty("Api-Subaccount-Id", subAccountId);
+    }
+
+    private void setContentHash() throws NoSuchAlgorithmException {
+        this.contentH = createHash(this.content);
+    }
+
+    private void setSignatureH() throws NoSuchAlgorithmException, InvalidKeyException {
+        this.signatureH = createSecureHash();
     }
 }
 

@@ -3,10 +3,8 @@ package Live;
 import com.example.movingaverage.Global;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.*;
 import java.security.InvalidKeyException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 
