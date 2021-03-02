@@ -1,5 +1,7 @@
 package Live;
 import com.example.movingaverage.Global;
+import jdk.nashorn.internal.runtime.regexp.joni.ast.StringNode;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
@@ -10,7 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-public abstract class Transaction {
+public abstract class Transaction implements Encryption {
     protected String mOne = Global.mOne;
     protected String mTwo = Global.mTwo;
     protected String type;
@@ -32,14 +34,17 @@ public abstract class Transaction {
     }
 
     public final void setContentHash() throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-512");
+        this.contentH = create512Hash(this.content);
+    }
+    public final String create512Hash(Object content) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance(SHA512);
         byte[] messageDigest = md.digest(content.toString().getBytes());
         BigInteger signumRep = new BigInteger(1, messageDigest);
         StringBuilder hash = new StringBuilder(signumRep.toString(16));
         while(hash.length() < 32)  {
             hash.insert(0, "0");
         }
-        this.contentH = hash.toString();
+        return hash.toString();
     }
 }
 
