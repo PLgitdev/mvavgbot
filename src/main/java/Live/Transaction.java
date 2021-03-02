@@ -76,12 +76,6 @@ public abstract class Transaction implements Encryption, Communication{
         }
         return hash;
     }
-
-    private String createSignature() {
-        return timestamp.toString() + uri.toString() + "POST" + contentH + subAccountId;
-    }
-
-
     final public HttpURLConnection connect() throws IOException {
         URLConnection con = uri.openConnection();
         return (HttpURLConnection) con;
@@ -94,6 +88,9 @@ public abstract class Transaction implements Encryption, Communication{
         http.setRequestProperty("Api-Signature", signatureH);
         http.setRequestProperty("Api-Subaccount-Id", subAccountId);
     }
+    private String createSignature() {
+        return timestamp.toString() + uri.toString() + "POST" + contentH + subAccountId;
+    }
 
     private void setContentHash() throws NoSuchAlgorithmException {
         this.contentH = createHash(this.content);
@@ -102,7 +99,7 @@ public abstract class Transaction implements Encryption, Communication{
     private void setSignatureH() throws NoSuchAlgorithmException, InvalidKeyException {
         this.signatureH = createSecureHash();
     }
-    void setContent() {
+    final void setContent() {
         this.content.put("marketSymbol", mOne + "-" + mTwo);
         this.content.put("direction", direction);
         this.content.put("limit", limit);

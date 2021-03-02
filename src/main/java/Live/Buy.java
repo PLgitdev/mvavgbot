@@ -18,7 +18,8 @@ public class Buy extends Transaction {
             quant + "?limit="+ limit + "?timeInForce="+ timeInForce + "?type=" + type);
     }
 
-    public static Buy getInstance(String type, Double limit, String timeInForce, String direction) throws MalformedURLException {
+    public static Buy getInstance(String type, Double limit,
+                                  String timeInForce, String direction) throws MalformedURLException {
         return new Buy(type,limit,timeInForce, direction);
     }
 }
