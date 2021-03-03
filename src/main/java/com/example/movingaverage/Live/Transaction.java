@@ -15,7 +15,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.Map;
 
 public abstract class Transaction implements Encryption, Communication{
     protected String type;
@@ -31,8 +30,9 @@ public abstract class Transaction implements Encryption, Communication{
 
     public final int send() throws IOException, InterruptedException {
         HttpURLConnection http = connect();
+        String jsonBodyString = JSON.serialize(content);
         try {
-            setContentHash();
+            setContentHash(jsonBodyString);
         }
         catch (NoSuchAlgorithmException e){
             System.out.println("invalid algorithm " + e );
@@ -44,11 +44,12 @@ public abstract class Transaction implements Encryption, Communication{
             System.out.println("invalid algorithm or key " + e );
         }
         setHeaders(http);
-        String jsonBodyString = JSON.serialize(content);
         http.setRequestMethod("POST");
         http.setDoOutput(true);
         http.setFixedLengthStreamingMode(jsonBodyString.getBytes().length);
         http.getOutputStream().write(jsonBodyString.getBytes());
+        //String s = http.getResponseMessage();
+        Thread.sleep(10000);
         return http.getResponseCode();
     }
 
@@ -59,12 +60,12 @@ public abstract class Transaction implements Encryption, Communication{
     }
 
     final public String createSecureHash() throws NoSuchAlgorithmException, InvalidKeyException {
-        final byte[] secretKey = Keys.SECRET_API_KEY.getBytes(StandardCharsets.UTF_8);
+        final byte[] secretKey = Keys.SECRET_API_KEY.getBytes();
         Mac sha512Hmac = Mac.getInstance(HMAC_SHA512);
         SecretKeySpec kSpec = new SecretKeySpec(secretKey, HMAC_SHA512);
         sha512Hmac.init(kSpec);
         String signature = createSignature();
-        byte[] macData = sha512Hmac.doFinal(signature.getBytes(StandardCharsets.UTF_8));
+        byte[] macData = sha512Hmac.doFinal(signature.getBytes());
         return zeroPad(convertBytes(macData), 32).toString();
     }
 
@@ -74,7 +75,7 @@ public abstract class Transaction implements Encryption, Communication{
     }
 
     final public StringBuilder zeroPad(StringBuilder hash, int totalBits) {
-        while (hash.length() < 32) {
+        while (hash.length() < totalBits) {
             hash.insert(0, "0");
         }
         return hash;
@@ -85,7 +86,6 @@ public abstract class Transaction implements Encryption, Communication{
     }
 
     final public void setHeaders(HttpURLConnection http) {
-
         http.setRequestProperty("Api-Key", Keys.API_KEY);
         http.setRequestProperty("Api-Timestamp", timestamp.toString());
         http.setRequestProperty("Api-Content-Hash", contentH);
@@ -96,8 +96,8 @@ public abstract class Transaction implements Encryption, Communication{
     private String createSignature() {
         return timestamp.toString() + uri.toString() + "POST" + contentH + subAccountId;
     }
-    private void setContentHash() throws NoSuchAlgorithmException {
-        this.contentH = createHash(this.content);
+    private void setContentHash(String content) throws NoSuchAlgorithmException {
+        this.contentH = createHash(content);
     }
 
     private void setSignatureH() throws NoSuchAlgorithmException, InvalidKeyException {
