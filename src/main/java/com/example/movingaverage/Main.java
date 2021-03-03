@@ -240,8 +240,8 @@ public class Main {
                                         try {
                                             response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
                                         }
-                                        catch(Exception e) {
-                                            System.out.println("Exception : " + e);
+                                        catch(IOException e) {
+                                            System.out.println("IO Exception : " + e + "\n" + "response: " + response);
                                         }
                                     }
                                     else {
@@ -273,14 +273,16 @@ public class Main {
                                            System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
                                                resultM.get("Ask"));
                                         }
-                                        catch (Exception e) {
-                                            System.out.print("There was an exception " + e);
+                                        catch (IOException e) {
+                                            System.out.print("There was an IOException " + e + "\n" + "response : " +
+                                                response);
                                         }
                                     if(response == 201) {
                                         successfulBuy = true;
                                         //buyMode = false;
                                         buyBidMode = false;
-                                        System.out.println("Successful 201 at " + buy);
+                                        System.out.println("Successful Buy 201 at " + buy + "\n" +
+                                            "this is the response " + response);
                                         response = 0;
                                     }
                                 }
@@ -301,8 +303,9 @@ public class Main {
                                     try {
                                         response = sendOrder(sellRoutine(sell, resultM));
                                     }
-                                    catch (Exception e) {
-                                        System.out.println("Exception e :" + e);
+                                    catch (IOException e) {
+                                        System.out.print("There was an IOException " + e + "\n" + "response : " +
+                                            response);
                                     }
                                     hold = false;
                                     sellGate = false;
@@ -345,14 +348,15 @@ public class Main {
                                 sell = sell.subtract(BigDecimal.valueOf(.00000001));
                                 sell = sell.setScale(8, RoundingMode.HALF_UP);
                                 //if no sell successful
+                                System.out.println("\n Cancel last sell and Sell at " + sell + " bid is " +
+                                    resultM.get("Bid"));
                                 try {
                                     response = sendOrder(sellRoutine(sell,resultM));
                                 }
-                                catch (Exception e) {
-                                    System.out.println("Exception e :" + e);
+                                catch (IOException e) {
+                                    System.out.print("There was an IOException " + e + "\n response : " +
+                                        response);
                                 }
-                                System.out.println("\n" + "Cancel last sell and Sell at " + sell + " bid is " +
-                                    resultM.get("Bid"));
                             }
                             if(response == 201 && !buyMode) {
                                 //? and valid MACDCrossover?
@@ -363,7 +367,7 @@ public class Main {
                                 }
                                 profitPercentageTotals += profit.doubleValue();
                                 System.out.println("Sell successful at " + sell + " " + "profit percent : " +
-                                    profit + "%");
+                                    profit + "%" + "\n response: " + response);
                                 sell = BigDecimal.valueOf(500.0);
                                 sellBidMode = false;
                                 buyMode = true;
@@ -429,7 +433,7 @@ public class Main {
             Buy.getInstance("LIMIT", limit, Global.orderTimeInForce, direction) :
             Sell.getInstance("CEILING_LIMIT", limit, Global.orderTimeInForce, direction);
     }
-    public static int sendOrder(Transaction order) throws IOException, NoSuchAlgorithmException {
+    public static int sendOrder(Transaction order) throws IOException {
             int response = order.send();
             if (response == 201) {
                 System.out.println("Successful order");
