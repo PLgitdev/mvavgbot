@@ -3,6 +3,7 @@ package com.example.movingaverage.Live;
 import com.example.movingaverage.Global;
 
 import java.net.*;
+import java.security.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
@@ -13,7 +14,7 @@ public class Buy extends Transaction {
         super();
         this.content = new HashMap<>();
         this.quant = Global.quant;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = System.currentTimeMillis() / 1000L;
         this.content.put("quantity", quant);
         this.content.put("marketSymbol", Global.mOne + "-" + Global.mTwo);
         this.content.put("direction", direction);

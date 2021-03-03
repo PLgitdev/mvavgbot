@@ -12,7 +12,7 @@ public class Sell extends Transaction {
         super();
         this.content = new HashMap<>();
         this.ceiling = Global.quant;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = System.currentTimeMillis() / 1000L;
         this.content.put("ceiling", ceiling);
         this.content.put("marketSymbol", Global.mOne + "-" + Global.mTwo);
         this.content.put("direction", direction);

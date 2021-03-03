@@ -9,12 +9,11 @@ import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Map;
 
 public abstract class Transaction implements Encryption, Communication{
     protected String type;
@@ -25,7 +24,7 @@ public abstract class Transaction implements Encryption, Communication{
     protected String subAccountId = "";
     protected HashMap<Object, Object> content;
     protected String contentH;
-    protected LocalDateTime timestamp;
+    protected Long timestamp;
     protected URL uri;
 
     public final int send() throws IOException, InterruptedException {
@@ -48,7 +47,7 @@ public abstract class Transaction implements Encryption, Communication{
         http.setDoOutput(true);
         http.setFixedLengthStreamingMode(jsonBodyString.getBytes().length);
         http.getOutputStream().write(jsonBodyString.getBytes());
-        //String s = http.getResponseMessage();
+        Map<?,?> s = http.getHeaderFields();
         Thread.sleep(10000);
         return http.getResponseCode();
     }
@@ -56,7 +55,7 @@ public abstract class Transaction implements Encryption, Communication{
     final public String createHash(Object content) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(SHA512);
         byte[] messageDigest = md.digest(content.toString().getBytes());
-        return zeroPad(convertBytes(messageDigest), 32).toString();
+        return convertBytes(messageDigest);
     }
 
     final public String createSecureHash() throws NoSuchAlgorithmException, InvalidKeyException {
@@ -66,19 +65,21 @@ public abstract class Transaction implements Encryption, Communication{
         sha512Hmac.init(kSpec);
         String signature = createSignature();
         byte[] macData = sha512Hmac.doFinal(signature.getBytes());
-        return zeroPad(convertBytes(macData), 32).toString();
+        return convertBytes(macData);
     }
 
-    final public StringBuilder convertBytes(byte[] message) {
-        BigInteger signumRep = new BigInteger(1, message);
-        return new StringBuilder(signumRep.toString(16));
-    }
-
-    final public StringBuilder zeroPad(StringBuilder hash, int totalBits) {
-        while (hash.length() < totalBits) {
-            hash.insert(0, "0");
+    final public String convertBytes(byte[] message) {
+        StringBuilder hexStringBuffer = new StringBuilder();
+        for (byte b : message) {
+            hexStringBuffer.append(byteToHex(b));
         }
-        return hash;
+        return hexStringBuffer.toString();
+    }
+    final public String byteToHex(byte num) {
+        char[] hexDigits = new char[2];
+        hexDigits[0] = Character.forDigit((num >> 4) & 0xF, 16);
+        hexDigits[1] = Character.forDigit((num & 0xF), 16);
+        return new String(hexDigits);
     }
     final public HttpURLConnection connect() throws IOException {
         URLConnection con = uri.openConnection();

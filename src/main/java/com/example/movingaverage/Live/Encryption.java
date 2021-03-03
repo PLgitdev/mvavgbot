@@ -7,11 +7,10 @@ import java.security.NoSuchAlgorithmException;
 
 public interface Encryption {
      String HMAC_SHA512 = "HmacSHA512";
-     Keys KEYS = new Keys();
      String SHA512 = "SHA-512";
      String createHash(Object content) throws NoSuchAlgorithmException;
      String createSecureHash() throws NoSuchAlgorithmException, InvalidKeyException;
-     StringBuilder convertBytes(byte[] message);
-     StringBuilder zeroPad(StringBuilder s, int totalBits);
+     String convertBytes(byte[] message);
+     String byteToHex(byte num);
 
 }
