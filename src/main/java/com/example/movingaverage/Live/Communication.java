@@ -2,9 +2,10 @@ package com.example.movingaverage.Live;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URLConnection;
 
 public interface Communication {
-     int send() throws IOException;
-     HttpURLConnection connect() throws IOException;
+     int send() throws IOException, InterruptedException;
+     URLConnection connect() throws IOException;
      void setHeaders(HttpURLConnection http);
 }

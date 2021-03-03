@@ -4,17 +4,23 @@ import com.example.movingaverage.Global;
 
 import java.net.*;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 
 public class Sell extends Transaction {
     private Double ceiling;
     private Sell(String type,Double limit, String timeInForce, String direction) throws MalformedURLException {
         super();
+        this.content = new HashMap<>();
         this.ceiling = Global.quant;
         this.timestamp = LocalDateTime.now();
-        setContent();
         this.content.put("ceiling", ceiling);
+        this.content.put("marketSymbol", Global.mOne + "-" + Global.mTwo);
+        this.content.put("direction", direction);
+        this.content.put("limit", limit);
+        this.content.put("timeInForce", timeInForce);
+        this.content.put("type", type);
         this.uri = new URL ("https://api.bittrex.com/v3/orders?marketSymbol="
-            + mTwo + "-" + mOne +"?direction="+ direction + "?ceiling=" +
+            + Global.mTwo + "-" + Global.mOne +"?direction="+ direction + "?ceiling=" +
             ceiling + "?limit="+ limit + "?timeInForce="+ timeInForce + "?type=" + type);
     }
 

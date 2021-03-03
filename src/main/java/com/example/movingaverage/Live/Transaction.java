@@ -1,8 +1,7 @@
 package com.example.movingaverage.Live;
 
-import com.example.movingaverage.Global;
 import com.example.movingaverage.Keys;
-
+import com.mongodb.util.JSON;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
@@ -15,23 +14,22 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Transaction implements Encryption, Communication{
-    protected String mOne = Global.mOne;
-    protected String mTwo = Global.mTwo;
     protected String type;
     protected Double limit;
     protected String timeInForce;
     protected String direction;
     protected String signatureH;
     protected String subAccountId = "";
-    protected Map<Object, Object> content;
+    protected HashMap<Object, Object> content;
     protected String contentH;
     protected LocalDateTime timestamp;
     protected URL uri;
 
-    public final int send() throws IOException {
+    public final int send() throws IOException, InterruptedException {
         HttpURLConnection http = connect();
         try {
             setContentHash();
@@ -46,8 +44,11 @@ public abstract class Transaction implements Encryption, Communication{
             System.out.println("invalid algorithm or key " + e );
         }
         setHeaders(http);
+        String jsonBodyString = JSON.serialize(content);
         http.setRequestMethod("POST");
         http.setDoOutput(true);
+        http.setFixedLengthStreamingMode(jsonBodyString.getBytes().length);
+        http.getOutputStream().write(jsonBodyString.getBytes());
         return http.getResponseCode();
     }
 
@@ -84,16 +85,17 @@ public abstract class Transaction implements Encryption, Communication{
     }
 
     final public void setHeaders(HttpURLConnection http) {
+
         http.setRequestProperty("Api-Key", Keys.API_KEY);
         http.setRequestProperty("Api-Timestamp", timestamp.toString());
         http.setRequestProperty("Api-Content-Hash", contentH);
         http.setRequestProperty("Api-Signature", signatureH);
         http.setRequestProperty("Api-Subaccount-Id", subAccountId);
+        http.setRequestProperty("Content-Type", "application/json");
     }
     private String createSignature() {
         return timestamp.toString() + uri.toString() + "POST" + contentH + subAccountId;
     }
-
     private void setContentHash() throws NoSuchAlgorithmException {
         this.contentH = createHash(this.content);
     }
@@ -101,13 +103,15 @@ public abstract class Transaction implements Encryption, Communication{
     private void setSignatureH() throws NoSuchAlgorithmException, InvalidKeyException {
         this.signatureH = createSecureHash();
     }
-    final void setContent() {
-        this.content.put("marketSymbol", mOne + "-" + mTwo);
+    /*final void setContent() {
+        this.content.put("marketSymbol", Global.mOne + "-" + Global.mTwo);
         this.content.put("direction", direction);
         this.content.put("limit", limit);
         this.content.put("timeInForce", timeInForce);
         this.content.put("type", type);
     }
+
+     */
 }
 
 

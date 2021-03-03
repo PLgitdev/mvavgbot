@@ -28,7 +28,7 @@ public class Main {
          String inputS;
          LocalDateTime start = LocalDateTime.now();
          boolean buyMode = true;
-         Global.quant = 100.0;
+         Global.quant = 1.00;
 
         System.out.println("Please enter markets separated by comma, or clear");
         while (!"clear".equalsIgnoreCase(markets)) {
@@ -236,6 +236,7 @@ public class Main {
                             if(priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
                                     if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
                                         buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
+                                        System.out.println("Take the ask at " + buy);
                                         try {
                                             response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
                                         }
@@ -253,29 +254,25 @@ public class Main {
                                     if (buyBidMode) {
                                         buy = buy.setScale(8, RoundingMode.HALF_UP);
                                         try {
-                                           if (buy.doubleValue() >= (Double) resultM.get("Ask")) {
-                                               buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
-                                               response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                                               System.out.println("Take the ask at " + buy);
-                                           }
-                                           if (buy.doubleValue() > (Double) resultM.get("Last")) {
-                                               buy = BigDecimal.valueOf((Double) resultM.get("Last"))
-                                                   .add(BigDecimal.valueOf(0.00000002));
-                                               response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                                               System.out.println("Take the last at " + buy);
-                                           }
-                                           else {
-                                               buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
-                                               response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                                               System.out.println("Take the ask at " + buy);
-                                           }
-                                           System.out.println("\n" + "Cancel last buy and Buy at " + buy + " ask is " +
-                                               resultM.get("Ask"));
-                                        }
-                                        catch (IOException e) {
+                                            if (buy.doubleValue() >= (Double) resultM.get("Ask")) {
+                                                buy = BigDecimal.valueOf((Double) resultM.get("Ask"))
+                                                    .add(BigDecimal.valueOf(0.00000002));
+                                                System.out.println("Take the ask at " + buy);
+                                            }
+                                            if (buy.doubleValue() > (Double) resultM.get("Last")) {
+                                                buy = BigDecimal.valueOf((Double) resultM.get("Last"))
+                                                    .add(BigDecimal.valueOf(0.00000002));
+                                                System.out.println("Take the last at " + buy);
+                                            } else {
+                                                buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
+                                                System.out.println("Take the ask at " + buy);
+                                            }
+                                            response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                                        } catch (IOException e) {
                                             System.out.print("There was an IOException " + e + "\n" + "response : " +
                                                 response);
                                         }
+                                    }
                                     if(response == 201) {
                                         successfulBuy = true;
                                         //buyMode = false;
@@ -285,117 +282,115 @@ public class Main {
                                         response = 0;
                                     }
                                 }
-                            }
-                            if((Double) resultM.get("Last") >=
-                                buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
-                                sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                            }
-                            if(priceObj.validMACDBackCross() && successfulBuy && !sellBidMode && !sellGate ) {
-                                buyMode = false;
-                                sellGate = true;
-                            }
-                            if(sellGate && successfulBuy) {
-                                if((Double) resultM.get("Last") <
-                                    //sensitivity
-                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
-                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
+                                if((Double) resultM.get("Last") >=
+                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
+                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                }
+                                if(priceObj.validMACDBackCross() && successfulBuy && !sellBidMode && !sellGate ) {
+                                    buyMode = false;
+                                    sellGate = true;
+                                }
+                                if(sellGate && successfulBuy) {
+                                    if((Double) resultM.get("Last") <
+                                        //sensitivity
+                                        buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
+                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
+                                        try {
+                                            response = sendOrder(sellRoutine(sell, resultM));
+                                        }
+                                        catch (IOException e) {
+                                            System.out.print("There was an IOException " + e + "\n" + "response : " +
+                                                response);
+                                        }
+                                        hold = false;
+                                        sellGate = false;
+                                        System.out.println("Sell exited because last price dropped to low");
+                                    }
+                                    else if(sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
+                                            .doubleValue()) {
+                                        hold = true;
+                                        //back to buy mode and threading?
+                                        // if its about to pop only take big ones if its flat take small ones
+                                        // if bid is a certian percent above last then take it..
+                                        System.out.println("Hold missed sell wait due to not enuf profit");
+                                    }
+                                    else if((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
+                                        hold = false;
+                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
+                                        sell = sell.subtract(BigDecimal.valueOf(.00000005));
+                                        sellBidMode = true;
+                                        System.out.println("Last was chosen then subtracted from");
+                                    }
+                                    else if((Double) resultM.get("Bid") > (Double) resultM.get("Ask")) {
+                                        hold = false;
+                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
+                                        sell = sell.subtract(BigDecimal.valueOf(.00000005));
+                                        sellBidMode = true;
+                                        System.out.println("Bid was chosen then subtracted from");
+                                    }
+                                    else {
+                                        hold = false;
+                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
+                                        sell = sell.subtract(BigDecimal.valueOf(.00000005));
+                                        sellBidMode = true;
+                                        System.out.println("Ask was chosen then subtracted from");
+                                    }
+                                    System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
+                                }
+                                if(sellBidMode && !hold) {
+                                    // if the Bid is more than the last use the Last
+                                    sellGate = false;
+                                    sell = sell.subtract(BigDecimal.valueOf(.00000001));
+                                    sell = sell.setScale(8, RoundingMode.HALF_UP);
+                                    //if no sell successful
+                                    System.out.println("\n Cancel last sell and Sell at " + sell + " bid is " +
+                                        resultM.get("Bid"));
                                     try {
-                                        response = sendOrder(sellRoutine(sell, resultM));
+                                        response = sendOrder(sellRoutine(sell,resultM));
                                     }
                                     catch (IOException e) {
-                                        System.out.print("There was an IOException " + e + "\n" + "response : " +
+                                        System.out.print("There was an IOException " + e + "\n response : " +
                                             response);
                                     }
-                                    hold = false;
-                                    sellGate = false;
-                                    System.out.println("Sell exited because last price dropped to low");
                                 }
-                                else if(sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
-                                        .doubleValue()) {
-                                    hold = true;
-                                    //back to buy mode and threading?
-                                    // if its about to pop only take big ones if its flat take small ones
-                                    // if bid is a certian percent above last then take it..
-                                    System.out.println("Hold missed sell wait due to not enuf profit");
+                                if(response == 201 && !buyMode) {
+                                    //? and valid MACDCrossover?
+                                    BigDecimal profit = sell.subtract(buy);
+                                    if(profit.doubleValue() > 0d) {
+                                        profit = profit.divide(buy, RoundingMode.HALF_UP)
+                                            .multiply(BigDecimal.valueOf(100.0));
+                                    }
+                                    profitPercentageTotals += profit.doubleValue();
+                                    System.out.println("Sell successful at " + sell + " " + "profit percent : " +
+                                        profit + "%" + "\n response: " + response);
+                                    sell = BigDecimal.valueOf(500.0);
+                                    sellBidMode = false;
+                                    buyMode = true;
+                                    successfulBuy = false;
                                 }
-                                else if((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
-                                    hold = false;
-                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
-                                    sell = sell.subtract(BigDecimal.valueOf(.00000005));
-                                    sellBidMode = true;
-                                    System.out.println("Last was chosen then subtracted from");
+                                //reset the historical data
+                                if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL))) {
+                                    priceObj.getPriceShorter().clear();
+                                    mongoCRUD
+                                        .retrieveMarketDataByDays("marketsummary",
+                                            inputL-1,
+                                            "TimeStamp",
+                                            "Last").forEach((data) -> priceObj
+                                                .addPriceShorter((Double) data.get("Last")));
                                 }
-                                else if((Double) resultM.get("Bid") > (Double) resultM.get("Ask")) {
-                                    hold = false;
-                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
-                                    sell = sell.subtract(BigDecimal.valueOf(.00000005));
-                                    sellBidMode = true;
-                                    System.out.println("Bid was chosen then subtracted from");
+                                if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL2))) {
+                                    priceObj.getPriceLonger().clear();
+                                    mongoCRUD
+                                        .retrieveMarketDataByDays("marketsummary",
+                                            inputL2-1,
+                                            "TimeStamp",
+                                            "Last").forEach((data) -> priceObj
+                                                .addPriceLonger((Double) (data.get("Last"))));
+                                    priceObj.setTimestamp(LocalDateTime.now());
                                 }
-                                else {
-                                    hold = false;
-                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
-                                    sell = sell.subtract(BigDecimal.valueOf(.00000005));
-                                    sellBidMode = true;
-                                    System.out.println("Ask was chosen then subtracted from");
-                                }
-                                System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
-                            }
-                            if(sellBidMode && !hold) {
-                                // if the Bid is more than the last use the Last
-                                sellGate = false;
-                                sell = sell.subtract(BigDecimal.valueOf(.00000001));
-                                sell = sell.setScale(8, RoundingMode.HALF_UP);
-                                //if no sell successful
-                                System.out.println("\n Cancel last sell and Sell at " + sell + " bid is " +
-                                    resultM.get("Bid"));
-                                try {
-                                    response = sendOrder(sellRoutine(sell,resultM));
-                                }
-                                catch (IOException e) {
-                                    System.out.print("There was an IOException " + e + "\n response : " +
-                                        response);
-                                }
-                            }
-                            if(response == 201 && !buyMode) {
-                                //? and valid MACDCrossover?
-                                BigDecimal profit = sell.subtract(buy);
-                                if(profit.doubleValue() > 0d) {
-                                    profit = profit.divide(buy, RoundingMode.HALF_UP)
-                                        .multiply(BigDecimal.valueOf(100.0));
-                                }
-                                profitPercentageTotals += profit.doubleValue();
-                                System.out.println("Sell successful at " + sell + " " + "profit percent : " +
-                                    profit + "%" + "\n response: " + response);
-                                sell = BigDecimal.valueOf(500.0);
-                                sellBidMode = false;
-                                buyMode = true;
-                                successfulBuy = false;
-                            }
-                            //reset the historical data
-                            if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL))) {
-                                priceObj.getPriceShorter().clear();
-                                mongoCRUD
-                                    .retrieveMarketDataByDays("marketsummary",
-                                        inputL-1,
-                                        "TimeStamp",
-                                        "Last").forEach((data) -> priceObj
-                                            .addPriceShorter((Double) data.get("Last")));
-                            }
-                            if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL2))) {
-                                priceObj.getPriceLonger().clear();
-                                mongoCRUD
-                                    .retrieveMarketDataByDays("marketsummary",
-                                        inputL2-1,
-                                        "TimeStamp",
-                                        "Last").forEach((data) -> priceObj
-                                            .addPriceLonger((Double) (data.get("Last"))));
-                                priceObj.setTimestamp(LocalDateTime.now());
-                            }
-                            //if it has not reset fully then subtract 1 a day
-                            if (!start.equals(start.plusDays(inputL))) { priceObj.dateLimitCheck(1); }
-                            if (!start.equals(start.plusDays(inputL2))) { priceObj.dateLimitCheckLonger(1); }
-
+                                //if it has not reset fully then subtract 1 a day
+                                if (!start.equals(start.plusDays(inputL))) { priceObj.dateLimitCheck(1); }
+                                if (!start.equals(start.plusDays(inputL2))) { priceObj.dateLimitCheckLonger(1); }
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -432,14 +427,15 @@ public class Main {
             Buy.getInstance("LIMIT", limit, Global.orderTimeInForce, direction) :
             Sell.getInstance("CEILING_LIMIT", limit, Global.orderTimeInForce, direction);
     }
-    public static int sendOrder(Transaction order) throws IOException {
-            int response = order.send();
-            if (response == 201) {
-                System.out.println("Successful order");
-            }
-            else {
-                System.out.println("Response not 201");
-            }
+    public static int sendOrder(Transaction order) throws IOException, InterruptedException {
+        Thread.sleep(1000);
+        int response = order.send();
+        if (response == 201) {
+            System.out.println("Successful order");
+        }
+        else {
+            System.out.println("Response not 201: " + response);
+        }
         return response;
     }
 
