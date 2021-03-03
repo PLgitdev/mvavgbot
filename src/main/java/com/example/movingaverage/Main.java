@@ -1,11 +1,11 @@
 package com.example.movingaverage;
 
-import Controller.MongoCRUD;
-import Live.Buy;
-import Live.DataFetch;
-import Live.Sell;
-import Live.Transaction;
-import Model.Price;
+import com.example.movingaverage.Controller.MongoCRUD;
+import com.example.movingaverage.Live.Buy;
+import com.example.movingaverage.Live.DataFetch;
+import com.example.movingaverage.Live.Sell;
+import com.example.movingaverage.Live.Transaction;
+import com.example.movingaverage.Model.Price;
 
 import java.io.IOException;
 import java.math.BigDecimal;

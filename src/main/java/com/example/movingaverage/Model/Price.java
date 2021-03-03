@@ -1,4 +1,4 @@
-package Model;
+package com.example.movingaverage.Model;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

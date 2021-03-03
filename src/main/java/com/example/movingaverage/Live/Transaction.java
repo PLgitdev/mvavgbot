@@ -1,4 +1,5 @@
-package Live;
+package com.example.movingaverage.Live;
+
 import com.example.movingaverage.Global;
 
 import javax.crypto.Mac;

@@ -1,4 +1,4 @@
-package Controller;
+package com.example.movingaverage.Controller;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static com.mongodb.client.model.Filters.gt;
 import static com.mongodb.client.model.Filters.gte;
 import static com.mongodb.client.model.Projections.include;
 

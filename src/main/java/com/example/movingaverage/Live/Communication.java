@@ -1,4 +1,4 @@
-package Live;
+package com.example.movingaverage.Live;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

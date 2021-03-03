@@ -1,6 +1,7 @@
-package Live;
+package com.example.movingaverage.Live;
 
 import com.example.movingaverage.Global;
+
 import java.net.*;
 import java.time.LocalDateTime;
 
