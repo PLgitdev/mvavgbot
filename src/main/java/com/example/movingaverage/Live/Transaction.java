@@ -1,6 +1,7 @@
 package com.example.movingaverage.Live;
 
 import com.example.movingaverage.Global;
+import com.example.movingaverage.Keys;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -57,7 +58,7 @@ public abstract class Transaction implements Encryption, Communication{
     }
 
     final public String createSecureHash() throws NoSuchAlgorithmException, InvalidKeyException {
-        final byte[] secretKey = KEYS.SECRET_API_KEY.getBytes(StandardCharsets.UTF_8);
+        final byte[] secretKey = Keys.SECRET_API_KEY.getBytes(StandardCharsets.UTF_8);
         Mac sha512Hmac = Mac.getInstance(HMAC_SHA512);
         SecretKeySpec kSpec = new SecretKeySpec(secretKey, HMAC_SHA512);
         sha512Hmac.init(kSpec);
@@ -83,7 +84,7 @@ public abstract class Transaction implements Encryption, Communication{
     }
 
     final public void setHeaders(HttpURLConnection http) {
-        http.setRequestProperty("Api-Key", "API-KEY");
+        http.setRequestProperty("Api-Key", Keys.API_KEY);
         http.setRequestProperty("Api-Timestamp", timestamp.toString());
         http.setRequestProperty("Api-Content-Hash", contentH);
         http.setRequestProperty("Api-Signature", signatureH);
