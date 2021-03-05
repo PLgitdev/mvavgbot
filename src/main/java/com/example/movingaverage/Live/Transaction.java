@@ -28,7 +28,7 @@ public abstract class Transaction implements Encryption, Communication{
     protected Long timestamp;
     protected URL uri;
 
-    public final int send() throws IOException, InterruptedException {
+    public final Object send() throws IOException, InterruptedException {
         HttpURLConnection http = connect();
         http.setDoOutput(true);
         String jsonBodyString = JSON.serialize(content);
@@ -48,7 +48,7 @@ public abstract class Transaction implements Encryption, Communication{
         http.setRequestMethod("POST");
         http.setFixedLengthStreamingMode(jsonBodyString.getBytes().length);
         http.getOutputStream().write(jsonBodyString.getBytes());
-        return (int) http.getContent();
+        return http.getContent();
     }
 
     final public String createHash(Object content) throws NoSuchAlgorithmException {
