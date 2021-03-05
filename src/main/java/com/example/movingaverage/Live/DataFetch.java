@@ -50,7 +50,7 @@ public class DataFetch {
         return objectMapper.readValue(historicalData.toString(), new TypeReference<ArrayList<Map<?,?>>>(){});
     }
 
-    public StringBuffer fetch(URL url) throws InterruptedException, IOException {
+    public StringBuffer fetch(URL url) throws IOException {
         StringBuffer data = new StringBuffer();
         try (InputStream is = url.openStream();
         BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
@@ -58,7 +58,6 @@ public class DataFetch {
              data.append(inputLine);
              //both requests are received as a single line
         }
-        Thread.sleep(1000);
         return data;
     }
     public boolean valid() {

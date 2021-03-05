@@ -12,6 +12,7 @@ import java.net.URLConnection;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +30,7 @@ public abstract class Transaction implements Encryption, Communication{
 
     public final int send() throws IOException, InterruptedException {
         HttpURLConnection http = connect();
+        http.setDoOutput(true);
         String jsonBodyString = JSON.serialize(content);
         try {
             setContentHash(jsonBodyString);
@@ -44,18 +46,15 @@ public abstract class Transaction implements Encryption, Communication{
         }
         setHeaders(http);
         http.setRequestMethod("POST");
-        http.setDoOutput(true);
         http.setFixedLengthStreamingMode(jsonBodyString.getBytes().length);
         http.getOutputStream().write(jsonBodyString.getBytes());
-        Map<?,?> s = http.getHeaderFields();
-        Thread.sleep(10000);
-        return http.getResponseCode();
+        return (int) http.getContent();
     }
 
     final public String createHash(Object content) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(SHA512);
         byte[] messageDigest = md.digest(content.toString().getBytes());
-        return convertBytes(messageDigest);
+        return byteToHex(messageDigest);
     }
 
     final public String createSecureHash() throws NoSuchAlgorithmException, InvalidKeyException {
@@ -65,21 +64,17 @@ public abstract class Transaction implements Encryption, Communication{
         sha512Hmac.init(kSpec);
         String signature = createSignature();
         byte[] macData = sha512Hmac.doFinal(signature.getBytes());
-        return convertBytes(macData);
+        return byteToHex(macData);
     }
 
-    final public String convertBytes(byte[] message) {
-        StringBuilder hexStringBuffer = new StringBuilder();
-        for (byte b : message) {
-            hexStringBuffer.append(byteToHex(b));
+    final public String byteToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
         }
-        return hexStringBuffer.toString();
-    }
-    final public String byteToHex(byte num) {
-        char[] hexDigits = new char[2];
-        hexDigits[0] = Character.forDigit((num >> 4) & 0xF, 16);
-        hexDigits[1] = Character.forDigit((num & 0xF), 16);
-        return new String(hexDigits);
+        return new String(hexChars);
     }
     final public HttpURLConnection connect() throws IOException {
         URLConnection con = uri.openConnection();
@@ -88,7 +83,7 @@ public abstract class Transaction implements Encryption, Communication{
 
     final public void setHeaders(HttpURLConnection http) {
         http.setRequestProperty("Api-Key", Keys.API_KEY);
-        http.setRequestProperty("Api-Timestamp", timestamp.toString());
+        http.setRequestProperty("Api-Timestamp", String.valueOf(timestamp));
         http.setRequestProperty("Api-Content-Hash", contentH);
         http.setRequestProperty("Api-Signature", signatureH);
         http.setRequestProperty("Api-Subaccount-Id", subAccountId);

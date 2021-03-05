@@ -59,6 +59,7 @@ public class Main {
                                 break;
                         }
                         ArrayList<Map<?, ?>> historicalData = fetcher.historicalDataFetcher(l);
+                        Thread.sleep(1000);
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
                         System.out.println("Please enter day count for the short moving avg up to 365 days");
                         inputL = sc.nextInt();
@@ -217,6 +218,7 @@ public class Main {
                         boolean hold = false;
                         while (!markets.equalsIgnoreCase("clear")) {
                             liveMarketData = fetcher.marketDataFetcher();
+                            Thread.sleep(1000);
                             ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
                             Map<?, ?> resultM = (Map<?, ?>) result.get(0);
                             priceObj.setPrices((Double) resultM.get("Last"));
@@ -239,6 +241,7 @@ public class Main {
                                         System.out.println("Take the ask at " + buy);
                                         try {
                                             response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                                            Thread.sleep(1000);
                                         }
                                         catch(IOException e) {
                                             System.out.println("IO Exception : " + e + "\n" + "response: " + response);
@@ -268,6 +271,7 @@ public class Main {
                                                 System.out.println("Take the ask at " + buy);
                                             }
                                             response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                                            Thread.sleep(1000);
                                         } catch (IOException e) {
                                             System.out.print("There was an IOException " + e + "\n" + "response : " +
                                                 response);
@@ -297,6 +301,7 @@ public class Main {
                                         sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                         try {
                                             response = sendOrder(sellRoutine(sell, resultM));
+                                            Thread.sleep(1000);
                                         }
                                         catch (IOException e) {
                                             System.out.print("There was an IOException " + e + "\n" + "response : " +
@@ -347,6 +352,7 @@ public class Main {
                                         resultM.get("Bid"));
                                     try {
                                         response = sendOrder(sellRoutine(sell,resultM));
+                                        Thread.sleep(1000);
                                     }
                                     catch (IOException e) {
                                         System.out.print("There was an IOException " + e + "\n response : " +
