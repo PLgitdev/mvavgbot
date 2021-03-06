@@ -3,7 +3,6 @@ package com.example.movingaverage.Live;
 
 import com.example.movingaverage.Global;
 import com.fasterxml.jackson.databind.*;
-import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,7 +12,6 @@ import java.io.InputStreamReader;
 
 import java.net.URL;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DataFetch {
@@ -42,14 +40,12 @@ public class DataFetch {
         }
 
     public ArrayList<Map<Object, Object>> historicalDataFetcher(String s) throws IOException, InterruptedException {
-        Pattern clean ="\"";
         ArrayList<Map<Object, Object>> arr = new ArrayList<>();
         URL url =
             new URL("https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + s +
                 "/recent");
         StringBuilder historicalData = fetch(url);
-        String[] historicalSplit = historicalData.toString().replaceAll(clean).split("},");
-
+        String[] historicalSplit = historicalData.toString().replace("\"", "").replace("[","").replace("{","").split("},");
         for (String value : historicalSplit) {
             arr.add(stringToMap(value));
         }
