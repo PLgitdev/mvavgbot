@@ -32,20 +32,22 @@ public class DataFetch {
         return soleInstanceDataFetch;
     }
 
-    public Map<?, ?> marketDataFetcher() throws IOException, InterruptedException {
+    public Map<Object, Object> marketDataFetcher() throws IOException {
         URL url =
             new URL("https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=" + mOne + "-" + mTwo);
         StringBuilder content = fetch(url);
-        return stringToMap(content.toString());
+        String[] splitContent = content.toString().split("\\[");
+        String clean = splitContent[1].replaceAll("[\\[{\"]", "");
+        return stringToMap(clean);
         }
 
-    public ArrayList<Map<Object, Object>> historicalDataFetcher(String s) throws IOException, InterruptedException {
-        ArrayList<Map<Object, Object>> arr = new ArrayList<>();
+    public ArrayList<Map<Object, Object>> historicalDataFetcher(String s) throws IOException {
+        ArrayList<Map<Object,Object>> arr = new ArrayList<>();
         URL url =
             new URL("https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + s +
                 "/recent");
         StringBuilder historicalData = fetch(url);
-        String[] historicalSplit = historicalData.toString().replace("\"", "").replace("[","").replace("{","").split("},");
+        String[] historicalSplit = historicalData.toString().replace("\"", "").replace("[","").replace("{", "").split("},");
         for (String value : historicalSplit) {
             arr.add(stringToMap(value));
         }

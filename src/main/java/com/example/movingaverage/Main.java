@@ -19,7 +19,7 @@ public class Main {
     public static void main(String[] args) {
          Scanner sc = new Scanner(System.in);
          MongoCRUD mongoCRUD = MongoCRUD.getInstance();
-         Map<?, ?> liveMarketData;
+         Map<Object, Object> liveMarketData;
          String [] marketSplit;
          DataFetch fetcher;
          String markets = "";
@@ -58,7 +58,7 @@ public class Main {
                                 l = "DAY_1";
                                 break;
                         }
-                        ArrayList<Map<Object, Object>> historicalData = fetcher.historicalDataFetcher(l);
+                        ArrayList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
                         Thread.sleep(1000);
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
                         System.out.println("Please enter day count for the short moving avg up to 365 days");
@@ -219,25 +219,26 @@ public class Main {
                         while (!markets.equalsIgnoreCase("clear")) {
                             liveMarketData = fetcher.marketDataFetcher();
                             Thread.sleep(1000);
-                            ArrayList<?> result = (ArrayList<?>) liveMarketData.get("result");
-                            Map<?, ?> resultM = (Map<?, ?>) result.get(0);
-                            priceObj.setPrices((Double) resultM.get("Last"));
+                            priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
                             priceObj.setSMA();
                             priceObj.setSMACDEMA();
                             priceObj.setLMACDEMA();
                             priceObj.setMACD();
                             priceObj.updateSignalLine();
-                            mongoCRUD.createMarketData(resultM, "marketsummary");
+                            mongoCRUD.createMarketData(liveMarketData, "marketsummary");
                             //set the transaction obj
-                            // resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
-                            System.out.println(resultM.get("Last") + "\n" +
+                            // liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value));
+                            Double lastDouble =Double.valueOf(liveMarketData.get("Last").toString());
+                            Double askDouble = Double.valueOf(liveMarketData.get("Ask").toString());
+                            Double bidDouble = Double.valueOf(liveMarketData.get("Bid").toString());
+                            System.out.println(liveMarketData.get("Last") + "\n" +
                                 "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
                                 + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
                             //check average inequality
                             int response = 0;
                             if(priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
-                                    if ((Double) resultM.get("Ask") <= (Double) resultM.get("Last")) {
-                                        buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
+                                    if (askDouble <= lastDouble) {
+                                        buy = BigDecimal.valueOf(askDouble);
                                         System.out.println("Take the ask at " + buy);
                                         try {
                                             response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
@@ -247,26 +248,25 @@ public class Main {
                                         }
                                     }
                                     else {
-                                        buy = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
+                                        buy = BigDecimal.valueOf(bidDouble);
                                         buyBidMode = true;
                                     }
                                     System.out.println("BUY at " + buy);
-                                    resultM.forEach((key, value) -> System.out.println(key + ":" + value));
+                                    liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
                                     //maybe use response = 0?
                                     if (buyBidMode) {
                                         buy = buy.setScale(8, RoundingMode.HALF_UP);
                                         try {
-                                            if (buy.doubleValue() >= (Double) resultM.get("Ask")) {
-                                                buy = BigDecimal.valueOf((Double) resultM.get("Ask"))
-                                                    .add(BigDecimal.valueOf(0.00000002));
+                                            if (buy.doubleValue() >= askDouble) {
+                                                buy = BigDecimal.valueOf(askDouble).add(BigDecimal.valueOf(0.00000002));
                                                 System.out.println("Take the ask at " + buy);
                                             }
-                                            if (buy.doubleValue() > (Double) resultM.get("Last")) {
-                                                buy = BigDecimal.valueOf((Double) resultM.get("Last"))
+                                            if (buy.doubleValue() > lastDouble) {
+                                                buy = BigDecimal.valueOf(lastDouble)
                                                     .add(BigDecimal.valueOf(0.00000002));
                                                 System.out.println("Take the last at " + buy);
                                             } else {
-                                                buy = BigDecimal.valueOf((Double) resultM.get("Ask"));
+                                                buy = BigDecimal.valueOf(askDouble);
                                                 System.out.println("Take the ask at " + buy);
                                             }
                                             response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
@@ -284,21 +284,21 @@ public class Main {
                                         response = 0;
                                     }
                                 }
-                                if((Double) resultM.get("Last") >=
+                                if(lastDouble >=
                                     buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
+                                    sell = BigDecimal.valueOf(bidDouble);
                                 }
                                 if(priceObj.validMACDBackCross() && successfulBuy && !sellBidMode && !sellGate ) {
                                     buyMode = false;
                                     sellGate = true;
                                 }
                                 if(sellGate && successfulBuy) {
-                                    if((Double) resultM.get("Last") <
+                                    if((Double) liveMarketData.get("Last") <
                                         //sensitivity
                                         buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
-                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
+                                        sell = BigDecimal.valueOf(bidDouble);
                                         try {
-                                            response = sendOrder(sellRoutine(sell, resultM));
+                                            response = sendOrder(sellRoutine(sell, liveMarketData));
                                         }
                                         catch (IOException e) {
                                             System.out.print("There was an IOException " + e + "\n" + "response : " +
@@ -316,28 +316,28 @@ public class Main {
                                         // if bid is a certian percent above last then take it..
                                         System.out.println("Hold missed sell wait due to not enuf profit");
                                     }
-                                    else if((Double) resultM.get("Bid") < (Double) resultM.get("Last")) {
+                                    else if((Double) liveMarketData.get("Bid") < (Double) liveMarketData.get("Last")) {
                                         hold = false;
-                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Last").toString()));
+                                        sell = BigDecimal.valueOf(lastDouble);
                                         sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                         sellBidMode = true;
                                         System.out.println("Last was chosen then subtracted from");
                                     }
-                                    else if((Double) resultM.get("Bid") > (Double) resultM.get("Ask")) {
+                                    else if((Double) liveMarketData.get("Bid") > (Double) liveMarketData.get("Ask")) {
                                         hold = false;
-                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
+                                        sell = BigDecimal.valueOf(bidDouble);
                                         sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                         sellBidMode = true;
                                         System.out.println("Bid was chosen then subtracted from");
                                     }
                                     else {
                                         hold = false;
-                                        sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Ask").toString()));
+                                        sell = BigDecimal.valueOf(askDouble);
                                         sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                         sellBidMode = true;
                                         System.out.println("Ask was chosen then subtracted from");
                                     }
-                                    System.out.println("\n" + "Sell at " + sell + " vs bid " + resultM.get("Bid"));
+                                    System.out.println("\n" + "Sell at " + sell + " vs bid " + liveMarketData.get("Bid"));
                                 }
                                 if(sellBidMode && !hold) {
                                     // if the Bid is more than the last use the Last
@@ -346,9 +346,9 @@ public class Main {
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
                                     //if no sell successful
                                     System.out.println("\n Cancel last sell and Sell at " + sell + " bid is " +
-                                        resultM.get("Bid"));
+                                        liveMarketData.get("Bid"));
                                     try {
-                                        response = sendOrder(sellRoutine(sell,resultM));
+                                        response = sendOrder(sellRoutine(sell,liveMarketData));
                                     }
                                     catch (IOException e) {
                                         System.out.print("There was an IOException " + e + "\n response : " +
@@ -416,6 +416,17 @@ public class Main {
         }
     }
 
+    /*public static Map<Object,?> liveMarketDataTransform(Map<Object, Object> map) {
+        map.forEach((k,v) ->  {
+            map.replace(k,k.toString());
+            if(map.get(v).toString().matches("[.]\\d")) {
+            map.replace(k, v, Double.valueOf(v.toString()));
+            }
+        });
+        return map;
+    }
+
+     */
     public static void takeAvg (ArrayList<Map<?, ?>> maps,
                                 ArrayList<Double> arOne, ArrayList<Double> arTwo,
                                 ArrayList<Double> prices) {

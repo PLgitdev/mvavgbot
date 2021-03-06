@@ -31,7 +31,7 @@ public class MongoCRUD {
         return soleInstanceMongoCRUD;
     }
 
-    public void createMarketData(Map<?, ?> data, String collection) {
+    public void createMarketData(Map<Object,Object> data, String collection) {
        Document doc = new Document();
        data.forEach( (key, value) -> doc.append(String.valueOf(key), value));
        db.getCollection(collection).insertOne(doc);
