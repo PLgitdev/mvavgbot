@@ -5,7 +5,7 @@ import java.net.HttpURLConnection;
 import java.net.URLConnection;
 
 public interface Communication {
-     int send() throws IOException, InterruptedException;
+     Object send() throws IOException, InterruptedException;
      URLConnection connect() throws IOException;
      void setHeaders(HttpURLConnection http);
 }

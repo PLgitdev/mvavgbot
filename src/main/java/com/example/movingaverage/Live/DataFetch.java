@@ -2,8 +2,8 @@ package com.example.movingaverage.Live;
 
 
 import com.example.movingaverage.Global;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.*;
+import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,18 +12,17 @@ import java.io.InputStreamReader;
 
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class DataFetch {
 
-    private ObjectMapper objectMapper;
     private String mOne;
     private String mTwo;
-    private static  DataFetch soleInstanceDataFetch;
+    private static DataFetch soleInstanceDataFetch;
 
     private DataFetch() {
-        this.objectMapper = new ObjectMapper();
         this.mOne = Global.mOne;
         this.mTwo = Global.mTwo;
     }
@@ -38,28 +37,40 @@ public class DataFetch {
     public Map<?, ?> marketDataFetcher() throws IOException, InterruptedException {
         URL url =
             new URL("https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=" + mOne + "-" + mTwo);
-        StringBuffer content = fetch(url);
-        return objectMapper.readValue(content.toString(), new TypeReference<Map<?,?>>(){});
-    }
+        StringBuilder content = fetch(url);
+        return stringToMap(content.toString());
+        }
 
-    public ArrayList<Map<?,?>> historicalDataFetcher(String s) throws IOException, InterruptedException {
+    public ArrayList<Map<Object, Object>> historicalDataFetcher(String s) throws IOException, InterruptedException {
+        Pattern clean ="\"";
+        ArrayList<Map<Object, Object>> arr = new ArrayList<>();
         URL url =
-            new URL( "https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + s +
+            new URL("https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + s +
                 "/recent");
-        StringBuffer historicalData = fetch(url);
-        return objectMapper.readValue(historicalData.toString(), new TypeReference<ArrayList<Map<?,?>>>(){});
+        StringBuilder historicalData = fetch(url);
+        String[] historicalSplit = historicalData.toString().replaceAll(clean).split("},");
+
+        for (String value : historicalSplit) {
+            arr.add(stringToMap(value));
+        }
+        return arr;
     }
 
-    public StringBuffer fetch(URL url) throws IOException {
-        StringBuffer data = new StringBuffer();
+    public StringBuilder fetch(URL url) throws IOException {
+        StringBuilder data = new StringBuilder();
         try (InputStream is = url.openStream();
-        BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-             String inputLine = br.readLine();
-             data.append(inputLine);
-             //both requests are received as a single line
+             BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+            String inputLine = br.readLine();
+            data.append(inputLine);
         }
         return data;
     }
+    private Map<Object, Object> stringToMap(String s) {
+        return Arrays
+            .stream(s.split( ",")).map(r -> r.split(":"))
+            .collect(Collectors.toMap(a -> a[0], a ->  a[1]));
+    }
+
     public boolean valid() {
         String marketV = "^(\\w|\\D|\\S){2,6}$";
         if (!mOne.matches(marketV)) return false;

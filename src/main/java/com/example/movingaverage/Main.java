@@ -58,7 +58,7 @@ public class Main {
                                 l = "DAY_1";
                                 break;
                         }
-                        ArrayList<Map<?, ?>> historicalData = fetcher.historicalDataFetcher(l);
+                        ArrayList<Map<Object, Object>> historicalData = fetcher.historicalDataFetcher(l);
                         Thread.sleep(1000);
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
                         System.out.println("Please enter day count for the short moving avg up to 365 days");
@@ -241,7 +241,6 @@ public class Main {
                                         System.out.println("Take the ask at " + buy);
                                         try {
                                             response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                                            Thread.sleep(1000);
                                         }
                                         catch(IOException e) {
                                             System.out.println("IO Exception : " + e + "\n" + "response: " + response);
@@ -271,7 +270,6 @@ public class Main {
                                                 System.out.println("Take the ask at " + buy);
                                             }
                                             response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                                            Thread.sleep(1000);
                                         } catch (IOException e) {
                                             System.out.print("There was an IOException " + e + "\n" + "response : " +
                                                 response);
@@ -301,7 +299,6 @@ public class Main {
                                         sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
                                         try {
                                             response = sendOrder(sellRoutine(sell, resultM));
-                                            Thread.sleep(1000);
                                         }
                                         catch (IOException e) {
                                             System.out.print("There was an IOException " + e + "\n" + "response : " +
@@ -352,7 +349,6 @@ public class Main {
                                         resultM.get("Bid"));
                                     try {
                                         response = sendOrder(sellRoutine(sell,resultM));
-                                        Thread.sleep(1000);
                                     }
                                     catch (IOException e) {
                                         System.out.print("There was an IOException " + e + "\n response : " +
@@ -434,14 +430,14 @@ public class Main {
             Sell.getInstance("CEILING_LIMIT", limit, Global.orderTimeInForce, direction);
     }
     public static int sendOrder(Transaction order) throws IOException, InterruptedException {
-        Thread.sleep(1000);
-        int response = order.send();
+        int response =(int) order.send();
         if (response == 201) {
             System.out.println("Successful order");
         }
         else {
             System.out.println("Response not 201: " + response);
         }
+        Thread.sleep(1000);
         return response;
     }
 
