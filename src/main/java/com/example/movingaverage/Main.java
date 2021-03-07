@@ -28,7 +28,7 @@ public class Main {
          String inputS;
          LocalDateTime start = LocalDateTime.now();
          boolean buyMode = true;
-         Global.quant = .00000001;
+         Global.quant = .00000010;
 
         System.out.println("Please enter markets separated by comma, or clear");
         while (!"clear".equalsIgnoreCase(markets)) {
@@ -410,6 +410,7 @@ public class Main {
                 e.printStackTrace();
             } finally {
                 //drop database
+
                 mongoCRUD.deleteAllMarketData("marketsummary");
                 mongoCRUD.deleteAllMarketData("historicaldata");
             }

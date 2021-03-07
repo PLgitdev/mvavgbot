@@ -2,19 +2,18 @@ package com.example.movingaverage.Live;
 
 import com.example.movingaverage.Keys;
 import com.mongodb.util.JSON;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
-import java.math.BigInteger;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public abstract class Transaction implements Encryption, Communication{
     protected String type;
@@ -27,9 +26,11 @@ public abstract class Transaction implements Encryption, Communication{
     protected String contentH;
     protected Long timestamp;
     protected URL uri;
+    protected URL sendUri;
 
-    public final Object send() throws IOException, InterruptedException {
+    public final Object send() throws IOException {
         HttpURLConnection http = connect();
+        http.setRequestMethod("POST");
         http.setDoOutput(true);
         String jsonBodyString = JSON.serialize(content);
         try {
@@ -45,10 +46,17 @@ public abstract class Transaction implements Encryption, Communication{
             System.out.println("invalid algorithm or key " + e );
         }
         setHeaders(http);
-        http.setRequestMethod("POST");
-        http.setFixedLengthStreamingMode(jsonBodyString.getBytes().length);
-        http.getOutputStream().write(jsonBodyString.getBytes());
-        return http.getContent();
+        http.setFixedLengthStreamingMode(jsonBodyString.getBytes(StandardCharsets.UTF_8).length);
+        byte[] data = jsonBodyString.getBytes(StandardCharsets.UTF_8);
+        http.getHeaderFields();
+        OutputStream out = http.getOutputStream();
+        out.write(data, 0 , data.length);
+        int i = http.getResponseCode();
+        String m =http.getResponseMessage();
+        String s = http.getRequestMethod();
+        InputStream error = http.getErrorStream();
+        Object content = http.getContent();
+        return content;
     }
 
     final public String createHash(Object content) throws NoSuchAlgorithmException {
@@ -77,7 +85,7 @@ public abstract class Transaction implements Encryption, Communication{
         return new String(hexChars);
     }
     final public HttpURLConnection connect() throws IOException {
-        URLConnection con = uri.openConnection();
+        URLConnection con = sendUri.openConnection();
         return (HttpURLConnection) con;
     }
 
