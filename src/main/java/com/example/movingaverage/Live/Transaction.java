@@ -1,11 +1,17 @@
 package com.example.movingaverage.Live;
 
+import com.example.movingaverage.Global;
 import com.example.movingaverage.Keys;
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpHeaders;
+import com.google.api.client.http.HttpRequest;
 import com.mongodb.util.JSON;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -29,9 +35,8 @@ public abstract class Transaction implements Encryption, Communication{
     protected URL sendUri;
 
     public final Object send() throws IOException {
-        HttpURLConnection http = connect();
-        http.setRequestMethod("POST");
-        http.setDoOutput(true);
+        HttpRequest request = Global.requestFactory.buildGetRequest(
+            new GenericUrl(sendUri));
         String jsonBodyString = JSON.serialize(content);
         try {
             setContentHash(jsonBodyString);
@@ -49,8 +54,10 @@ public abstract class Transaction implements Encryption, Communication{
         http.setFixedLengthStreamingMode(jsonBodyString.getBytes(StandardCharsets.UTF_8).length);
         byte[] data = jsonBodyString.getBytes(StandardCharsets.UTF_8);
         http.getHeaderFields();
-        OutputStream out = http.getOutputStream();
-        out.write(data, 0 , data.length);
+        OutputStreamWriter out = new OutputStreamWriter(
+            http.getOutputStream());
+        out.write(jsonBodyString.toCharArray(),0,jsonBodyString.length());
+        out.flush();
         int i = http.getResponseCode();
         String m =http.getResponseMessage();
         String s = http.getRequestMethod();
@@ -84,18 +91,16 @@ public abstract class Transaction implements Encryption, Communication{
         }
         return new String(hexChars);
     }
-    final public HttpURLConnection connect() throws IOException {
-        URLConnection con = sendUri.openConnection();
-        return (HttpURLConnection) con;
-    }
 
-    final public void setHeaders(HttpURLConnection http) {
-        http.setRequestProperty("Api-Key", Keys.API_KEY);
-        http.setRequestProperty("Api-Timestamp", String.valueOf(timestamp));
-        http.setRequestProperty("Api-Content-Hash", contentH);
-        http.setRequestProperty("Api-Signature", signatureH);
-        http.setRequestProperty("Api-Subaccount-Id", subAccountId);
-        http.setRequestProperty("Content-Type", "application/json");
+    final public void setHeaders(HttpRequest http) {
+
+        HttpHeaders headers = http.getHeaders();
+        headers.set("Api-Key", Keys.API_KEY);
+        headers.set("Api-Timestamp", String.valueOf(timestamp));
+        headers.set("Api-Content-Hash", contentH);
+        headers.set("Api-Signature", signatureH);
+        headers.set("Api-Subaccount-Id", subAccountId);
+        headers.set("Content-Type", "application/json");
     }
     private String createSignature() {
         return timestamp.toString() + uri.toString() + "POST" + contentH + subAccountId;

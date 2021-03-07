@@ -2,15 +2,11 @@ package com.example.movingaverage.Live;
 
 
 import com.example.movingaverage.Global;
-import com.fasterxml.jackson.databind.*;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-
 import java.net.URL;
+
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,8 +31,8 @@ public class DataFetch {
     public Map<Object, Object> marketDataFetcher() throws IOException {
         URL url =
             new URL("https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=" + mOne + "-" + mTwo);
-        StringBuilder content = fetch(url);
-        String[] splitContent = content.toString().split("\\[");
+        String content = fetch(url);
+        String[] splitContent = content.split("\\[");
         String clean = splitContent[1].replaceAll("[\\[{\"]", "");
         return stringToMap(clean);
         }
@@ -46,22 +42,20 @@ public class DataFetch {
         URL url =
             new URL("https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + s +
                 "/recent");
-        StringBuilder historicalData = fetch(url);
-        String[] historicalSplit = historicalData.toString().replaceAll("[\\[{\"]", "").split("},");
+        String historicalData = fetch(url);
+        String[] historicalSplit = historicalData.replaceAll("[\\[{\"]", "").split("},");
         for (String value : historicalSplit) {
             arr.add(stringToMap(value));
         }
         return arr;
     }
 
-    public StringBuilder fetch(URL url) throws IOException {
-        StringBuilder data = new StringBuilder();
-        try (InputStream is = url.openStream();
-             BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-            String inputLine = br.readLine();
-            data.append(inputLine);
-        }
-        return data;
+    public String fetch(URL url) throws IOException {
+        HttpRequest request = Global.requestFactory.buildGetRequest(
+            new GenericUrl(url));
+        return request.execute().parseAsString();
+
+
     }
     private Map<Object, Object> stringToMap(String s) {
         return Arrays
