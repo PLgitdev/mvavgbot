@@ -50,20 +50,9 @@ public abstract class Transaction implements Encryption, Communication{
         catch (InvalidKeyException | NoSuchAlgorithmException e) {
             System.out.println("invalid algorithm or key " + e );
         }
-        setHeaders(http);
-        http.setFixedLengthStreamingMode(jsonBodyString.getBytes(StandardCharsets.UTF_8).length);
-        byte[] data = jsonBodyString.getBytes(StandardCharsets.UTF_8);
-        http.getHeaderFields();
-        OutputStreamWriter out = new OutputStreamWriter(
-            http.getOutputStream());
-        out.write(jsonBodyString.toCharArray(),0,jsonBodyString.length());
-        out.flush();
-        int i = http.getResponseCode();
-        String m =http.getResponseMessage();
-        String s = http.getRequestMethod();
-        InputStream error = http.getErrorStream();
-        Object content = http.getContent();
-        return content;
+        setHeaders(request);
+        request.setRequestMethod("POST");
+        return request.execute().getStatusCode();
     }
 
     final public String createHash(Object content) throws NoSuchAlgorithmException {
@@ -93,7 +82,6 @@ public abstract class Transaction implements Encryption, Communication{
     }
 
     final public void setHeaders(HttpRequest http) {
-
         HttpHeaders headers = http.getHeaders();
         headers.set("Api-Key", Keys.API_KEY);
         headers.set("Api-Timestamp", String.valueOf(timestamp));

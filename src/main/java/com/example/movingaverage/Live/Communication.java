@@ -1,11 +1,10 @@
 package com.example.movingaverage.Live;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URLConnection;
+
+import com.google.api.client.http.HttpRequest;
 
 public interface Communication {
      Object send() throws IOException, InterruptedException;
-     URLConnection connect() throws IOException;
-     void setHeaders(HttpURLConnection http);
+     void setHeaders(HttpRequest http);
 }
