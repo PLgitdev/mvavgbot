@@ -47,7 +47,7 @@ public class DataFetch {
             new URL("https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + s +
                 "/recent");
         StringBuilder historicalData = fetch(url);
-        String[] historicalSplit = historicalData.toString().replace("\"", "").replace("[","").replace("{", "").split("},");
+        String[] historicalSplit = historicalData.toString().replaceAll("[\\[{\"]", "").split("},");
         for (String value : historicalSplit) {
             arr.add(stringToMap(value));
         }
