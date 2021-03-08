@@ -3,6 +3,7 @@ package com.example.movingaverage.Live;
 import com.example.movingaverage.Global;
 
 import java.net.*;
+import java.time.Instant;
 import java.util.HashMap;
 
 public class Buy extends Transaction {
@@ -12,7 +13,7 @@ public class Buy extends Transaction {
         super();
         this.content = new HashMap<>();
         this.quant = Global.quant;
-        this.timestamp = System.currentTimeMillis() / 1000L;
+        this.timestamp = Instant.now().getEpochSecond();
         this.content.put("quantity", quant);
         this.content.put("marketSymbol", Global.mOne + "-" + Global.mTwo);
         this.content.put("direction", direction);
@@ -21,8 +22,8 @@ public class Buy extends Transaction {
         this.content.put("type", type);
         this.sendUri = new URL("https://api.bittrex.com/v3/orders");
         this.uri = new URL ("https://api.bittrex.com/v3/orders?marketSymbol="
-            + Global.mOne + "-" + Global.mTwo +"&direction=" + direction + "&quantity=" +
-            quant + "&limit="+ limit + "&timeInForce="+ timeInForce + "&type=" + type);
+            + Global.mOne + "-" + Global.mTwo +"&direction=" + direction + "&type=" + type + "&quantity=" +
+            quant + "&limit="+ limit + "&timeInForce="+ timeInForce );
     }
 
     public static Buy getInstance(String type, Double limit,

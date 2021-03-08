@@ -36,20 +36,23 @@ public abstract class Transaction implements Encryption, Communication{
 
     public final Object send() throws IOException {
         String flatContent = mapToString(content);
+        String jsonSearlize = JSON.serialize(content);
         try {
-            setContentHash(flatContent);
+            setContentHash(jsonSearlize);
         }
         catch (NoSuchAlgorithmException e){
             System.out.println("invalid algorithm " + e );
         }
+        HttpContent httpContent = new JsonHttpContent(new JacksonFactory(),content);
+        HttpHeaders headers = setHeaders();
+        String signature = createSignature(headers);
         try {
-            setSignatureH();
+            setSignatureH(signature);
         }
         catch (InvalidKeyException | NoSuchAlgorithmException e) {
             System.out.println("invalid algorithm or key " + e );
         }
-        HttpContent httpContent = new JsonHttpContent(new JacksonFactory(),content);
-        HttpHeaders headers = setHeaders();
+        headers.set("Api-Signature", signatureH);
         HttpRequest request = Global.requestFactory.buildPostRequest(new GenericUrl(uri), httpContent).setHeaders(headers);
         return request.execute().getStatusCode();
     }
@@ -60,25 +63,15 @@ public abstract class Transaction implements Encryption, Communication{
         return hexEncode(Arrays.toString(messageDigest));
     }
 
-    final public String createSecureHash() throws NoSuchAlgorithmException, InvalidKeyException {
+    final public String createSecureHash(String signature) throws NoSuchAlgorithmException, InvalidKeyException {
         final byte[] secretKey = Keys.SECRET_API_KEY.getBytes();
         Mac sha512Hmac = Mac.getInstance(HMAC_SHA512);
         SecretKeySpec kSpec = new SecretKeySpec(secretKey, HMAC_SHA512);
         sha512Hmac.init(kSpec);
-        String signature = createSignature();
         byte[] macData = sha512Hmac.doFinal(signature.getBytes());
         return hexEncode(Arrays.toString(macData));
     }
 
-    final public String byteToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for (int j = 0; j < bytes.length; j++) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
     final public String hexEncode(String s) {
         return String.format("%040x", new BigInteger(1, s.getBytes()));
     }
@@ -87,21 +80,20 @@ public abstract class Transaction implements Encryption, Communication{
     final public HttpHeaders setHeaders() {
         HttpHeaders headers  = new HttpHeaders();
         headers.set("Api-Key", Keys.API_KEY);
-        headers.set("Api-Timestamp", String.valueOf(timestamp));
+        headers.set("Api-Timestamp", timestamp);
         headers.set("Api-Content-Hash", contentH);
-        headers.set("Api-Signature", signatureH);
         headers.set("Api-Subaccount-Id", subAccountId);
         return headers;
     }
-    private String createSignature() {
-        return timestamp.toString() + uri.toString() + "POST" + contentH + subAccountId;
+    private String createSignature(HttpHeaders headers) {
+        return headers.get("Api-TimeStamp") + uri.toString() + "POST" + headers.get("Api-Content-Hash") + subAccountId;
     }
     private void setContentHash(String content) throws NoSuchAlgorithmException {
         this.contentH = createHash(content);
     }
 
-    private void setSignatureH() throws NoSuchAlgorithmException, InvalidKeyException {
-        this.signatureH = createSecureHash();
+    private void setSignatureH(String signature) throws NoSuchAlgorithmException, InvalidKeyException {
+        this.signatureH = createSecureHash(signature);
     }
     private String mapToString(Map<Object,Object> map) {
         return map.keySet().stream()
