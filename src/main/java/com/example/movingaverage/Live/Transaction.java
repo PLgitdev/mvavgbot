@@ -13,11 +13,13 @@ import com.mongodb.util.JSON;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class Transaction implements Encryption, Communication{
     protected String type;
@@ -33,9 +35,9 @@ public abstract class Transaction implements Encryption, Communication{
     protected URL sendUri;
 
     public final Object send() throws IOException {
-        String jsonBodyString = JSON.serialize(content);
+        String flatContent = mapToString(content);
         try {
-            setContentHash(jsonBodyString);
+            setContentHash(flatContent);
         }
         catch (NoSuchAlgorithmException e){
             System.out.println("invalid algorithm " + e );
@@ -55,7 +57,7 @@ public abstract class Transaction implements Encryption, Communication{
     final public String createHash(Object content) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(SHA512);
         byte[] messageDigest = md.digest(content.toString().getBytes());
-        return byteToHex(messageDigest);
+        return hexEncode(Arrays.toString(messageDigest));
     }
 
     final public String createSecureHash() throws NoSuchAlgorithmException, InvalidKeyException {
@@ -65,7 +67,7 @@ public abstract class Transaction implements Encryption, Communication{
         sha512Hmac.init(kSpec);
         String signature = createSignature();
         byte[] macData = sha512Hmac.doFinal(signature.getBytes());
-        return byteToHex(macData);
+        return hexEncode(Arrays.toString(macData));
     }
 
     final public String byteToHex(byte[] bytes) {
@@ -77,6 +79,10 @@ public abstract class Transaction implements Encryption, Communication{
         }
         return new String(hexChars);
     }
+    final public String hexEncode(String s) {
+        return String.format("%040x", new BigInteger(1, s.getBytes()));
+    }
+
 
     final public HttpHeaders setHeaders() {
         HttpHeaders headers  = new HttpHeaders();
@@ -97,6 +103,12 @@ public abstract class Transaction implements Encryption, Communication{
     private void setSignatureH() throws NoSuchAlgorithmException, InvalidKeyException {
         this.signatureH = createSecureHash();
     }
+    private String mapToString(Map<Object,Object> map) {
+        return map.keySet().stream()
+            .map(key -> "\"" + key + "\"" + ":" + map.get(key))
+            .collect(Collectors.joining(", ", "{", "}"));
+    }
+
     /*final void setContent() {
         this.content.put("marketSymbol", Global.mOne + "-" + Global.mTwo);
         this.content.put("direction", direction);

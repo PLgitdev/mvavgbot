@@ -21,7 +21,7 @@ public class Buy extends Transaction {
         this.content.put("type", type);
         this.sendUri = new URL("https://api.bittrex.com/v3/orders");
         this.uri = new URL ("https://api.bittrex.com/v3/orders?marketSymbol="
-            + Global.mTwo + "-" + Global.mOne +"&direction=" + direction + "&quantity=" +
+            + Global.mOne + "-" + Global.mTwo +"&direction=" + direction + "&quantity=" +
             quant + "&limit="+ limit + "&timeInForce="+ timeInForce + "&type=" + type);
     }
 
