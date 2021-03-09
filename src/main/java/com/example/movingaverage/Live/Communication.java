@@ -7,5 +7,4 @@ import com.google.api.client.http.HttpRequest;
 
 public interface Communication {
      Object send() throws IOException, InterruptedException;
-     HttpHeaders setHeaders();
 }

@@ -1,6 +1,8 @@
 package com.example.movingaverage.Live;
 
 import com.example.movingaverage.Global;
+import com.example.movingaverage.Keys;
+import com.google.api.client.http.HttpHeaders;
 
 import java.net.*;
 import java.time.Instant;
@@ -13,7 +15,6 @@ public class Sell extends Transaction {
         super();
         this.content = new HashMap<>();
         this.ceiling = Global.quant;
-        this.timestamp = Instant.now().getEpochSecond();
         this.content.put("ceiling", ceiling);
         this.content.put("marketSymbol", Global.mOne + "-" + Global.mTwo);
         this.content.put("direction", direction);

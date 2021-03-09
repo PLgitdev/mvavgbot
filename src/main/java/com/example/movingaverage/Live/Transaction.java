@@ -2,22 +2,24 @@ package com.example.movingaverage.Live;
 
 import com.example.movingaverage.Global;
 import com.example.movingaverage.Keys;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpContent;
 import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.json.JsonHttpContent;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.mongodb.util.JSON;
+import com.google.gson.Gson;
+import org.apache.commons.codec.binary.Hex;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,21 +32,21 @@ public abstract class Transaction implements Encryption, Communication{
     protected String subAccountId = "";
     protected HashMap<Object, Object> content;
     protected String contentH;
-    protected Long timestamp;
     protected URL uri;
     protected URL sendUri;
 
     public final Object send() throws IOException {
-        String flatContent = mapToString(content);
-        String jsonSearlize = JSON.serialize(content);
+        HttpHeaders headers = new HttpHeaders();
+        JsonHttpContent jContent = new JsonHttpContent(new JacksonFactory(), content);
+        HttpRequest request = Global.requestFactory.buildPostRequest(new GenericUrl(sendUri), jContent);
+        Gson gson = new Gson();
         try {
-            setContentHash(jsonSearlize);
+            setContentHash(gson.toJson(content));
         }
         catch (NoSuchAlgorithmException e){
             System.out.println("invalid algorithm " + e );
         }
-        HttpContent httpContent = new JsonHttpContent(new JacksonFactory(),content);
-        HttpHeaders headers = setHeaders();
+        setHeaders(headers);
         String signature = createSignature(headers);
         try {
             setSignatureH(signature);
@@ -53,14 +55,21 @@ public abstract class Transaction implements Encryption, Communication{
             System.out.println("invalid algorithm or key " + e );
         }
         headers.set("Api-Signature", signatureH);
-        HttpRequest request = Global.requestFactory.buildPostRequest(new GenericUrl(uri), httpContent).setHeaders(headers);
+        request.setHeaders(headers);
         return request.execute().getStatusCode();
+    }
+    final public HttpHeaders setHeaders(HttpHeaders headers) {
+        headers.set("Api-Key", Keys.API_KEY);
+        headers.set("Api-Timestamp", String.valueOf(Instant.now().getEpochSecond()));
+        headers.set("Api-Content-Hash", contentH);
+        headers.set("Api-Subaccount-Id", subAccountId);
+        return headers;
     }
 
     final public String createHash(Object content) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(SHA512);
         byte[] messageDigest = md.digest(content.toString().getBytes());
-        return hexEncode(Arrays.toString(messageDigest));
+        return String.valueOf(Hex.encodeHex(messageDigest, true));
     }
 
     final public String createSecureHash(String signature) throws NoSuchAlgorithmException, InvalidKeyException {
@@ -69,22 +78,9 @@ public abstract class Transaction implements Encryption, Communication{
         SecretKeySpec kSpec = new SecretKeySpec(secretKey, HMAC_SHA512);
         sha512Hmac.init(kSpec);
         byte[] macData = sha512Hmac.doFinal(signature.getBytes());
-        return hexEncode(Arrays.toString(macData));
+        return String.valueOf(Hex.encodeHex(macData,true));
     }
 
-    final public String hexEncode(String s) {
-        return String.format("%040x", new BigInteger(1, s.getBytes()));
-    }
-
-
-    final public HttpHeaders setHeaders() {
-        HttpHeaders headers  = new HttpHeaders();
-        headers.set("Api-Key", Keys.API_KEY);
-        headers.set("Api-Timestamp", timestamp);
-        headers.set("Api-Content-Hash", contentH);
-        headers.set("Api-Subaccount-Id", subAccountId);
-        return headers;
-    }
     private String createSignature(HttpHeaders headers) {
         return headers.get("Api-TimeStamp") + uri.toString() + "POST" + headers.get("Api-Content-Hash") + subAccountId;
     }
