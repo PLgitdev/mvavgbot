@@ -1,6 +1,6 @@
 package com.example.movingaverage;
 
 public class Keys {
-    final public static String API_KEY  = "3654876db9bd4ab289564493bed7e5a0";
-    final public static  String SECRET_API_KEY  = "8f16bcd61b3f4529b5e3bb3eb91fbeda";
+    final public static String API_KEY  = "d0e8575c1e094525aa4c45fe95b3c3d2";
+    final public static  String SECRET_API_KEY  = "998f70e17c2a44fc80f11a86a69cb23b";
 }

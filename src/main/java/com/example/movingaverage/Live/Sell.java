@@ -15,16 +15,13 @@ public class Sell extends Transaction {
         super();
         this.content = new HashMap<>();
         this.ceiling = Global.quant;
-        this.content.put("ceiling", ceiling);
         this.content.put("marketSymbol", Global.mOne + "-" + Global.mTwo);
         this.content.put("direction", direction);
-        this.content.put("limit", limit);
-        this.content.put("timeInForce", timeInForce);
         this.content.put("type", type);
+        this.content.put("celing", ceiling.toString());
+        this.content.put("limit", limit.toString());
+        this.content.put("timeInForce", timeInForce);
         this.sendUri = new URL("https://api.bittrex.com/v3/orders");
-        this.uri = new URL ("https://api.bittrex.com/v3/orders?marketSymbol="
-            + Global.mOne + "-" + Global.mTwo +"&direction="+ direction + "&type=" + type + "&ceiling=" +
-            ceiling + "&limit="+ limit + "&timeInForce="+ timeInForce );
     }
 
     public static Sell getInstance(String type, Double limit,
