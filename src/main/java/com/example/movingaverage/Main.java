@@ -6,6 +6,7 @@ import com.example.movingaverage.Live.DataFetch;
 import com.example.movingaverage.Live.Sell;
 import com.example.movingaverage.Live.Transaction;
 import com.example.movingaverage.Model.Price;
+import com.google.api.client.http.HttpResponse;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -235,16 +236,17 @@ public class Main {
                                 "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
                                 + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
                             //check average inequality
-                            int response = 0;
+                            int responseCode = 0;
                             if(priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
                                     if (askDouble <= lastDouble) {
                                         buy = BigDecimal.valueOf(askDouble);
                                         System.out.println("Take the ask at " + buy);
                                         try {
-                                            response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                                            HttpResponse response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                                            responseCode = response.getStatusCode();
                                         }
                                         catch(IOException e) {
-                                            System.out.println("IO Exception : " + e + "\n" + "response: " + response);
+                                            System.out.println("IO Exception : " + e + "\n" + "response: " + responseCode);
                                         }
                                     }
                                     else {
@@ -269,19 +271,20 @@ public class Main {
                                                 buy = BigDecimal.valueOf(askDouble);
                                                 System.out.println("Take the ask at " + buy);
                                             }
-                                            response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                                            HttpResponse response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                                            responseCode = response.getStatusCode();
                                         } catch (IOException e) {
                                             System.out.print("There was an IOException " + e + "\n" + "response : " +
-                                                response);
+                                                responseCode);
                                         }
                                     }
-                                    if(response == 201) {
+                                    if(responseCode == 201) {
                                         successfulBuy = true;
                                         //buyMode = false;
                                         buyBidMode = false;
                                         System.out.println("Successful Buy 201 at " + buy + "\n" +
-                                            "this is the response " + response);
-                                        response = 0;
+                                            "this is the response " + responseCode);
+                                        responseCode = 0;
                                     }
                                 }
                                 if(lastDouble >=
@@ -298,11 +301,12 @@ public class Main {
                                         buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                         sell = BigDecimal.valueOf(bidDouble);
                                         try {
-                                            response = sendOrder(sellRoutine(sell, liveMarketData));
+                                            HttpResponse response = sendOrder(sellRoutine(sell, liveMarketData));
+                                            responseCode = response.getStatusCode();
                                         }
                                         catch (IOException e) {
                                             System.out.print("There was an IOException " + e + "\n" + "response : " +
-                                                response);
+                                                responseCode);
                                         }
                                         hold = false;
                                         sellGate = false;
@@ -348,14 +352,14 @@ public class Main {
                                     System.out.println("\n Cancel last sell and Sell at " + sell + " bid is " +
                                         liveMarketData.get("Bid"));
                                     try {
-                                        response = sendOrder(sellRoutine(sell,liveMarketData));
+                                       HttpResponse response = sendOrder(sellRoutine(sell,liveMarketData));
                                     }
                                     catch (IOException e) {
                                         System.out.print("There was an IOException " + e + "\n response : " +
-                                            response);
+                                            responseCode);
                                     }
                                 }
-                                if(response == 201 && !buyMode) {
+                                if(responseCode == 201 && !buyMode) {
                                     //? and valid MACDCrossover?
                                     BigDecimal profit = sell.subtract(buy);
                                     if(profit.doubleValue() > 0d) {
@@ -364,7 +368,7 @@ public class Main {
                                     }
                                     profitPercentageTotals += profit.doubleValue();
                                     System.out.println("Sell successful at " + sell + " " + "profit percent : " +
-                                        profit + "%" + "\n response: " + response);
+                                        profit + "%" + "\n response: " + responseCode);
                                     sell = BigDecimal.valueOf(500.0);
                                     sellBidMode = false;
                                     buyMode = true;
@@ -441,10 +445,13 @@ public class Main {
             Buy.getInstance("LIMIT", limit, Global.orderTimeInForce, direction) :
             Sell.getInstance("CEILING_LIMIT", limit, Global.orderTimeInForce, direction);
     }
-    public static int sendOrder(Transaction order) throws IOException, InterruptedException {
-        int response =(int) order.send();
-        if (response == 201) {
+    public static HttpResponse sendOrder(Transaction order) throws IOException, InterruptedException {
+        HttpResponse response = order.send();
+        if(response.getStatusCode() == 201) {
             System.out.println("Successful order");
+        }
+        if(response.getStatusCode() == 401)  {
+            System.out.println("Unauthorized " + response.getHeaders());
         }
         else {
             System.out.println("Response not 201: " + response);
