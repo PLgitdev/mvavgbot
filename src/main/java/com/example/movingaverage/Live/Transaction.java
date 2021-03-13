@@ -1,15 +1,12 @@
 package com.example.movingaverage.Live;
 
-import com.example.movingaverage.Global;
 import com.example.movingaverage.Keys;
 import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
-import com.squareup.okhttp.RequestBody;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
@@ -38,10 +35,7 @@ public abstract class Transaction implements Encryption, Communication{
     public final HttpResponse<String> send() throws IOException, InterruptedException {
         Gson gSon = new Gson();
         String requestBody = gSon.toJson(content);
-
         HttpClient client = HttpClient.newHttpClient();
-
-
         this.timestamp = Instant.now().getEpochSecond();
         try {
             setContentHash(requestBody);
@@ -57,7 +51,7 @@ public abstract class Transaction implements Encryption, Communication{
             System.out.println("invalid algorithm or key " + e );
         }
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create("https://httpbin.org/post"))
+            .uri(URI.create(sendUri.toString()))
             .POST(HttpRequest.BodyPublishers.ofString(requestBody))
             .header("Api-Key", Keys.API_KEY)
             .header("Api-Signature", signatureH)
@@ -71,9 +65,9 @@ public abstract class Transaction implements Encryption, Communication{
         return response;
     }
 
-    final public String createHash(String content) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+    final public String createHash(String content) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(SHA512);
-        byte[] digest = md.digest(content.getBytes("UTF-8"));
+        byte[] digest = md.digest(content.getBytes(StandardCharsets.UTF_8));
         return BaseEncoding.base16().lowerCase().encode(digest);
     }
 
@@ -89,7 +83,7 @@ public abstract class Transaction implements Encryption, Communication{
     private String createSignature() {
         return timestamp + sendUri.toString() + "POST" + contentH + subAccountId;
     }
-    private void setContentHash(String content) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+    private void setContentHash(String content) throws NoSuchAlgorithmException {
         this.contentH = createHash(content);
     }
 

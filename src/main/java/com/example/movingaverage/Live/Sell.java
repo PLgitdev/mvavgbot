@@ -1,12 +1,9 @@
 package com.example.movingaverage.Live;
 
 import com.example.movingaverage.Global;
-import com.example.movingaverage.Keys;
-import com.google.api.client.http.HttpHeaders;
 
-import java.net.*;
-import java.time.Instant;
-import java.time.LocalDateTime;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 
 public class Sell extends Transaction {
