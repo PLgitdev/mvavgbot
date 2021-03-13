@@ -25,7 +25,7 @@ public abstract class Transaction implements Encryption, Communication{
     protected Double limit;
     protected String timeInForce;
     protected String direction;
-    protected Long timestamp;
+    protected String timestamp;
     protected String signatureH;
     protected String subAccountId = "";
     protected Map<String,String> content;
@@ -36,29 +36,27 @@ public abstract class Transaction implements Encryption, Communication{
         Gson gSon = new Gson();
         String requestBody = gSon.toJson(content);
         HttpClient client = HttpClient.newHttpClient();
-        this.timestamp = Instant.now().getEpochSecond();
         try {
             setContentHash(requestBody);
         }
         catch (NoSuchAlgorithmException e){
             System.out.println("invalid algorithm " + e );
         }
-        String signature = createSignature();
+        HttpRequest.Builder request = HttpRequest.newBuilder()
+            .uri(URI.create(sendUri.toString()))
+            .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+            .header("Api-Key", Keys.API_KEY)
+            .header("Api-Timestamp", String.valueOf(System.currentTimeMillis() / 1000L))
+            .header("Api-Content-Hash", contentH);
+        String signature = createSignature(request);
         try {
             setSignatureH(signature);
         }
         catch (InvalidKeyException | NoSuchAlgorithmException e) {
             System.out.println("invalid algorithm or key " + e );
         }
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(sendUri.toString()))
-            .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-            .header("Api-Key", Keys.API_KEY)
-            .header("Api-Signature", signatureH)
-            .header("Api-Timestamp", timestamp.toString())
-            .header("Api-Content-Hash", contentH)
-            .build();
-        HttpResponse<String> response = client.send(request,
+        HttpRequest requestBuilt = request.header("Api-Signature", signatureH).build();
+        HttpResponse<String> response = client.send(requestBuilt,
             HttpResponse.BodyHandlers.ofString());
         System.out.println(response.body());
         System.out.println(response.statusCode());
@@ -80,8 +78,10 @@ public abstract class Transaction implements Encryption, Communication{
         return BaseEncoding.base16().lowerCase().encode(macData);
     }
 
-    private String createSignature() {
-        return timestamp + sendUri.toString() + "POST" + contentH + subAccountId;
+    private String createSignature(HttpRequest.Builder request) {
+        HttpRequest temp  = request.build();
+        String timeContent = temp.headers().allValues("Api-Timestamp").get(0);
+        return timeContent + sendUri.toString() + "POST" + contentH + subAccountId;
     }
     private void setContentHash(String content) throws NoSuchAlgorithmException {
         this.contentH = createHash(content);
