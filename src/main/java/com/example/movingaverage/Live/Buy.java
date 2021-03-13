@@ -13,7 +13,7 @@ public class Buy extends Transaction {
         super();
         this.content = new LinkedHashMap<>();
         this.quant = Global.quant;
-        this.content.put("marketSymbol", Global.mOne + "-" + Global.mTwo);
+        this.content.put("marketSymbol", Global.mTwo + "-" + Global.mOne);
         this.content.put("direction", direction);
         this.content.put("type", type);
         this.content.put("quantity", "0.00000100");

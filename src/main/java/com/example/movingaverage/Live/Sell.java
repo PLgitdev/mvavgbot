@@ -12,10 +12,10 @@ public class Sell extends Transaction {
         super();
         this.content = new HashMap<>();
         this.ceiling = Global.quant;
-        this.content.put("marketSymbol", Global.mOne + "-" + Global.mTwo);
+        this.content.put("marketSymbol", Global.mTwo + "-" + Global.mOne);
         this.content.put("direction", direction);
         this.content.put("type", type);
-        this.content.put("celing", ceiling.toString());
+        this.content.put("ceiling", "0.00000100");
         this.content.put("limit", limit.toString());
         this.content.put("timeInForce", timeInForce);
         this.sendUri = new URL("https://api.bittrex.com/v3/orders");
