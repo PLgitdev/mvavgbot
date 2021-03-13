@@ -29,7 +29,7 @@ public class Main {
          String inputS;
          LocalDateTime start = LocalDateTime.now();
          boolean buyMode = true;
-         Global.quant = .00000010;
+         Global.quant = .0300000;
 
         System.out.println("Please enter markets separated by comma, or clear");
         while (!"clear".equalsIgnoreCase(markets)) {
@@ -237,7 +237,7 @@ public class Main {
                                 + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
                             //check average inequality
                             int responseCode = 0;
-                            if(priceObj.validMACDCrossover() && buyMode && !successfulBuy && !buyBidMode) {
+                            if(priceObj.validMACDCrossover() && buyMode && !successfulBuy) {
                                     if (askDouble <= lastDouble) {
                                         buy = BigDecimal.valueOf(askDouble);
                                         System.out.println("Take the ask at " + buy);
@@ -256,7 +256,7 @@ public class Main {
                                     System.out.println("BUY at " + buy);
                                     liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
                                     //maybe use response = 0?
-                                    if (buyBidMode) {
+                                    if (buyBidMode && responseCode != 201) {
                                         buy = buy.setScale(8, RoundingMode.HALF_UP);
                                         try {
                                             if (buy.doubleValue() >= askDouble) {
@@ -287,29 +287,27 @@ public class Main {
                                         responseCode = 0;
                                     }
                                 }
-                                if(lastDouble >=
-                                    buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
-                                    sell = BigDecimal.valueOf(bidDouble);
-                                }
                                 if(priceObj.validMACDBackCross() && successfulBuy && !sellBidMode && !sellGate ) {
                                     buyMode = false;
                                     sellGate = true;
                                 }
                                 if(sellGate && successfulBuy) {
-                                    if((Double) liveMarketData.get("Last") <
+                                    if(lastDouble <
                                         //sensitivity
                                         buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                         sell = BigDecimal.valueOf(bidDouble);
                                         try {
-                                            HttpResponse<String> response = sendOrder(sellRoutine(sell, liveMarketData));
+                                            HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
                                             responseCode = response.statusCode();
                                         }
                                         catch (IOException e) {
                                             System.out.print("There was an IOException " + e + "\n" + "response : " +
                                                 responseCode);
                                         }
-                                        hold = false;
-                                        sellGate = false;
+                                        if (responseCode == 201) {
+                                            hold = false;
+                                            sellGate = false;
+                                        }
                                         System.out.println("Sell exited because last price dropped to low");
                                     }
                                     else if(sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
@@ -320,14 +318,14 @@ public class Main {
                                         // if bid is a certian percent above last then take it..
                                         System.out.println("Hold missed sell wait due to not enuf profit");
                                     }
-                                    else if((Double) liveMarketData.get("Bid") < (Double) liveMarketData.get("Last")) {
+                                    else if(bidDouble < lastDouble) {
                                         hold = false;
                                         sell = BigDecimal.valueOf(lastDouble);
                                         sell = sell.subtract(BigDecimal.valueOf(.00000005));
                                         sellBidMode = true;
                                         System.out.println("Last was chosen then subtracted from");
                                     }
-                                    else if((Double) liveMarketData.get("Bid") > (Double) liveMarketData.get("Ask")) {
+                                    else if(bidDouble > askDouble) {
                                         hold = false;
                                         sell = BigDecimal.valueOf(bidDouble);
                                         sell = sell.subtract(BigDecimal.valueOf(.00000005));
@@ -345,14 +343,13 @@ public class Main {
                                 }
                                 if(sellBidMode && !hold) {
                                     // if the Bid is more than the last use the Last
-                                    sellGate = false;
                                     sell = sell.subtract(BigDecimal.valueOf(.00000001));
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
                                     //if no sell successful
                                     System.out.println("\n Cancel last sell and Sell at " + sell + " bid is " +
                                         liveMarketData.get("Bid"));
                                     try {
-                                       HttpResponse<String> response = sendOrder(sellRoutine(sell,liveMarketData));
+                                       HttpResponse<String> response = sendOrder(sellRoutine(sell,bidDouble));
                                        responseCode = response.statusCode();
                                     }
                                     catch (IOException e) {
@@ -370,7 +367,6 @@ public class Main {
                                     profitPercentageTotals += profit.doubleValue();
                                     System.out.println("Sell successful at " + sell + " " + "profit percent : " +
                                         profit + "%" + "\n response: " + responseCode);
-                                    sell = BigDecimal.valueOf(500.0);
                                     sellBidMode = false;
                                     buyMode = true;
                                     successfulBuy = false;
@@ -444,7 +440,7 @@ public class Main {
     public static Transaction createOrder(Double limit, String direction) throws MalformedURLException {
         return direction.equalsIgnoreCase("Buy") ?
             Buy.getInstance("LIMIT", limit, Global.orderTimeInForce, direction) :
-            Sell.getInstance("CEILING_LIMIT", limit, Global.orderTimeInForce, direction);
+            Sell.getInstance("LIMIT", limit, Global.orderTimeInForce, direction);
     }
     public static HttpResponse<String> sendOrder(Transaction order) throws IOException, InterruptedException {
         HttpResponse<String> response = order.send();
@@ -461,17 +457,17 @@ public class Main {
         return response;
     }
 
-    public static BigDecimal fixSell(Map<?,?> resultM) {
-        BigDecimal sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
+    public static BigDecimal fixSell(Double bidDouble) {
+        BigDecimal sell = BigDecimal.valueOf(bidDouble)
             .add(BigDecimal.valueOf(0.00000005));
         System.out.println("The sell was calculated lower than the bid, " + "\n" +
             "sell : " + sell);
         return sell;
     }
 
-    public static Transaction sellRoutine(BigDecimal sell, Map<?,?> resultM) throws IOException {
-        if (sell.doubleValue() < (Double) resultM.get("Bid")) {
-            BigDecimal fixedSell = fixSell(resultM).setScale(8, RoundingMode.HALF_UP);
+    public static Transaction sellRoutine(BigDecimal sell, Double bidDouble) throws IOException {
+        if (sell.doubleValue() <  bidDouble) {
+            BigDecimal fixedSell = fixSell(bidDouble).setScale(8, RoundingMode.HALF_UP);
             return createOrder(fixedSell.doubleValue(), "SELL");
         }
         return createOrder(sell.doubleValue(), "SELL");
