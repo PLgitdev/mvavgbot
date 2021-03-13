@@ -46,7 +46,7 @@ public abstract class Transaction implements Encryption, Communication{
             .uri(URI.create(sendUri.toString()))
             .POST(HttpRequest.BodyPublishers.ofString(requestBody))
             .header("Api-Key", Keys.API_KEY)
-            .header("Api-Timestamp", String.valueOf(System.currentTimeMillis() / 1000L))
+            .header("Api-Timestamp", String.valueOf(System.currentTimeMillis()))
             .header("Api-Content-Hash", contentH);
         String signature = createSignature(request);
         try {
