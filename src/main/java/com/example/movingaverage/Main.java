@@ -6,12 +6,12 @@ import com.example.movingaverage.Live.DataFetch;
 import com.example.movingaverage.Live.Sell;
 import com.example.movingaverage.Live.Transaction;
 import com.example.movingaverage.Model.Price;
-import com.google.api.client.http.HttpResponse;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
+import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -242,8 +242,8 @@ public class Main {
                                         buy = BigDecimal.valueOf(askDouble);
                                         System.out.println("Take the ask at " + buy);
                                         try {
-                                            HttpResponse response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                                            responseCode = response.getStatusCode();
+                                            HttpResponse<String> response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                                            responseCode = response.statusCode();
                                         }
                                         catch(IOException e) {
                                             System.out.println("IO Exception : " + e + "\n" + "response: " + responseCode);
@@ -271,8 +271,8 @@ public class Main {
                                                 buy = BigDecimal.valueOf(askDouble);
                                                 System.out.println("Take the ask at " + buy);
                                             }
-                                            HttpResponse response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                                            responseCode = response.getStatusCode();
+                                            HttpResponse<String> response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                                            responseCode = response.statusCode();
                                         } catch (IOException e) {
                                             System.out.print("There was an IOException " + e + "\n" + "response : " +
                                                 responseCode);
@@ -301,8 +301,8 @@ public class Main {
                                         buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
                                         sell = BigDecimal.valueOf(bidDouble);
                                         try {
-                                            HttpResponse response = sendOrder(sellRoutine(sell, liveMarketData));
-                                            responseCode = response.getStatusCode();
+                                            HttpResponse<String> response = sendOrder(sellRoutine(sell, liveMarketData));
+                                            responseCode = response.statusCode();
                                         }
                                         catch (IOException e) {
                                             System.out.print("There was an IOException " + e + "\n" + "response : " +
@@ -352,7 +352,8 @@ public class Main {
                                     System.out.println("\n Cancel last sell and Sell at " + sell + " bid is " +
                                         liveMarketData.get("Bid"));
                                     try {
-                                       HttpResponse response = sendOrder(sellRoutine(sell,liveMarketData));
+                                       HttpResponse<String> response = sendOrder(sellRoutine(sell,liveMarketData));
+                                       responseCode = response.statusCode();
                                     }
                                     catch (IOException e) {
                                         System.out.print("There was an IOException " + e + "\n response : " +
@@ -445,13 +446,13 @@ public class Main {
             Buy.getInstance("LIMIT", limit, Global.orderTimeInForce, direction) :
             Sell.getInstance("CEILING_LIMIT", limit, Global.orderTimeInForce, direction);
     }
-    public static HttpResponse sendOrder(Transaction order) throws IOException, InterruptedException {
-        HttpResponse response = order.send();
-        if(response.getStatusCode() == 201) {
+    public static HttpResponse<String> sendOrder(Transaction order) throws IOException, InterruptedException {
+        HttpResponse<String> response = order.send();
+        if(response.statusCode() == 201) {
             System.out.println("Successful order");
         }
-        if(response.getStatusCode() == 401)  {
-            System.out.println("Unauthorized " + response.getHeaders());
+        if(response.statusCode() == 401)  {
+            System.out.println("Unauthorized 401 body is" + response.body());
         }
         else {
             System.out.println("Response not 201: " + response);

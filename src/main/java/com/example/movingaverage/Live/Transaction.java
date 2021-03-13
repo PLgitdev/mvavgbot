@@ -2,7 +2,6 @@ package com.example.movingaverage.Live;
 
 import com.example.movingaverage.Global;
 import com.example.movingaverage.Keys;
-import com.google.api.client.http.*;
 import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
 import com.squareup.okhttp.RequestBody;
@@ -11,7 +10,11 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -32,11 +35,16 @@ public abstract class Transaction implements Encryption, Communication{
     protected String contentH;
     protected URL sendUri;
 
-    public final HttpResponse send() throws IOException {
-       //build request
+    public final HttpResponse<String> send() throws IOException, InterruptedException {
+        Gson gSon = new Gson();
+        String requestBody = gSon.toJson(content);
+
+        HttpClient client = HttpClient.newHttpClient();
+
+
         this.timestamp = Instant.now().getEpochSecond();
         try {
-            setContentHash(payload);
+            setContentHash(requestBody);
         }
         catch (NoSuchAlgorithmException e){
             System.out.println("invalid algorithm " + e );
@@ -48,15 +56,19 @@ public abstract class Transaction implements Encryption, Communication{
         catch (InvalidKeyException | NoSuchAlgorithmException e) {
             System.out.println("invalid algorithm or key " + e );
         }
-        setHeaders(headers);
-        request.setHeaders(headers);
-        return request.execute();
-    }
-    final public void setHeaders(HttpHeaders headers) {
-        headers.set("Api-Key", Keys.API_KEY);
-        headers.set("Api-Signature", signatureH);
-        headers.set("Api-Timestamp", timestamp.toString());
-        headers.set("Api-Content-Hash", contentH);
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("https://httpbin.org/post"))
+            .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+            .header("Api-Key", Keys.API_KEY)
+            .header("Api-Signature", signatureH)
+            .header("Api-Timestamp", timestamp.toString())
+            .header("Api-Content-Hash", contentH)
+            .build();
+        HttpResponse<String> response = client.send(request,
+            HttpResponse.BodyHandlers.ofString());
+        System.out.println(response.body());
+        System.out.println(response.statusCode());
+        return response;
     }
 
     final public String createHash(String content) throws NoSuchAlgorithmException, UnsupportedEncodingException {
