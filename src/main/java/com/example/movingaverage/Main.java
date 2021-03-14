@@ -279,7 +279,7 @@ public class Main {
                                                 responseCode);
                                         }
                                     }
-                                    if(responseCode == 201 || buy.doubleValue() >= askDouble) {
+                                    if(responseCode == 201) {
                                         successfulBuy = true;
                                         //buyMode = false;
                                         buyBidMode = false;
@@ -357,7 +357,7 @@ public class Main {
                                             responseCode);
                                     }
                                 }
-                                if(responseCode == 201 || sell.doubleValue() >= bidDouble && !buyMode && successfulBuy) {
+                                if(responseCode == 201 && !buyMode && successfulBuy) {
                                     //? and valid MACDCrossover?
                                     BigDecimal profit = sell.subtract(buy);
                                     if(profit.doubleValue() > 0d) {
