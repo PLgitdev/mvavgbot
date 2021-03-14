@@ -295,7 +295,7 @@ public class Main {
 
                             if(sellGate && lastDouble <
                                 //sensitivity
-                                buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
+                                buy.subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
                                 sell = BigDecimal.valueOf(bidDouble);
                                 try {
                                     HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
@@ -320,9 +320,8 @@ public class Main {
                                 else if(bidDouble > askDouble) {
                                     hold = false;
                                     sell = BigDecimal.valueOf(bidDouble);
-                                    sell = sell.subtract(BigDecimal.valueOf(.0000005));
                                     sellBidMode = true;
-                                    System.out.println("Bid was chosen then subtracted from");
+                                    System.out.println("Bid was chosen");
                                 }
                                 else {
                                     hold = false;
@@ -330,7 +329,7 @@ public class Main {
                                     sell = sell.subtract(BigDecimal.valueOf(.0000005));
                                     System.out.println("Ask was chosen then subtracted from");
                                 }
-                                if(sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.001)))
+                                if(sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.01)))
                                         .doubleValue() && sell.doubleValue() != 0) {
                                     hold = true;
                                     //back to buy mode and threading?
@@ -341,7 +340,7 @@ public class Main {
                                 }
                                 System.out.println("\n" + "Sell at " + sell + " vs bid " + liveMarketData.get("Bid"));
                                 }
-                                if(!hold && sellGate) {
+                                if(!hold && sellGate && successfulBuy) {
                                     // if the Bid is more than the last use the Last
                                     sell = sell.subtract(BigDecimal.valueOf(.00000001));
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
