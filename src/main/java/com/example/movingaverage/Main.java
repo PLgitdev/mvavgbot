@@ -237,6 +237,7 @@ public class Main {
                                 + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
                             //check average inequality
                             int responseCode = 0;
+                            buyMode = priceObj.validMACDCrossover();
                             if(priceObj.validMACDCrossover() && buyMode && !successfulBuy) {
                                     if (askDouble <= lastDouble) {
                                         buy = BigDecimal.valueOf(askDouble);
@@ -256,12 +257,12 @@ public class Main {
                                     System.out.println("BUY at " + buy);
                                     liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
                                     //maybe use response = 0?
-                                    if (buyBidMode && responseCode != 201) {
+                                    if (buyBidMode && responseCode != 201 && buy.doubleValue() < askDouble) {
                                         buy = buy.setScale(8, RoundingMode.HALF_UP);
                                         try {
                                             if (buy.doubleValue() >= askDouble) {
                                                 buy = BigDecimal.valueOf(askDouble).add(BigDecimal.valueOf(0.00000002));
-                                                System.out.println("Take the ask at " + buy);
+                                                System.out.println("add to the ask for " + buy);
                                             }
                                             if (buy.doubleValue() > lastDouble) {
                                                 buy = BigDecimal.valueOf(lastDouble)
@@ -278,7 +279,7 @@ public class Main {
                                                 responseCode);
                                         }
                                     }
-                                    if(responseCode == 201) {
+                                    if(responseCode == 201 || buy.doubleValue() >= askDouble) {
                                         successfulBuy = true;
                                         //buyMode = false;
                                         buyBidMode = false;
@@ -291,6 +292,7 @@ public class Main {
                                     buyMode = false;
                                     sellGate = true;
                                 }
+
                             if(sellGate && lastDouble <
                                 //sensitivity
                                 buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
@@ -305,8 +307,6 @@ public class Main {
                                 }
                                 sellGate = false;
                                 sellBidMode = false;
-                                buyMode = true;
-                                successfulBuy = false;
                                 System.out.println("Sell exited because last price dropped to low");
                             }
                             if(sellGate && successfulBuy) {
@@ -330,7 +330,7 @@ public class Main {
                                     sell = sell.subtract(BigDecimal.valueOf(.0000005));
                                     System.out.println("Ask was chosen then subtracted from");
                                 }
-                                if(sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
+                                if(sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.001)))
                                         .doubleValue() && sell.doubleValue() != 0) {
                                     hold = true;
                                     //back to buy mode and threading?
@@ -357,7 +357,7 @@ public class Main {
                                             responseCode);
                                     }
                                 }
-                                if(responseCode == 201 && !buyMode) {
+                                if(responseCode == 201 || sell.doubleValue() >= bidDouble && !buyMode && successfulBuy) {
                                     //? and valid MACDCrossover?
                                     BigDecimal profit = sell.subtract(buy);
                                     if(profit.doubleValue() > 0d) {
@@ -369,7 +369,6 @@ public class Main {
                                         profit + "%" + "\n response: " + responseCode);
                                     sellGate = false;
                                     sellBidMode = false;
-                                    buyMode = true;
                                     successfulBuy = false;
                                 }
                                 //reset the historical data
