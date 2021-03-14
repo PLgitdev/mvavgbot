@@ -291,57 +291,57 @@ public class Main {
                                     buyMode = false;
                                     sellGate = true;
                                 }
-                                if(sellGate && successfulBuy) {
-                                    if(lastDouble <
-                                        //sensitivity
-                                        buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
-                                        sell = BigDecimal.valueOf(bidDouble);
-                                        try {
-                                            HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
-                                            responseCode = response.statusCode();
-                                        }
-                                        catch (IOException e) {
-                                            System.out.print("There was an IOException " + e + "\n" + "response : " +
-                                                responseCode);
-                                        }
-                                        if (responseCode == 201) {
-                                            hold = false;
-                                            sellGate = false;
-                                        }
-                                        System.out.println("Sell exited because last price dropped to low");
-                                    }
-                                    else if(sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
-                                            .doubleValue()) {
-                                        hold = true;
-                                        //back to buy mode and threading?
-                                        // if its about to pop only take big ones if its flat take small ones
-                                        // if bid is a certian percent above last then take it..
-                                        System.out.println("Hold missed sell wait due to not enuf profit");
-                                    }
-                                    else if(bidDouble < lastDouble) {
-                                        hold = false;
+                            if(sellGate && lastDouble <
+                                //sensitivity
+                                buy.subtract(buy.multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
+                                sell = BigDecimal.valueOf(bidDouble);
+                                try {
+                                    HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
+                                    responseCode = response.statusCode();
+                                }
+                                catch (IOException e) {
+                                    System.out.print("There was an IOException " + e + "\n" + "response : " +
+                                        responseCode);
+                                }
+                                sellGate = false;
+                                sellBidMode = false;
+                                buyMode = true;
+                                successfulBuy = false;
+                                System.out.println("Sell exited because last price dropped to low");
+                            }
+                            if(sellGate && successfulBuy) {
+                                if(bidDouble < lastDouble) {
+                                    hold = false;
                                         sell = BigDecimal.valueOf(lastDouble);
-                                        sell = sell.subtract(BigDecimal.valueOf(.00000005));
+                                        sell = sell.subtract(BigDecimal.valueOf(.0000005));
                                         sellBidMode = true;
                                         System.out.println("Last was chosen then subtracted from");
-                                    }
-                                    else if(bidDouble > askDouble) {
-                                        hold = false;
-                                        sell = BigDecimal.valueOf(bidDouble);
-                                        sell = sell.subtract(BigDecimal.valueOf(.00000005));
-                                        sellBidMode = true;
-                                        System.out.println("Bid was chosen then subtracted from");
-                                    }
-                                    else {
-                                        hold = false;
-                                        sell = BigDecimal.valueOf(askDouble);
-                                        sell = sell.subtract(BigDecimal.valueOf(.00000005));
-                                        sellBidMode = true;
-                                        System.out.println("Ask was chosen then subtracted from");
-                                    }
-                                    System.out.println("\n" + "Sell at " + sell + " vs bid " + liveMarketData.get("Bid"));
                                 }
-                                if(sellBidMode && !hold) {
+                                else if(bidDouble > askDouble) {
+                                    hold = false;
+                                    sell = BigDecimal.valueOf(bidDouble);
+                                    sell = sell.subtract(BigDecimal.valueOf(.0000005));
+                                    sellBidMode = true;
+                                    System.out.println("Bid was chosen then subtracted from");
+                                }
+                                else {
+                                    hold = false;
+                                    sell = BigDecimal.valueOf(askDouble);
+                                    sell = sell.subtract(BigDecimal.valueOf(.0000005));
+                                    System.out.println("Ask was chosen then subtracted from");
+                                }
+                                if(sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.0001)))
+                                        .doubleValue() && sell.doubleValue() != 0) {
+                                    hold = true;
+                                    //back to buy mode and threading?
+                                    //adjust this i guess
+                                    // if its about to pop only take big ones if its flat take small ones
+                                    // if bid is a certian percent above last then take it..
+                                    System.out.println("Hold missed sell wait due to not enuf profit");
+                                }
+                                System.out.println("\n" + "Sell at " + sell + " vs bid " + liveMarketData.get("Bid"));
+                                }
+                                if(!hold && sellGate) {
                                     // if the Bid is more than the last use the Last
                                     sell = sell.subtract(BigDecimal.valueOf(.00000001));
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
@@ -367,6 +367,7 @@ public class Main {
                                     profitPercentageTotals += profit.doubleValue();
                                     System.out.println("Sell successful at " + sell + " " + "profit percent : " +
                                         profit + "%" + "\n response: " + responseCode);
+                                    sellGate = false;
                                     sellBidMode = false;
                                     buyMode = true;
                                     successfulBuy = false;
