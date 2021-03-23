@@ -1,4 +1,5 @@
 package com.example.movingaverage.Model;
+import com.google.common.annotations.VisibleForTesting;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,6 +15,7 @@ import java.util.List;
 @EqualsAndHashCode
 @Builder
 @Data
+@VisibleForTesting
 public class Price {
     private Double smoothing;
     private Double currentPrice;
@@ -121,15 +123,13 @@ public class Price {
         return (smoothing / (period + 1d));
     }
     //sma is off be cause it is doing int division
-    private double calculateSMA(List<Double> a) {
-        int n = a.size();
-        //binarySum(a, a[], a[n])
-        BigDecimal sum = BigDecimal.valueOf(0);
-        for(Double x : a) {
-            sum = sum.add(BigDecimal.valueOf(x));
-        }
-        sum = sum.divide(BigDecimal.valueOf(n), 8,  RoundingMode.HALF_UP);
-        return sum.doubleValue();
+    private double calculateSMA(List<Double> l) {
+        int n = l.size();
+        Double[] a = new Double[n];
+        a = l.toArray(a);
+        double sum = binarySum(a, 0, a.length);
+        BigDecimal bigSum = BigDecimal.valueOf(sum);
+        return bigSum.divide(BigDecimal.valueOf(n), 8,  RoundingMode.HALF_UP).doubleValue();
     }
     private double calculateEMA(Double b, Double a, Double smoothing, int period) {
         Double m = emaMultiplier(smoothing, period);
