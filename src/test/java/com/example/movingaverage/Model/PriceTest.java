@@ -11,18 +11,18 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PriceTest {
-    @BeforeEach
-    void setUp() {
-        ArrayList<Double> pricesShorter = new ArrayList<>(Arrays.asList(.01,.02,.01));
-        ArrayList<Double> pricesLonger = new ArrayList<>(Arrays.asList(.01,.02,.01));
-        Price priceObj = Price.builder().priceShorter(pricesShorter)
-            .priceLonger(pricesLonger)
-            .smoothing(2.0)
-            .build();
-    }
-
-    @Test
+    final Double answerOne = 0.01333333;
+    final Double answerTwo = 0.0325;
+    ArrayList<Double> pricesShorter = new ArrayList<>(Arrays.asList(.01,.02,.01));
+    ArrayList<Double> pricesLonger = new ArrayList<>(Arrays.asList(.01, .02, .04, .06));
+    Price priceObj = Price.builder().priceShorter(pricesShorter)
+        .priceLonger(pricesLonger)
+        .smoothing(2.0)
+        .build();
+ @Test
     void calculateSMATest() {
-
+     priceObj.setSMA();
+     assertEquals(answerOne,priceObj.getAvgShorter());
+     assertEquals(answerTwo, priceObj.getAvgLonger());
     }
 }
