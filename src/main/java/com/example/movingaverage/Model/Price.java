@@ -3,6 +3,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,11 +124,12 @@ public class Price {
     private double calculateSMA(List<Double> a) {
         int n = a.size();
         //binarySum(a, a[], a[n])
-        double sum = 0d;
+        BigDecimal sum = BigDecimal.valueOf(0);
         for(Double x : a) {
-            sum += x;
+            sum = sum.add(BigDecimal.valueOf(x));
         }
-        return sum / n;
+        sum = sum.divide(BigDecimal.valueOf(n), 8,  RoundingMode.HALF_UP);
+        return sum.doubleValue();
     }
     private double calculateEMA(Double b, Double a, Double smoothing, int period) {
         Double m = emaMultiplier(smoothing, period);
