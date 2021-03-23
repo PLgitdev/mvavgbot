@@ -122,7 +122,6 @@ public class Price {
     private Double emaMultiplier(Double smoothing, int period) {
         return (smoothing / (period + 1d));
     }
-    //sma is off be cause it is doing int division
     private double calculateSMA(List<Double> l) {
         int n = l.size();
         Double[] a = new Double[n];
