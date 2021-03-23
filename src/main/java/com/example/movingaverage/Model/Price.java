@@ -127,7 +127,7 @@ public class Price {
         int n = l.size();
         Double[] a = new Double[n];
         a = l.toArray(a);
-        double sum = binarySum(a, 0, a.length);
+        double sum = binarySum(a, 0, a.length - 1);
         BigDecimal bigSum = BigDecimal.valueOf(sum);
         return bigSum.divide(BigDecimal.valueOf(n), 8,  RoundingMode.HALF_UP).doubleValue();
     }
