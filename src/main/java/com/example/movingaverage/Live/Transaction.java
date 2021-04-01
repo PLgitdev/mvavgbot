@@ -16,9 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public abstract class Transaction implements Encryption, Communication{
     protected String type;
@@ -91,21 +89,6 @@ public abstract class Transaction implements Encryption, Communication{
     private void setSignatureH(String signature) throws NoSuchAlgorithmException, InvalidKeyException {
         this.signatureH = createSecureHash(signature);
     }
-    private String mapToString(Map<String, String> map) {
-        return map.keySet().stream()
-            .map(key -> "\"" + key + "\"" + ":" + "\"" + map.get(key) + "\"")
-            .collect(Collectors.joining(",\n", "{\n", "\n}"));
-    }
-
-    /*final void setContent() {
-        this.content.put("marketSymbol", Global.mOne + "-" + Global.mTwo);
-        this.content.put("direction", direction);
-        this.content.put("limit", limit);
-        this.content.put("timeInForce", timeInForce);
-        this.content.put("type", type);
-    }
-
-     */
 }
 
 

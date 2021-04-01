@@ -71,6 +71,7 @@ public class Price {
             twelveDayRibbons.add(calculateSMA(shortMACDPeriod));
         }
     }
+    //LinkedList!!!!
     public void setLMACDEMA() {
         if(twentySixDayRibbons.size() > 0) {
             double prev = twentySixDayRibbons.get(twentySixDayRibbons.size() - 1);
@@ -105,6 +106,7 @@ public class Price {
             priceLonger.remove(priceLonger.size() - x);
         }
     }
+    //LinkedList ????
     public void initializeSignalLine() {
         int n = nineDaysOfClose.size();
         ArrayList<Double> temp = new ArrayList<>();
