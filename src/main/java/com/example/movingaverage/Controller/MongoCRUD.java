@@ -1,4 +1,4 @@
-package Controller;
+package com.example.movingaverage.Controller;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static com.mongodb.client.model.Filters.gt;
 import static com.mongodb.client.model.Filters.gte;
 import static com.mongodb.client.model.Projections.include;
 
@@ -32,7 +31,7 @@ public class MongoCRUD {
         return soleInstanceMongoCRUD;
     }
 
-    public void createMarketData(Map<?, ?> data, String collection) {
+    public void createMarketData(Map<Object,Object> data, String collection) {
        Document doc = new Document();
        data.forEach( (key, value) -> doc.append(String.valueOf(key), value));
        db.getCollection(collection).insertOne(doc);
@@ -43,7 +42,7 @@ public class MongoCRUD {
     }
 
 
-    public ArrayList<Map<?, ?>> retrieveMarketDataByDays(String collection, Long days, String q, String p) {
+    public ArrayList<Map<?, ?>> retrieveMarketDataByDays(String collection, int days, String q, String p) {
         ArrayList<Map<?, ?>> marketDataCollection = new ArrayList<Map<?, ?>>(){};
         MongoCollection<Document> dbCollection = db.getCollection(collection);
         dbCollection .find(gte(q, now.minusDays(days).toString()))

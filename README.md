@@ -20,9 +20,6 @@ If you do not complete a buy or you stop the program without a command you will 
 This is for use with MongoDB.
 
 
-
-![buy](https://github.com/PLgitdev/images/blob/master/buy.PNG)
-
 Current version buy-sell on btc-eth
 
 ![buy-sell](https://github.com/PLgitdev/images/blob/master/cryptogif.gif)
