@@ -14,6 +14,18 @@ import java.net.MalformedURLException;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.*;
+ /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ This program is an automated trading algorithm with a modular strategy based on common financial indicators.
+ In this version the deciding indicators are the moving average convergence divergence, commonly known as MACD and
+ the signal line which both are derived from historical data. These EMA or exponential moving averages are
+ derived from the simple moving average determined by time period of historical data you select to use for analysis.
+ The simple moving average is fundamental in calculating this weighted average which determines the buy sell decisions
+ of the program. This program uses smoothing of 2.0 for this EMA multiplier which is a standard.
+ *Caution this bot runs on a model currently that is preset for an optimal point in the market.
+ if you feel like forking the project you would most likely want to add RSI
+ this project is currently adding an indicator RSI which will extend the period of time the bot can be left
+ unmonitored.
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 public class Main {
 
@@ -46,7 +58,7 @@ public class Main {
                             " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
                         int len = sc.nextInt();
                         String l = "";
-                        switch (len % 10) {
+                        switch (len) {
                             case 0:
                                 l = "MINUTE_1";
                                 break;
@@ -59,8 +71,11 @@ public class Main {
                             case 3:
                                 l = "DAY_1";
                                 break;
+                            default:
+                                throw new Exception();
                         }
                         ArrayList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
+                        //rate limit is dynamic be careful adjusting Thread.sleep
                         Thread.sleep(1000);
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
                         System.out.println("Please enter day count for the short moving avg up to 365 days");
@@ -70,6 +85,7 @@ public class Main {
                         System.out.println("Please enter a calculation strategy high-low = 0, open-close = 1, " +
                             "close = 2");
                         inputS = sc.next();
+                        //there has to be a better way to create all these objects
                         ArrayList<Map<?, ?>> shorterDaysDataClose;
                         ArrayList<Map<?, ?>> shorterDaysDataOpen;
                         ArrayList<Map<?, ?>> longerDaysDataClose;
@@ -302,9 +318,6 @@ public class Main {
                                         responseCode);
                                 }
                                 sellBidMode = false;
-                                if(responseCode == 201) {
-                                    bottomOut++;
-                                }
                                 System.out.println("Sell exited because last price dropped to low");
                             }
                             else if(successfulBuy && sellBidMode) {
@@ -330,9 +343,6 @@ public class Main {
                                 if(sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.015)))
                                         .doubleValue() && sell.doubleValue() != 0) {
                                     hold = true;
-                                    //back to buy mode and threading?
-                                    //adjust this i guess
-                                    // if its about to pop only take big ones if its flat take small ones
                                     System.out.println("Hold missed sell wait due to not enough profit");
                                 }
                                 if(buyMode) {
@@ -416,18 +426,6 @@ public class Main {
             }
         }
     }
-
-    /*public static Map<Object,?> liveMarketDataTransform(Map<Object, Object> map) {
-        map.forEach((k,v) ->  {
-            map.replace(k,k.toString());
-            if(map.get(v).toString().matches("[.]\\d")) {
-            map.replace(k, v, Double.valueOf(v.toString()));
-            }
-        });
-        return map;
-    }
-
-     */
     public static void takeAvg (ArrayList<Map<?, ?>> maps,
                                 ArrayList<Double> arOne, ArrayList<Double> arTwo,
                                 ArrayList<Double> prices) {
@@ -472,189 +470,3 @@ public class Main {
         return createOrder(sell.doubleValue(), "SELL");
     }
 }
-//take the avg of open and close
-                                /*for (int i = 0; i < shorterDaysDataOpen.size(); i++) {
-                                    pricesS.add((shorterDaysDataOpenD.get(i) + shorterDaysDataCloseD.get(i)) / 2);
-                                } for (int i = 0; i < longerDaysDataOpen.size(); i++) {
-                                    pricesL.add((longerDaysDataOpenD.get(i) + longerDaysDataCloseD.get(i)) / 2);
-                                }
-                                */
-//if ask is more than last use ask
-// ^^ oirg 0.00000010
-// send new sells every time sell.subtract(BigDecimal.valueOf(0.00000001));
-//sell multiplier should be related to volume
-//if volume increases more than at the time of buy increase multiplier
-//get out at bid or get out at scale option
-//ask - an amount to try to get off the sale or bid plus amount
-//bid + an amount
-//only sell on a successful buy?
-//sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()));
-//win loss ration, profit total
-//resultM.forEach( (key,value) -> System.out.println(key + ":"+  value));
-                                /*if(Double.valueOf(sell.toString()) < (Double) resultM.get("Last") &&
-                                    !sell.equals(BigDecimal.valueOf(0.0)) && !buyMode) {
-                                    System.out.println("Sucessfull SELL");
-                                }
-                                */
-                            /*else if (!priceObj.validSMACrossover() && successfulBuy) {
-
-
-                            }
-                            else if (!priceObj.validSMACrossover() && successfulSell
-                             */
-//send a buy request then either scale profits or sell at crossover
-//check out v1 and look at buy request as well as the profit scaling
-//make buy order a limit buy that is a little less than the target. (safety)
-//and successful buy
-//if MACD crosses without successful buy reset to buy mode
-//does it cancel current buy?
-//scale profits ??? buy object sell object needed
-//grab someones order out of the order book
-//ask + 1?
-//if it starts to dig a hole increase quanitity * by how many times it has looped
-//try to use last as each base for bidding basically subtract from last each time not buy
-
-//BigDecimal sellMultiplier = BigDecimal.valueOf(.04);
-//sell = buy.multiply(sellMultiplier);
-//if the bid is less than the buy during a sell mode you should respond with buy
-//if bid is lower than price meet price
-//if(resultM.get("Last") > )
-//bidding storm increasing slightly every iteration?
-// we need to make sure transaction went through to continue to sell mode
-//manual sell button
-//profit zone indicator
-// if its in sell mode and encounters a crossover it should sell?
-//stoploss at 3%
-//less quantitiy at the beining more as time progresses to a point
-
-                                /*if ((Double) resultM.get("Bid") >= sell.doubleValue()) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                }
-                                 */
-//if ask less than sell make it ask
-                                /*if ((Double) resultM.get("Last") < sell.doubleValue()) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Last"));
-                                }
-                                 */
-                                /*if (sell.doubleValue() < (Double) resultM.get("Bid") ||
-                                    (Double) resultM.get("Last") <= (Double) resultM.get("Bid")) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                }
-r                                */
-                            /*if(!sellBidMode && successfulBuy && buy.doubleValue() < buy
-                                .subtract(buy.multiply(BigDecimal.valueOf(0.01))).doubleValue()) {
-                                sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                System.out.println("Sell replaced with bid");
-                            }
-                             */
-//stop loss for buys
-//fixed scaled buys option
-//what to do if buy is more than last but less than ask during buy
-//if the bid
-// buy less than price and less than ask good barder
-                                /*else if ((Double) resultM.get("Last") > buy.doubleValue() &&
-                                    (Double) resultM.get("Ask") > buy.doubleValue()) {
-                                    buy = BigDecimal.valueOf((Double) resultM.get("Last"));
-                                    buy = buy.add(buy.multiply(BigDecimal.valueOf(0.0001)));
-                                }
-                                 */
-                               /* else if (buy.doubleValue() < (Double) resultM.get("Last")) {
-                                }
-
-                                */
-                                /*else if((Double) resultM.get("Last") > buy.subtract(buy
-                                    .multiply(BigDecimal.valueOf(0.001))).doubleValue()) {
-                                     sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
-                                        .subtract(BigDecimal.valueOf(0.00000001));
-                                }
-                                /*else if ((Double) resultM.get("Bid") > buy.doubleValue()) {
-                                    sell = BigDecimal.valueOf(Double.valueOf(resultM.get("Bid").toString()))}
-                            /*if((Double) resultM.get("Bid") > (Double) resultM.get("Last") &&
-                                sell.doubleValue() < (Double) resultM.get("Last") &&
-                                !buyMode && sellBidMode && priceObj.validMACDCrossover()) {
-                                sell =
-                                    BigDecimal.valueOf((Double) resultM.get("Bid"))
-                                        .subtract(BigDecimal.valueOf(0.00000005));
-                                System.out.println("Sell is replaced with percentage of ask " + sell);
-                            }
-
-                             */
-                            /*if(sell.doubleValue() > (Double) resultM.get("Last") && sellBidMode) {
-                                sell = BigDecimal.valueOf((Double) resultM.get("Last"));
-                            }
-
-                             */
-
-                                /*if((Double) resultM.get("Bid") > buy.doubleValue()) {
-                                    if((Double) resultM.get("Bid") >= (Double) resultM.get("Last")) {
-                                        sellBidMode = true;
-                                    }
-                                    else {
-                                        sell = BigDecimal.valueOf((Double) resultM.get("Bid"))
-                                                .subtract(BigDecimal.valueOf(0.00000005));
-                                        System.out.println("Bid higher than buy and Bid lower than last");
-                                    }
-
-                                }
-                                /*else if(sell.doubleValue() < buy.doubleValue()) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Ask"))
-                                        .subtract(BigDecimal.valueOf(0.00000005));
-                                    sellBidMode = true;
-                                }
-
-                                 */
-                                /*else {
-                                    if((Double) resultM.get("Last") > sell.doubleValue()) {
-                                        if ((Double) resultM.get("Ask") > sell.doubleValue()) {
-                                            sell = BigDecimal.valueOf((Double) resultM.get("Ask"))
-                                                .subtract(BigDecimal.valueOf((Double) (resultM.get("Ask")))
-                                                    .multiply(BigDecimal.valueOf(0.0001)));
-                                            System.out.println("Sell is less than the Last " +
-                                                "and ask is more than the sell replacing with percentage of ask ");
-                                        }
-                                        else {
-                                            sell = BigDecimal.valueOf((Double) resultM.get("Last"));
-                                            sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.00001)));
-                                            System.out.println("Sell will be subtracted by a multiple of .0001");
-                                        }
-                                    }
-
-                                 */
-//sell = sell.subtract(sell.multiply(BigDecimal.valueOf(.0000001)));
-//System.out.println("Sell will be subtracted by a multiple of .0001");
-// ^ big reduction here small during bid
-// sell = sell.setScale(8, RoundingMode.HALF_UP);
-                                /*jjjelse if (priceObj.validMACDBackCross()) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                    sell = sell.subtract(BigDecimal.valueOf(0.00000002));
-                                    System.out.println("Sell exited due to shift in MACD in real life " +
-                                        "you could hold instead of sell");
-                                }
-
-                                 */
-                                /*jjjelse if (priceObj.validMACDBackCross()) {
-                                    sell = BigDecimal.valueOf((Double) resultM.get("Bid"));
-                                    sell = sell.subtract(BigDecimal.valueOf(0.00000002));
-                                    System.out.println("Sell exited due to shift in MACD in real life " +
-                                        "you could hold instead of sell");
-                                }
-
-                                 */
-//mayb take the below if statement out
-                             /*else if (priceObj.validMACDBackCross()){
-                                //cancel last buy
-                                System.out.println("no buys / cancel ur buy");
-                            }
-                              */
-                                /*else if (priceObj.validMACDCrossover()) {
-                                    hold = true;
-                                    System.out.println("Sell on hold due to MACD");
-                                }
-
-                                 */
-//MACD gaurd on  off capability
-//MACD gaurd hits early you need to keep ir from premptivly cutting you out
-//if it hits a new low quantity up!
-//new 24 hour low this multiplier below up!
-//quanitity tied to overall score
-//.00001 might be too sensitive
