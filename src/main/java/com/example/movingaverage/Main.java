@@ -21,10 +21,10 @@ import java.util.*;
  derived from the simple moving average determined by time period of historical data you select to use for analysis.
  The simple moving average is fundamental in calculating this weighted average which determines the buy sell decisions
  of the program. This program uses smoothing of 2.0 for this EMA multiplier which is a standard.
- *Caution this bot runs on a model currently that is preset for an optimal point in the market.
+ *Caution this bot runs on a model currently that is preset for an optimal entry point in the market.
  if you feel like forking the project you would most likely want to add RSI
  this project is currently adding an indicator RSI which will extend the period of time the bot can be left
- unmonitored.
+ unmonitored and reduce the amount of experience necessary with trading to make profit.
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 public class Main {
@@ -41,7 +41,6 @@ public class Main {
          String inputS;
          BigDecimal profit = new BigDecimal(0);
          LocalDateTime start = LocalDateTime.now();
-         int bottomOut = 0;
          Global.quant = .0400000;
 
         System.out.println("Please enter markets separated by comma, or clear");
@@ -85,7 +84,6 @@ public class Main {
                         System.out.println("Please enter a calculation strategy high-low = 0, open-close = 1, " +
                             "close = 2");
                         inputS = sc.next();
-                        //there has to be a better way to create all these objects
                         ArrayList<Map<?, ?>> shorterDaysDataClose;
                         ArrayList<Map<?, ?>> shorterDaysDataOpen;
                         ArrayList<Map<?, ?>> longerDaysDataClose;
