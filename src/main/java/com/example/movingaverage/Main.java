@@ -6,6 +6,7 @@ import com.example.movingaverage.Live.DataFetch;
 import com.example.movingaverage.Live.Sell;
 import com.example.movingaverage.Live.Transaction;
 import com.example.movingaverage.Model.Price;
+import lombok.Builder;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -97,6 +98,7 @@ public class Main {
                         ArrayList<Double> longerDaysDataCloseD = new ArrayList<>();
                         ArrayList<Double> pricesS = new ArrayList<>();
                         ArrayList<Double> pricesL = new ArrayList<>();
+                        //Price.PriceBuilder priceBuilder = Price.builder().smoothing(2.0);
 
                         switch (inputS) {
                             case "0":
