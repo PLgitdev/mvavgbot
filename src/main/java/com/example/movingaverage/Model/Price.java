@@ -16,11 +16,11 @@ Simple moving average                     - Average calculated for each of the t
 The moving average convergence divergence - A weighted average using a classical 12, 26, close strategy derived from SMA
 The signal line                           - Take the EMA of 9 days of the closing price
 
-This object will be updated by adding Last prices from incoming HOLC data from the server every iteration
+This object will be updated by adding Last prices from incoming HOLC data from the server every iteration it will then
+make candles based on candle size global input.
 
 Once the data has has expired it will be removed
     For example:  the program has been running longer than one day and needs to recalculate the indicators
-
 
 This object uses methods that return boolean values based on inequities between the indicators
     For example: Buy signal will be affected by the boolean value between the signal line and the MACD (mACD)
@@ -69,9 +69,10 @@ public class Price {
     }
 
     public void setSMACDEMA() {
-        Deque<Double> linkedTwelveDay = new LinkedList<>(twelveDayRibbons);
-        if (linkedTwelveDay.size() > 0) {
-            double prev = linkedTwelveDay.pop();
+        //ArrayDeque chosen to reduce space complexity required by a D Linked List
+        Deque<Double> twelveDayDeque = new ArrayDeque<>(twelveDayRibbons);
+        if (!this.twelveDayRibbons.isEmpty()) {
+            double prev = twelveDayDeque.pop();
             this.sMACDEMA = calculateEMA(currentPrice, prev, smoothing,12);
             this.twelveDayRibbons.add((sMACDEMA));
         }
@@ -81,9 +82,9 @@ public class Price {
     }
 
     public void setLMACDEMA() {
-        Deque<Double> linkedTwentyDay = new LinkedList<>(twentySixDayRibbons);
-        if (linkedTwentyDay.size() > 0) {
-            double prev = linkedTwentyDay.pop();
+        Deque<Double> twentyDayDeque = new ArrayDeque<>(twentySixDayRibbons);
+        if (!this.twentySixDayRibbons.isEmpty()) {
+            double prev = twentyDayDeque.pop();
             this.lMACDEMA  = calculateEMA(currentPrice, prev, smoothing,26);
             this.twentySixDayRibbons.add((lMACDEMA));
         }
@@ -121,7 +122,7 @@ public class Price {
             Deque<Double> linkedSignalLine = new LinkedList<>(signalLine);
             double prev = linkedSignalLine.pop();
             this.signal = calculateEMA(mACD, prev, smoothing, 9);
-            this.signalLine.add(signal); //create a signal line by making a EMA function
+            this.signalLine.add(signal); //create a signal line by calculating the EMA function
         }
     }
 
@@ -169,9 +170,9 @@ public class Price {
         return bigSum.divide(BigDecimal.valueOf(n), 8,  RoundingMode.HALF_UP).doubleValue();
     }
 
-    private double calculateEMA(Double b, Double a, Double smoothing, int period) {
-        Double m = emaMultiplier(smoothing, period);
-        return (b * m) + (a * (1 - m));
+    private double calculateEMA(Double current, Double previous, Double smoothing, int period) {
+        Double multiplier = emaMultiplier(smoothing, period);
+        return (current * multiplier) + (previous * (1 - multiplier));
     }
     private boolean validShortCrossover(Double a, Double b) {
         if (a != null &&  b != null) {

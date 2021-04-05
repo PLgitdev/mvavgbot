@@ -50,32 +50,38 @@ public class Main {
                 marketSplit = markets.split(",");
                 Global.mOne = marketSplit[0].toUpperCase();
                 Global.mTwo = marketSplit[1].toUpperCase();
+                int candleLength = Integer.MIN_VALUE;
+                int candleLengthM = Global.rateLimit / 1000;
                 fetcher = DataFetch.getInstance();
                 if (fetcher.valid()) {
                     try {
                         System.out.println("Welcome please enter a candle length" +
                             " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
-                        int len = sc.nextInt();
+                        Global.len = sc.nextInt();
                         String l = "";
-                        switch (len) {
+                        switch (Global.len) {
                             case 0:
                                 l = "MINUTE_1";
+                                candleLength = 60 / candleLengthM;
                                 break;
                             case 1:
                                 l = "MINUTE_5";
+                                candleLength = (60 * 5) / candleLengthM;
                                 break;
                             case 2:
                                 l = "HOUR_1";
+                                candleLength = (60 * 60) / candleLengthM;
                                 break;
                             case 3:
                                 l = "DAY_1";
+                                candleLength = 86400 / candleLengthM;
                                 break;
                             default:
                                 throw new Exception();
                         }
                         ArrayList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
                         //rate limit is dynamic be careful adjusting Thread.sleep
-                        Thread.sleep(1000);
+                        Thread.sleep(Global.rateLimit);
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, "historicaldata"));
                         System.out.println("Please enter day count for the short moving avg up to 365 days");
                         inputL = sc.nextInt();
@@ -236,11 +242,10 @@ public class Main {
                             liveMarketData = fetcher.marketDataFetcher();
                             Thread.sleep(1000);
                             priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
-                            priceObj.setSMA();
-                            priceObj.setSMACDEMA();
-                            priceObj.setLMACDEMA();
-                            priceObj.setMACD();
-                            priceObj.updateSignalLine();
+                            //if the incoming size reaches a factor of a candle length create a candle
+                            if(priceObj.getPriceLonger().size() % candleLength == 0 &&
+                                priceObj.getPriceShorter().size() % candleLength == 0)
+                            createCandle(priceObj);
                             mongoCRUD.createMarketData(liveMarketData, "marketsummary");
                             //set the transaction obj
                             // liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value));
@@ -467,5 +472,13 @@ public class Main {
             return createOrder(fixedSell.doubleValue(), "SELL");
         }
         return createOrder(sell.doubleValue(), "SELL");
+    }
+    public static void createCandle(Price priceObj) {
+        priceObj.setSMA();
+        priceObj.setSMACDEMA();
+        priceObj.setLMACDEMA();
+        priceObj.setMACD();
+        priceObj.updateSignalLine();
+
     }
 }
