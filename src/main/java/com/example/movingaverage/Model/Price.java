@@ -10,6 +10,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 @EqualsAndHashCode
@@ -48,13 +49,14 @@ public class Price {
         this.priceLonger.add(price);
         this.currentPrice = price;
     }
+
     public void setMACD() {
-        if(lMACDEMA != null) {
+        if (lMACDEMA != null) {
             this.mACD =  sMACDEMA - lMACDEMA ;
         }
     }
     public void updateSignalLine() {
-        if(this.mACD != null) {
+        if (this.mACD != null) {
             int n = signalLine.size();
             double prev = signalLine.get(n - 1);
             this.signal = calculateEMA(mACD, prev, smoothing, 9);
@@ -62,24 +64,25 @@ public class Price {
         }
     }
     public void setSMACDEMA() {
-        if(twelveDayRibbons.size() > 0) {
-            double prev = twelveDayRibbons.get(twelveDayRibbons.size() - 1);
-            this.sMACDEMA = calculateEMA(currentPrice,prev,smoothing,12);
-            twelveDayRibbons.add((sMACDEMA));
+        LinkedList<Double> linkedTwelveDay = new LinkedList<>(twelveDayRibbons);
+        if(linkedTwelveDay.size() > 0) {
+            double prev = linkedTwelveDay.get(linkedTwelveDay.size() - 1);
+            this.sMACDEMA = calculateEMA(currentPrice, prev, smoothing,12);
+            this.twelveDayRibbons.add((sMACDEMA));
         }
         else {
             twelveDayRibbons.add(calculateSMA(shortMACDPeriod));
         }
     }
-    //LinkedList!!!!
     public void setLMACDEMA() {
-        if(twentySixDayRibbons.size() > 0) {
-            double prev = twentySixDayRibbons.get(twentySixDayRibbons.size() - 1);
-            this.lMACDEMA  = calculateEMA(currentPrice,prev,smoothing,26);
-            twentySixDayRibbons.add((lMACDEMA));
+        LinkedList<Double> linkedTwentyDay = new LinkedList<>(twentySixDayRibbons);
+        if(linkedTwentyDay.size() > 0) {
+            double prev = linkedTwentyDay.get(linkedTwentyDay.size() - 1);
+            this.lMACDEMA  = calculateEMA(currentPrice, prev, smoothing,26);
+            this.twentySixDayRibbons.add((lMACDEMA));
         }
         else {
-            twentySixDayRibbons.add(calculateSMA(longerMACDPeriod));
+            this.twentySixDayRibbons.add(calculateSMA(longerMACDPeriod));
         }
     }
     public void setSMA() {
@@ -106,13 +109,15 @@ public class Price {
             priceLonger.remove(priceLonger.size() - x);
         }
     }
-    //LinkedList ????
     public void initializeSignalLine() {
         int n = nineDaysOfClose.size();
-        ArrayList<Double> temp = new ArrayList<>();
+        // MACD periods 12, 26
+        LinkedList<Double> sMACD = new LinkedList<>(shortMACDPeriod);
+        LinkedList<Double> lMACD = new LinkedList<>(longerMACDPeriod);
+        LinkedList<Double> temp = new LinkedList<>();
         for(int i = 1; i < n; i++) {
-            double value = calculateEMA(shortMACDPeriod.get(i),shortMACDPeriod.get(i - 1), smoothing, 12) -
-                calculateEMA(longerMACDPeriod.get(i), longerMACDPeriod.get(i - 1), smoothing, 26);
+            double value = calculateEMA(sMACD.get(i),sMACD.get(i - 1), smoothing, 12) -
+                calculateEMA(lMACD.get(i), lMACD.get(i - 1), smoothing, 26);
                 temp.add(value);
         }
         for(int i = 1; i < temp.size(); i++) {
@@ -161,31 +166,6 @@ public class Price {
             return binarySum(data, b, m) + binarySum(data, m + 1, e);
         }
     }
-    //what if it kept trying different amts
-    //when there is a valid contraction after a valid sma crossover
-// ?? random idea i had basically will reach a vaLid expansion for a certain amount set
-
-    /*
-    private boolean validExpansion(List<Double> ma, int amt) {
-        int counter = 0;
-        for (int i = 0; i < ma.size(); i++) {
-            if (i > 0 && (ma.get(i) > ma.get(i - 1))) {
-                counter++;
-            }
-        }
-        return  counter == amt;
-    }
-    private boolean validContraction(List<Double> ma,int amt) {
-        int counter = 0;
-       for (int i = 0; i < ma.size(); i++) {
-           if (i > 0 && (ma.get(i) < ma.get(i - 1))) {
-               counter++;
-           }
-       }
-       return counter == amt;
-
-   }
-   */
     @Override
     public String toString() {
         return "Price{" +
