@@ -10,6 +10,7 @@ public class Global {
     public static double quant;
     public static String close = null;
     public static int len = Integer.MIN_VALUE;
+    public static int candleLength;
     public static int rateLimit = 1000;
     public static HttpRequestFactory requestFactory
         = new NetHttpTransport().createRequestFactory();

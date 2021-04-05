@@ -50,7 +50,6 @@ public class Main {
                 marketSplit = markets.split(",");
                 Global.mOne = marketSplit[0].toUpperCase();
                 Global.mTwo = marketSplit[1].toUpperCase();
-                int candleLength = Integer.MIN_VALUE;
                 int candleLengthM = Global.rateLimit / 1000;
                 fetcher = DataFetch.getInstance();
                 if (fetcher.valid()) {
@@ -62,19 +61,19 @@ public class Main {
                         switch (Global.len) {
                             case 0:
                                 l = "MINUTE_1";
-                                candleLength = 60 / candleLengthM;
+                                Global.candleLength = 60 / candleLengthM;
                                 break;
                             case 1:
                                 l = "MINUTE_5";
-                                candleLength = (60 * 5) / candleLengthM;
+                                Global.candleLength = (60 * 5) / candleLengthM;
                                 break;
                             case 2:
                                 l = "HOUR_1";
-                                candleLength = (60 * 60) / candleLengthM;
+                                Global.candleLength = (60 * 60) / candleLengthM;
                                 break;
                             case 3:
                                 l = "DAY_1";
-                                candleLength = 86400 / candleLengthM;
+                                Global.candleLength = 86400 / candleLengthM;
                                 break;
                             default:
                                 throw new Exception();
@@ -230,7 +229,7 @@ public class Main {
                             .timestamp(LocalDateTime.now())
                             .dateLimit(LocalDateTime.now().plusHours(24))
                             .build();
-                        priceObj.initializeSignalLine();
+                        priceObj.init();
                         BigDecimal buy = new BigDecimal(0);
                         BigDecimal sell = new BigDecimal(0);
                         double profitPercentageTotals = 0.0;
@@ -243,9 +242,10 @@ public class Main {
                             Thread.sleep(1000);
                             priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
                             //if the incoming size reaches a factor of a candle length create a candle
-                            if(priceObj.getPriceLonger().size() % candleLength == 0 &&
-                                priceObj.getPriceShorter().size() % candleLength == 0)
-                            createCandle(priceObj);
+                            if(priceObj.getPriceLonger().size() % Global.candleLength == 0 &&
+                                priceObj.getPriceShorter().size() % Global.candleLength == 0) {
+                                createCandle(priceObj);
+                            }
                             mongoCRUD.createMarketData(liveMarketData, "marketsummary");
                             //set the transaction obj
                             // liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value));

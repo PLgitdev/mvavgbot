@@ -16,7 +16,7 @@ Simple moving average                     - Average calculated for each of the t
 The moving average convergence divergence - A weighted average using a classical 12, 26, close strategy derived from SMA
 The signal line                           - Take the EMA of 9 days of the closing price
 
-This object will be updated by adding Last prices from incoming HOLC data from the server every iteration it will then
+This object will be updated by adding Last prices from incoming HLOC data from the server every iteration it will then
 make candles based on candle size global input.
 
 Once the data has has expired it will be removed
@@ -49,6 +49,42 @@ public class Price {
     private List<Double> shortMACDPeriod;
     private List<Double> longerMACDPeriod;
 
+    public void init() {
+        //To calculate EMA you must use the SMA using close of last period for initial value
+        Deque<Double> sMACD = new ArrayDeque<>(shortMACDPeriod);
+        Deque<Double> lMACD = new ArrayDeque<>(longerMACDPeriod);
+        Deque<Double> temp = new ArrayDeque<>();
+        double previousShortSMA = calculateSMA(shortMACDPeriod);
+        double previousLongSMA = calculateSMA(shortMACDPeriod);
+        double currentLongValue;
+        double currentShortValue;
+        double tempValue;
+        double value;
+        double signal;
+
+        //set up the initial short EMA
+        this.sMACDEMA = calculateEMA(currentPrice, previousShortSMA, smoothing,12);
+        this.twelveDayRibbons.add((this.sMACDEMA));
+
+        //set up the initial long EMA
+        this.lMACDEMA = calculateEMA(currentPrice, previousLongSMA, smoothing, 26);
+        this.twentySixDayRibbons.add(this.lMACDEMA);
+
+        //initialize the signal line
+        while (temp.size() < nineDaysOfClose.size()) {
+            currentShortValue = sMACD.pop();
+            currentLongValue = lMACD.pop();
+            value = calculateEMA(currentShortValue, sMACD.peek(), smoothing, 12) -
+                calculateEMA(currentLongValue, lMACD.peek(), smoothing, 26);
+            temp.push(value);
+        }
+        while (temp.size() > 1) {
+            tempValue = temp.pop();
+            signal = calculateEMA(tempValue,temp.peek(),smoothing,9);
+            this.signalLine.add(signal);
+        }
+    }
+
     public void addPriceShorter (Double price) {
         this.priceShorter.add(price);
     }
@@ -69,30 +105,15 @@ public class Price {
     }
 
     public void setSMACDEMA() {
-        //ArrayDeque chosen to reduce space complexity required by a D Linked List
         Deque<Double> twelveDayDeque = new ArrayDeque<>(twelveDayRibbons);
-        Deque<Double> mACDDeque = new ArrayDeque<>(shortMACDPeriod);
-        if (!this.twelveDayRibbons.isEmpty()) {
-            double prev = twelveDayDeque.pop();
-            this.sMACDEMA = calculateEMA(currentPrice, prev, smoothing,12);
-            this.twelveDayRibbons.add((sMACDEMA));
-        }
-        else {
-            this.twelveDayRibbons.add(calculateEMA(currentPrice, mACDDeque.peek(), smoothing, 12));
-        }
+        this.sMACDEMA = calculateEMA(currentPrice, twelveDayDeque.peek(), smoothing,12);
+        this.twelveDayRibbons.add((sMACDEMA));
     }
 
     public void setLMACDEMA() {
-        Deque<Double> twentyDayDeque = new ArrayDeque<>(twentySixDayRibbons);
-        Deque<Double> mACDDeque = new ArrayDeque<>(longerMACDPeriod);
-        if (this.lMACDEMA != null) {
-            double prev = twentyDayDeque.pop();
-            this.lMACDEMA  = calculateEMA(currentPrice, prev, smoothing,26);
-            this.twentySixDayRibbons.add(this.lMACDEMA);
-        }
-        else {
-            this.twentySixDayRibbons.add(calculateEMA(currentPrice, mACDDeque.peek(), smoothing, 26));
-        }
+        Deque<Double> twentySixDayDeque = new ArrayDeque<>(twentySixDayRibbons);
+        this.lMACDEMA  = calculateEMA(currentPrice, twentySixDayDeque.peek(), smoothing,26);
+        this.twentySixDayRibbons.add(this.lMACDEMA);
     }
 
     public void setSMA() {
@@ -100,43 +121,23 @@ public class Price {
         this.avgLonger =  calculateSMA(priceLonger);
     }
 
-    public void initializeSignalLine() {
-        Deque<Double> sMACD = new LinkedList<>(shortMACDPeriod);
-        Deque<Double> lMACD = new LinkedList<>(longerMACDPeriod);
-        Deque<Double> temp = new LinkedList<>();
-
-        while (temp.size() <= nineDaysOfClose.size()) {
-            double currentShortValue = sMACD.pop();
-            double currentLongValue = lMACD.pop();
-            double value = calculateEMA(currentShortValue, sMACD.peek(), smoothing, 12) -
-                calculateEMA(currentLongValue, lMACD.peek(), smoothing, 26);
-            temp.push(value);
-        }
-        while (!temp.isEmpty()) {
-            double tempValue = temp.pop();
-            Double s = calculateEMA(tempValue,temp.peek(),smoothing,9);
-            this.signalLine.add(s);
-        }
-    }
-
     public void updateSignalLine() {
+        Deque<Double> signalDeque = new LinkedList<>(signalLine);
+
         if (this.mACD != null) {
-            //LIFO linked list
-            Deque<Double> linkedSignalLine = new LinkedList<>(signalLine);
-            double prev = linkedSignalLine.pop();
-            this.signal = calculateEMA(mACD, prev, smoothing, 9);
-            this.signalLine.add(signal); //create a signal line by calculating the EMA function
+            this.signal = calculateEMA(mACD, signalDeque.peek(), smoothing, 9);
+            this.signalLine.add(signal); //create a signal line
         }
     }
 
     public void dateLimitCheck(int x) {
-        if(LocalDateTime.now().getDayOfWeek().compareTo(dateLimit.getDayOfWeek()) < 0) {
+        if (LocalDateTime.now().getDayOfWeek().compareTo(dateLimit.getDayOfWeek()) < 0) {
             priceShorter.remove(priceShorter.size() - x);
         }
     }
 
     public void dateLimitCheckLonger(int x) {
-        if(LocalDateTime.now().getDayOfWeek().compareTo(dateLimit.getDayOfWeek()) < 0) {
+        if (LocalDateTime.now().getDayOfWeek().compareTo(dateLimit.getDayOfWeek()) < 0) {
             priceLonger.remove(priceLonger.size() - x);
         }
     }
@@ -145,10 +146,10 @@ public class Price {
     // Unused in current strategy
 
     public boolean validSMACrossover() {
-        return validShortCrossover(avgShorter,avgLonger);
+        return validShortCrossover(this.avgShorter,this.avgLonger);
     }
 
-    public boolean validSMABackCross() { return  validLongerCrossover(avgShorter,avgLonger); }
+    public boolean validSMABackCross() { return  validLongerCrossover(this.avgShorter,this.avgLonger); }
 
     public boolean validMACDCrossover() {
         return validShortCrossover(this.mACD, this.signal);
@@ -164,21 +165,21 @@ public class Price {
         return (smoothing / (period + 1d));
     }
 
-    private double calculateSMA(List<Double> l) {
-        int n = l.size();
+    private double calculateSMA(List<Double> data) {
+        int n = data.size();
         Double[] a = new Double[n];
-        a = l.toArray(a);
+        a = data.toArray(a);
         double sum = binarySum(a, 0, a.length - 1);
         BigDecimal bigSum = BigDecimal.valueOf(sum);
         return bigSum.divide(BigDecimal.valueOf(n), 8,  RoundingMode.HALF_UP).doubleValue();
     }
 
-    private double calculateEMA(Double current, Double previous, Double smoothing, int period) {
+    private double calculateEMA(Double current, Double previousEMA, Double smoothing, int period) {
         Double multiplier = emaMultiplier(smoothing, period);
-        return (current * multiplier) + (previous * (1 - multiplier));
+        return (current * multiplier) + (previousEMA * (1 - multiplier));
     }
     private boolean validShortCrossover(Double a, Double b) {
-        if (a != null &&  b != null) {
+        if (a != null && b != null) {
             return a > b;
         }
         return false;
