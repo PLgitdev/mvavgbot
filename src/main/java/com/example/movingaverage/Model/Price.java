@@ -50,7 +50,7 @@ public class Price {
     private List<Double> longerMACDPeriod;
 
     public void init() {
-        //To calculate EMA you must use the SMA using close of last period for initial value
+        //To calculate EMA you must use the SMA using close of last period as the initial value
         Deque<Double> sMACD = new ArrayDeque<>(shortMACDPeriod);
         Deque<Double> lMACD = new ArrayDeque<>(longerMACDPeriod);
         Deque<Double> temp = new ArrayDeque<>();
