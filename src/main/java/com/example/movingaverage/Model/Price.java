@@ -99,25 +99,20 @@ public class Price {
     }
 
     public void initializeSignalLine() {
-        int n = nineDaysOfClose.size();
-        // MACD periods 12, 26
         Deque<Double> sMACD = new LinkedList<>(shortMACDPeriod);
         Deque<Double> lMACD = new LinkedList<>(longerMACDPeriod);
         Deque<Double> temp = new LinkedList<>();
-        double currentShortValue = sMACD.pop();
-        double currentShortPrevious = sMACD.pop();
-        double currentLongValue = lMACD.pop();
-        double currentLongPrevious = lMACD.pop();
 
-        for (int i = 1; i < n; i++) {
-            double value = calculateEMA(currentShortValue, currentShortPrevious, smoothing, 12) -
-                calculateEMA(currentLongValue, currentLongPrevious, smoothing, 26);
+        while (temp.size() <= nineDaysOfClose.size()) {
+            double currentShortValue = sMACD.pop();
+            double currentLongValue = lMACD.pop();
+            double value = calculateEMA(currentShortValue, sMACD.peek(), smoothing, 12) -
+                calculateEMA(currentLongValue, lMACD.peek(), smoothing, 26);
             temp.push(value);
         }
-        double tempValue = temp.pop();
-        double tempValuePrevious = temp.pop();
-        for (int i = 1; i < temp.size(); i++) {
-            Double s = calculateEMA(tempValue,tempValuePrevious,smoothing,9);
+        while (!temp.isEmpty()) {
+            double tempValue = temp.pop();
+            Double s = calculateEMA(tempValue,temp.peek(),smoothing,9);
             this.signalLine.add(s);
         }
     }
