@@ -63,16 +63,16 @@ class PriceTest {
     @Test
     void setLMACDEMATest() {
         //first iteration
-        assertEquals(0, twentyDayRibbons.size());
+        assertEquals(0, priceObj.getTwentySixDayRibbons().size());
         priceObj.setLMACDEMA();
         //did it add to ribbons
-        assertEquals(1, twentyDayRibbons.size());
+        assertEquals(1, priceObj.getTwentySixDayRibbons().size());
         //is it the correct value
-        assertEquals(sMAAnswerTwo,twelveDayRibbons.get(0));
+        assertEquals(sMAAnswerTwo,priceObj.getTwentySixDayRibbons().get(0));
         //second iteration
         priceObj.setLMACDEMA();
-        assertEquals(2, twentyDayRibbons.size());
+        assertEquals(2, priceObj.getTwentySixDayRibbons().size());
 
-        assertEquals(eMAAnswerFour, twentyDayRibbons.get(1));
+        assertEquals(eMAAnswerFour, priceObj.getTwentySixDayRibbons().get(1);
     }
 }
