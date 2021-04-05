@@ -36,6 +36,7 @@ class PriceTest {
         .signalLine(signaLine)
         .smoothing(2.0)
         .build();
+
     @Test
     void initTest() {
         // First iteration
@@ -50,8 +51,8 @@ class PriceTest {
         assertEquals(emaShorterAnswerOne,priceObj.getTwelveDayRibbons().get(0));
         // Is it the correct value
         assertEquals(eMALongerAnswerOne,priceObj.getTwentySixDayRibbons().get(0));
-
     }
+
     @Test
     void calculateSMATest() {
         priceObj.setSMA();
