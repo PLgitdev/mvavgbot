@@ -5,13 +5,17 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This is the price object. The price object is in charge of calculating the indicators from the incoming data.
+
+Current Indicators:
+Simple moving average - average calculated for each of the time periods set by the console input
+The moving Average convergence divergence - A weighted average using a classical 12, 26, close strategy derived from sma
+The signal line
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 @EqualsAndHashCode
 @Builder
@@ -57,27 +61,28 @@ public class Price {
     }
     public void updateSignalLine() {
         if (this.mACD != null) {
-            int n = signalLine.size();
-            double prev = signalLine.get(n - 1);
+            //LIFO linked list
+            Deque<Double> linkedSignalLine = new LinkedList<>(signalLine);
+            double prev = linkedSignalLine.pop();
             this.signal = calculateEMA(mACD, prev, smoothing, 9);
-            signalLine.add(signal); //create a signal line by making a EMA function
+            this.signalLine.add(signal); //create a signal line by making a EMA function
         }
     }
     public void setSMACDEMA() {
-        LinkedList<Double> linkedTwelveDay = new LinkedList<>(twelveDayRibbons);
-        if(linkedTwelveDay.size() > 0) {
-            double prev = linkedTwelveDay.get(linkedTwelveDay.size() - 1);
+        Deque<Double> linkedTwelveDay = new LinkedList<>(twelveDayRibbons);
+        if (linkedTwelveDay.size() > 0) {
+            double prev = linkedTwelveDay.pop();
             this.sMACDEMA = calculateEMA(currentPrice, prev, smoothing,12);
             this.twelveDayRibbons.add((sMACDEMA));
         }
         else {
-            twelveDayRibbons.add(calculateSMA(shortMACDPeriod));
+            this.twelveDayRibbons.add(calculateSMA(shortMACDPeriod));
         }
     }
     public void setLMACDEMA() {
-        LinkedList<Double> linkedTwentyDay = new LinkedList<>(twentySixDayRibbons);
-        if(linkedTwentyDay.size() > 0) {
-            double prev = linkedTwentyDay.get(linkedTwentyDay.size() - 1);
+        Deque<Double> linkedTwentyDay = new LinkedList<>(twentySixDayRibbons);
+        if (linkedTwentyDay.size() > 0) {
+            double prev = linkedTwentyDay.pop();
             this.lMACDEMA  = calculateEMA(currentPrice, prev, smoothing,26);
             this.twentySixDayRibbons.add((lMACDEMA));
         }
@@ -115,14 +120,14 @@ public class Price {
         LinkedList<Double> sMACD = new LinkedList<>(shortMACDPeriod);
         LinkedList<Double> lMACD = new LinkedList<>(longerMACDPeriod);
         LinkedList<Double> temp = new LinkedList<>();
-        for(int i = 1; i < n; i++) {
+        for (int i = 1; i < n; i++) {
             double value = calculateEMA(sMACD.get(i),sMACD.get(i - 1), smoothing, 12) -
                 calculateEMA(lMACD.get(i), lMACD.get(i - 1), smoothing, 26);
                 temp.add(value);
         }
-        for(int i = 1; i < temp.size(); i++) {
+        for (int i = 1; i < temp.size(); i++) {
             Double s = calculateEMA(temp.get(i),temp.get(i - 1),smoothing,9);
-            signalLine.add(s);
+            this.signalLine.add(s);
         }
     }
 
@@ -142,23 +147,23 @@ public class Price {
         return (b * m) + (a * (1 - m));
     }
     private boolean validShortCrossover(Double a, Double b) {
-        if(a != null &&  b != null) {
+        if (a != null &&  b != null) {
             return a > b;
         }
         return false;
     }
     private boolean validLongerCrossover(Double a, Double b) {
-        if(a != null &&  b != null) {
+        if (a != null &&  b != null) {
             return a < b;
         }
         return false;
     }
     private Double binarySum(Double[] data, int b, int e) {
         Arrays.sort(data);
-        if(b > e) {
+        if (b > e) {
             throw new IllegalArgumentException();
         }
-        else if(b == e) {
+        else if (b == e) {
             return data[b];
         }
         else {
