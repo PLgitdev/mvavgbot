@@ -1,12 +1,11 @@
 package com.example.movingaverage;
 
-import com.example.movingaverage.Controller.MongoCRUD;
+import com.example.movingaverage.DAO.MongoCRUD;
 import com.example.movingaverage.Live.Buy;
 import com.example.movingaverage.Live.DataFetch;
 import com.example.movingaverage.Live.Sell;
 import com.example.movingaverage.Live.Transaction;
 import com.example.movingaverage.Model.Price;
-import lombok.Builder;
 
 import java.io.IOException;
 import java.math.BigDecimal;

@@ -2,6 +2,8 @@ package com.example.movingaverage.Model;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,5 +40,19 @@ class PriceTest {
         // This simulates the second round of incoming data
         priceObj.setSMACDEMA();
         assertEquals(answerThree, priceObj.getTwelveDayRibbons().get(1));
+    }
+    @Test
+    void calculateDateLimitCheckTest() {
+        priceObj.setDateLimit(LocalDateTime.now().minusDays(1));
+        priceObj.dateLimitCheck(1);
+        assertEquals(2, priceObj.getPriceShorter().size());
+
+    }
+
+    @Test
+    void calculateDateLimitCheckLongerTest() {
+        priceObj.setDateLimit(LocalDateTime.now().minusDays(1));
+        priceObj.dateLimitCheckLonger(1);
+        assertEquals(3, priceObj.getPriceLonger().size());
     }
 }

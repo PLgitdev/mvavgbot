@@ -1,4 +1,4 @@
-package com.example.movingaverage.Controller;
+package com.example.movingaverage.DAO;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
