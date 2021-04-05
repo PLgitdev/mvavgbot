@@ -73,6 +73,6 @@ class PriceTest {
         priceObj.setLMACDEMA();
         assertEquals(2, priceObj.getTwentySixDayRibbons().size());
 
-        assertEquals(eMAAnswerFour, priceObj.getTwentySixDayRibbons().get(1);
+        assertEquals(eMAAnswerFour, priceObj.getTwentySixDayRibbons().get(1));
     }
 }
