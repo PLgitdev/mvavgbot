@@ -69,12 +69,11 @@ class PriceTest {
         //did it add to ribbons
         assertEquals(1, priceObj.getTwentySixDayRibbons().size());
         //is it the correct value
-        priceObj.setCurrentPrice(priceObj.getCurrentPrice() +.000002);
         assertEquals(eMAAnswerFour,priceObj.getTwentySixDayRibbons().get(0));
         //second iteration
+        priceObj.setCurrentPrice(priceObj.getCurrentPrice() +.000002);
         priceObj.setLMACDEMA();
         assertEquals(2, priceObj.getTwentySixDayRibbons().size());
-
         assertEquals(eMAAnswerFive, priceObj.getTwentySixDayRibbons().get(1));
     }
 }
