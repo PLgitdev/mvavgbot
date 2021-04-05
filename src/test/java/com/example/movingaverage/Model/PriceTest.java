@@ -12,8 +12,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class PriceTest {
     final Double sMAAnswerOne = 0.01333333;
     final Double sMAAnswerTwo = 0.0325;
-    final Double eMAAnswerThree = 0.01593467923076923;
-    final Double eMAAnswerFour = 0d;
+    final Double eMAAnswerThree = 0.01574923550295858;
+    final Double eMAAnswerFour = 0.011499414814814814;
+    final Double eMAAnswerFive = 0.011499562962962962;
     final Double currentPrice = 0.03024210;
     ArrayList<Double> pricesShorter = new ArrayList<>(Arrays.asList(.01, .02, .01));
     ArrayList<Double> pricesLonger = new ArrayList<>(Arrays.asList(.01, .02, .04, .06));
@@ -68,11 +69,12 @@ class PriceTest {
         //did it add to ribbons
         assertEquals(1, priceObj.getTwentySixDayRibbons().size());
         //is it the correct value
-        assertEquals(sMAAnswerTwo,priceObj.getTwentySixDayRibbons().get(0));
+        priceObj.setCurrentPrice(priceObj.getCurrentPrice() +.000002);
+        assertEquals(eMAAnswerFour,priceObj.getTwentySixDayRibbons().get(0));
         //second iteration
         priceObj.setLMACDEMA();
         assertEquals(2, priceObj.getTwentySixDayRibbons().size());
 
-        assertEquals(eMAAnswerFour, priceObj.getTwentySixDayRibbons().get(1));
+        assertEquals(eMAAnswerFive, priceObj.getTwentySixDayRibbons().get(1));
     }
 }

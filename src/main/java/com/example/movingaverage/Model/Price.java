@@ -71,25 +71,27 @@ public class Price {
     public void setSMACDEMA() {
         //ArrayDeque chosen to reduce space complexity required by a D Linked List
         Deque<Double> twelveDayDeque = new ArrayDeque<>(twelveDayRibbons);
+        Deque<Double> mACDDeque = new ArrayDeque<>(shortMACDPeriod);
         if (!this.twelveDayRibbons.isEmpty()) {
             double prev = twelveDayDeque.pop();
             this.sMACDEMA = calculateEMA(currentPrice, prev, smoothing,12);
             this.twelveDayRibbons.add((sMACDEMA));
         }
         else {
-            this.twelveDayRibbons.add(calculateSMA(shortMACDPeriod));
+            this.twelveDayRibbons.add(calculateEMA(currentPrice, mACDDeque.peek(), smoothing, 12));
         }
     }
 
     public void setLMACDEMA() {
         Deque<Double> twentyDayDeque = new ArrayDeque<>(twentySixDayRibbons);
-        if (!this.twentySixDayRibbons.isEmpty()) {
+        Deque<Double> mACDDeque = new ArrayDeque<>(longerMACDPeriod);
+        if (this.lMACDEMA != null) {
             double prev = twentyDayDeque.pop();
             this.lMACDEMA  = calculateEMA(currentPrice, prev, smoothing,26);
-            this.twentySixDayRibbons.add((lMACDEMA));
+            this.twentySixDayRibbons.add(this.lMACDEMA);
         }
         else {
-            this.twentySixDayRibbons.add(calculateSMA(longerMACDPeriod));
+            this.twentySixDayRibbons.add(calculateEMA(currentPrice, mACDDeque.peek(), smoothing, 26));
         }
     }
 
