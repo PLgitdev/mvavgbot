@@ -25,6 +25,9 @@ import java.util.*;
  if you feel like forking the project you would most likely want to add RSI
  this project is currently adding an indicator RSI which will extend the period of time the bot can be left
  unmonitored and reduce the amount of experience necessary with trading to make profit.
+
+ - roundSquare
+
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 public class Main {
@@ -90,8 +93,8 @@ public class Main {
                             "close = 2");
                         inputS = sc.next();
                         Price.PriceBuilder priceBuilder = Price.builder().smoothing(2.0);
-                        ArrayList<Double> shortMacdPeriod = new ArrayList<>();
-                        ArrayList<Double> longerMacdPeriod = new ArrayList<>();
+                        ArrayList<Double> shortMACDPeriod = new ArrayList<>();
+                        ArrayList<Double> longerMACDPeriod = new ArrayList<>();
                         ArrayList<Double> nineDayMACDPeriod = new ArrayList<>();
                         ArrayList<Double> shorterDaysDataOpenD = new ArrayList<>();
                         ArrayList<Double> shorterDaysDataCloseD = new ArrayList<>();
@@ -121,6 +124,7 @@ public class Main {
                                         "startsAt",
                                         "low");
 
+                                // Has to be a better way to do this parsing on another day
                                 ArrayList<Double> shorterDaysDataHighD = new ArrayList<>();
                                 ArrayList<Double> shorterDaysDataLowD = new ArrayList<>();
                                 ArrayList<Double> longerDaysDataHighD = new ArrayList<>();
@@ -194,7 +198,6 @@ public class Main {
                                 priceBuilder.priceLonger(pricesL);
                                 break;
                         }
-                        // fixed macd on a set period. no matter the strategy the macd will be taken from a days period
 
                         List<Map<?, ?>> nineDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
                             9,
@@ -208,16 +211,18 @@ public class Main {
                             26,
                             "startsAt",
                             "close");
+
                         nineDayPeriod.forEach((map) ->
                             nineDayMACDPeriod.add(Double.parseDouble((String) map.get("close"))));
                         twelveDayPeriod.forEach((map) ->
-                            shortMacdPeriod.add(Double.parseDouble((String) map.get("close"))));
+                            shortMACDPeriod.add(Double.parseDouble((String) map.get("close"))));
                         twentySixDayPeriod.forEach((map) ->
-                            longerMacdPeriod.add(Double.parseDouble((String) map.get("close"))));
+                            longerMACDPeriod.add(Double.parseDouble((String) map.get("close"))));
+
                         Price priceObj = Price.builder()
                             .nineDaysOfClose(nineDayMACDPeriod)
-                            .shortMACDPeriod(shortMacdPeriod)
-                            .longerMACDPeriod(longerMacdPeriod)
+                            .shortMACDPeriod(shortMACDPeriod)
+                            .longerMACDPeriod(longerMACDPeriod)
                             .twelveDayRibbons(new ArrayList<>(0))
                             .twentySixDayRibbons(new ArrayList<>(0))
                             .signalLine(new ArrayList<>(0))
@@ -226,27 +231,35 @@ public class Main {
                             .build();
                         priceObj.init();
                         BigDecimal buy = new BigDecimal(0);
-                        BigDecimal sell = new BigDecimal(0);
+                        BigDecimal sell; // If it says not initialized try setting to zero
                         double profitPercentageTotals = 0.0;
                         boolean successfulBuy = false;
                         boolean sellBidMode = true;
                         boolean buyBidMode = false;
                         boolean hold;
                         while (!markets.equalsIgnoreCase("clear")) {
+                            // Fetch the data
                             liveMarketData = fetcher.marketDataFetcher();
-                            Thread.sleep(1000);
+                            Thread.sleep(Global.rateLimit);
+
+                            // Set values to the price object
                             priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
-                            //if the incoming size reaches a factor of a candle length create a candle
+
+                            // If the incoming size reaches a factor of a candle length create a candle
                             if(priceObj.getPriceLonger().size() % Global.candleLength == 0 &&
                                 priceObj.getPriceShorter().size() % Global.candleLength == 0) {
                                 createCandle(priceObj);
+                                System.out.println("Candle created: \n" + priceObj.toString());
                             }
                             mongoCRUD.createMarketData(liveMarketData, Global.MARKET_SUMMARY);
-                            //set the transaction obj
-                            // liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value));
-                            Double lastDouble = Double.valueOf(liveMarketData.get("Last").toString());
-                            Double askDouble = Double.valueOf(liveMarketData.get("Ask").toString());
-                            Double bidDouble = Double.valueOf(liveMarketData.get("Bid").toString());
+
+                            /*  If you want to check every iteration
+                              liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value)); */
+
+                            // Might have to go back to Wrappers after live testing
+                            double lastDouble = Double.parseDouble(liveMarketData.get("Last").toString());
+                            double askDouble = Double.parseDouble(liveMarketData.get("Ask").toString());
+                            double bidDouble = Double.parseDouble(liveMarketData.get("Bid").toString());
                             System.out.println(liveMarketData.get("Last") + "\n" +
                                 "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
                                 + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
@@ -254,15 +267,16 @@ public class Main {
                             boolean buyMode = priceObj.validMACDCrossover();
                             System.out.println(buyMode);
                             int responseCode = 0;
-                            if(buyMode && !successfulBuy) {
+                            if (buyMode && !successfulBuy) {
                                 if (askDouble <= lastDouble) {
                                     buy = BigDecimal.valueOf(askDouble);
                                     System.out.println("Take the ask at " + buy);
                                     try {
-                                        HttpResponse<String> response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                                        HttpResponse<String> response
+                                            = sendOrder(createOrder(buy.doubleValue(), "BUY"));
                                         responseCode = response.statusCode();
                                     }
-                                    catch(IOException e) {
+                                    catch (IOException e) {
                                         System.out.println("IO Exception : " + e + "\n" + "response: " + responseCode);
                                     }
                                 }
@@ -288,7 +302,8 @@ public class Main {
                                             buy = BigDecimal.valueOf(askDouble);
                                             System.out.println("Take the ask at " + buy);
                                         }
-                                        HttpResponse<String> response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                                        HttpResponse<String> response
+                                            = sendOrder(createOrder(buy.doubleValue(), "BUY"));
                                         responseCode = response.statusCode();
                                     } catch (IOException e) {
                                         System.out.print("There was an IOException " + e + "\n" + "response : " +
@@ -304,7 +319,7 @@ public class Main {
                                         responseCode = 0;
                                 }
                             }
-                            if(successfulBuy && lastDouble <
+                            if (successfulBuy && lastDouble <
                                 //sensitivity
                                 buy.subtract(buy.multiply(BigDecimal.valueOf(0.025))).doubleValue()) {
                                 sell = BigDecimal.valueOf(bidDouble);
@@ -319,15 +334,15 @@ public class Main {
                                 sellBidMode = false;
                                 System.out.println("Sell exited because last price dropped to low");
                             }
-                            else if(successfulBuy && sellBidMode) {
-                                if(bidDouble < lastDouble) {
+                            else if (successfulBuy && sellBidMode) {
+                                if (bidDouble < lastDouble) {
                                     hold = false;
                                     sell = BigDecimal.valueOf(lastDouble);
                                     sell = sell.subtract(BigDecimal.valueOf(.0000005));
                                     sellBidMode = true;
                                     System.out.println("Last was chosen then subtracted from");
                                 }
-                                else if(bidDouble > askDouble) {
+                                else if (bidDouble > askDouble) {
                                     hold = false;
                                     sell = BigDecimal.valueOf(bidDouble);
                                     sellBidMode = true;
@@ -339,17 +354,17 @@ public class Main {
                                     sell = sell.subtract(BigDecimal.valueOf(.0000005));
                                     System.out.println("Ask was chosen then subtracted from");
                                 }
-                                if(sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.015)))
+                                if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.015)))
                                         .doubleValue() && sell.doubleValue() != 0) {
                                     hold = true;
                                     System.out.println("Hold missed sell wait due to not enough profit");
                                 }
-                                if(buyMode) {
+                                if (buyMode) {
                                     hold = true;
                                     System.out.println("buy signal not sell signal HOLD");
                                 }
                                 System.out.println("\n" + "Sell at " + sell + " vs bid " + liveMarketData.get("Bid"));
-                                if(!hold) {
+                                if (!hold) {
                                     // if the Bid is more than the last use the Last
                                     sell = sell.subtract(BigDecimal.valueOf(.00000001));
                                     sell = sell.setScale(8, RoundingMode.HALF_UP);
@@ -425,7 +440,8 @@ public class Main {
             }
         }
     }
-    public static List<Double> takeAvg (List<Map<?, ?>> maps,
+    //Optimize this with a binary sum or statistics this needs to change
+    public static List<Double> takeAvg(List<Map<?, ?>> maps,
                                         List<Double> arOne, List<Double> arTwo) {
         List<Double> avg = new LinkedList<>();
         for (int i = 0; i < maps.size(); i++) {
@@ -441,10 +457,10 @@ public class Main {
     }
     public static HttpResponse<String> sendOrder(Transaction order) throws IOException, InterruptedException {
         HttpResponse<String> response = order.send();
-        if(response.statusCode() == 201) {
+        if (response.statusCode() == 201) {
             System.out.println("Successful order");
         }
-        if(response.statusCode() == 401)  {
+        if (response.statusCode() == 401)  {
             System.out.println("Unauthorized 401 body is" + response.body());
         }
         else {
@@ -475,6 +491,5 @@ public class Main {
         priceObj.setLMACDEMA();
         priceObj.setMACD();
         priceObj.setSignalLine();
-
     }
 }

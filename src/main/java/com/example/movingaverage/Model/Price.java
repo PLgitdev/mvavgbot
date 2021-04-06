@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 This is the price object. The price object is in charge of calculating the indicators from the incoming data.
 
@@ -24,7 +25,9 @@ Once the data has has expired it will be removed
 
 This object uses methods that return boolean values based on inequities between the indicators
     For example: Buy signal will be affected by the boolean value between the signal line and the MACD (mACD)
- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+- roundSquare
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 @EqualsAndHashCode
 @Builder

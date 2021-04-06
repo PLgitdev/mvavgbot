@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 public class DataFetch {
 
     final private String CLEAN_REGEX = "[\\[{\"]";
-    private String mOne;
-    private String mTwo;
+    final private String mOne;
+    final private String mTwo;
     private static DataFetch soleInstanceDataFetch;
 
     private DataFetch() {
