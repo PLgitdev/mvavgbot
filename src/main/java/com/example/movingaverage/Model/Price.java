@@ -180,18 +180,21 @@ public class Price {
         Double multiplier = emaMultiplier(smoothing, period);
         return (current * multiplier) + (previousEMA * (1 - multiplier));
     }
+
     private boolean validShortCrossover(Double a, Double b) {
         if (a != null && b != null) {
             return a > b;
         }
         return false;
     }
+
     private boolean validLongerCrossover(Double a, Double b) {
         if (a != null &&  b != null) {
             return a < b;
         }
         return false;
     }
+
     private Double binarySum(Double[] data, int b, int e) {
         Arrays.sort(data);
         if (b > e) {
@@ -205,6 +208,7 @@ public class Price {
             return binarySum(data, b, m) + binarySum(data, m + 1, e);
         }
     }
+
     @Override
     public String toString() {
         return "Price{" +
