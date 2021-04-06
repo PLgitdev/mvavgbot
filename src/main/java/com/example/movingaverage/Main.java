@@ -70,19 +70,19 @@ public class Main {
 
                             case 0:
                                 l = "MINUTE_1";
-                                Global.candleLength = 60 / candleLengthM;
+                                Global.candleLength = 60 * candleLengthM;
                                 break;
                             case 1:
                                 l = "MINUTE_5";
-                                Global.candleLength = (60 * 5) / candleLengthM;
+                                Global.candleLength = (60 * 5) * candleLengthM;
                                 break;
                             case 2:
                                 l = "HOUR_1";
-                                Global.candleLength = (60 * 60) / candleLengthM;
+                                Global.candleLength = (60 * 60) * candleLengthM;
                                 break;
                             case 3:
                                 l = "DAY_1";
-                                Global.candleLength = 86400 / candleLengthM;
+                                Global.candleLength = 86400 * candleLengthM;
                                 break;
                             default:
                                 throw new Exception();
