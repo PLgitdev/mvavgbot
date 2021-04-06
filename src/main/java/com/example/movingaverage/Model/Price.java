@@ -145,6 +145,10 @@ public class Price {
         }
     }
 
+    public boolean validMACDCrossover() {
+        return validShortCrossover(this.mACD, this.signal);
+    }
+
     // Unused in current strategy
 
     public boolean validSMACrossover() {
@@ -152,10 +156,6 @@ public class Price {
     }
 
     public boolean validSMABackCross() { return  validLongerCrossover(this.avgShorter,this.avgLonger); }
-
-    public boolean validMACDCrossover() {
-        return validShortCrossover(this.mACD, this.signal);
-    }
 
     public boolean validMACDBackCross() {
         return validLongerCrossover(this.mACD, this.signal);
