@@ -13,6 +13,7 @@ public class DataFetch {
     final private String CLEAN_REGEX = "[\\[{\"]";
     final private String mOne;
     final private String mTwo;
+
     private static DataFetch soleInstanceDataFetch;
 
     private DataFetch() {

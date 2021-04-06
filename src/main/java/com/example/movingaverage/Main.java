@@ -6,6 +6,7 @@ import com.example.movingaverage.Live.DataFetch;
 import com.example.movingaverage.Live.Sell;
 import com.example.movingaverage.Live.Transaction;
 import com.example.movingaverage.Model.Price;
+import lombok.Builder;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -26,6 +27,7 @@ import java.util.*;
  this project is currently adding an indicator RSI which will extend the period of time the bot can be left
  unmonitored and reduce the amount of experience necessary with trading to make profit.
 
+
  - roundSquare
 
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -42,7 +44,9 @@ public class Main {
          int inputL;
          int inputL2;
          String inputS;
+
          BigDecimal profit;
+
          LocalDateTime start = LocalDateTime.now();
          Global.quant = .0400000;
 
@@ -59,9 +63,11 @@ public class Main {
                     try {
                         System.out.println("Welcome please enter a candle length" +
                             " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
+
                         Global.len = sc.nextInt();
                         String l;
                         switch (Global.len) {
+
                             case 0:
                                 l = "MINUTE_1";
                                 Global.candleLength = 60 / candleLengthM;
@@ -83,8 +89,10 @@ public class Main {
                         }
                         ArrayList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
                         //rate limit is dynamic be careful adjusting Thread.sleep
+
                         Thread.sleep(Global.rateLimit);
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
+
                         System.out.println("Please enter day count for the short moving avg up to 365 days");
                         inputL = sc.nextInt();
                         System.out.println("Please enter day count for the int moving avg up to one year, 365 days");
@@ -302,6 +310,7 @@ public class Main {
                                             buy = BigDecimal.valueOf(askDouble);
                                             System.out.println("Take the ask at " + buy);
                                         }
+
                                         HttpResponse<String> response
                                             = sendOrder(createOrder(buy.doubleValue(), "BUY"));
                                         responseCode = response.statusCode();
@@ -330,6 +339,7 @@ public class Main {
                                 catch (IOException e) {
                                     System.out.print("There was an IOException " + e + "\n" + "response : " +
                                         responseCode);
+
                                 }
                                 sellBidMode = false;
                                 System.out.println("Sell exited because last price dropped to low");
@@ -440,6 +450,7 @@ public class Main {
             }
         }
     }
+  
     //Optimize this with a binary sum or statistics this needs to change
     public static List<Double> takeAvg(List<Map<?, ?>> maps,
                                         List<Double> arOne, List<Double> arTwo) {
@@ -485,6 +496,7 @@ public class Main {
         }
         return createOrder(sell.doubleValue(), "SELL");
     }
+
     public static void createCandle(Price priceObj) {
         priceObj.setSMA();
         priceObj.setSMACDEMA();

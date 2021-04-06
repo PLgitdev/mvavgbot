@@ -1,8 +1,8 @@
 package com.example.movingaverage.Model;
+import com.google.common.annotations.VisibleForTesting;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -32,6 +32,7 @@ This object uses methods that return boolean values based on inequities between 
 @EqualsAndHashCode
 @Builder
 @Data
+@VisibleForTesting
 public class Price {
     private Double smoothing;
     private Double currentPrice;
@@ -144,7 +145,6 @@ public class Price {
             priceLonger.remove(priceLonger.size() - x);
         }
     }
-
 
     // Unused in current strategy
 

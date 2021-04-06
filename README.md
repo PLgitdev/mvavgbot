@@ -13,14 +13,14 @@ Then enter your days count for each moving average calculation.
 
 Then enter your strategy for calculation.
 
-The database will build on start with the historical infomration sepcified.
+The database will build on entry after the market is selected.
 
-If you do not complete a buy or stop the program you will need to clear before next use.
+If you do not complete a buy or you stop the program without a command you will need to clear before next use.
 
 This is for use with MongoDB.
 
-(Work in progress)
 
+Current version buy-sell on btc-eth
 
-![buy](https://github.com/PLgitdev/images/blob/master/buy.PNG)
+![buy-sell](https://github.com/PLgitdev/images/blob/master/cryptogif.gif)
 example https://gist.github.com/PLgitdev/54c448e221ce3143e404d1a836921b2b

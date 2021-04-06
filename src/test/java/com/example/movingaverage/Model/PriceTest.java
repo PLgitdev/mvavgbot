@@ -93,5 +93,4 @@ class PriceTest {
         assertEquals(2, priceObj.getTwelveDayRibbons().size());
         assertEquals(emaShorterAnswerTwo, priceObj.getTwelveDayRibbons().get(1));
     }
-
 }
