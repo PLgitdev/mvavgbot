@@ -227,16 +227,14 @@ public class Main {
                         twentySixDayPeriod.forEach((map) ->
                             longerMACDPeriod.add(Double.parseDouble((String) map.get("close"))));
 
-                        Price priceObj = Price.builder()
-                            .nineDaysOfClose(nineDayMACDPeriod)
+                        Price priceObj = priceBuilder.nineDaysOfClose(nineDayMACDPeriod)
                             .shortMACDPeriod(shortMACDPeriod)
                             .longerMACDPeriod(longerMACDPeriod)
                             .twelveDayRibbons(new ArrayList<>(0))
                             .twentySixDayRibbons(new ArrayList<>(0))
                             .signalLine(new ArrayList<>(0))
                             .timestamp(LocalDateTime.now())
-                            .dateLimit(LocalDateTime.now().plusHours(24))
-                            .build();
+                            .dateLimit(LocalDateTime.now().plusHours(24)).build();
                         priceObj.init();
                         BigDecimal buy = new BigDecimal(0);
                         BigDecimal sell; // If it says not initialized try setting to zero
