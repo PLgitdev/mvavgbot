@@ -6,8 +6,6 @@ import com.example.movingaverage.Live.DataFetch;
 import com.example.movingaverage.Live.Sell;
 import com.example.movingaverage.Live.Transaction;
 import com.example.movingaverage.Model.Price;
-import lombok.Builder;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,20 +33,20 @@ import java.util.*;
 public class Main {
 
     public static void main(String[] args) {
-         Scanner sc = new Scanner(System.in);
-         MongoCRUD mongoCRUD = MongoCRUD.getInstance();
-         Map<Object, Object> liveMarketData;
-         String [] marketSplit;
-         DataFetch fetcher;
-         String markets = "";
-         int inputL;
-         int inputL2;
-         String inputS;
+        Scanner sc = new Scanner(System.in);
+        MongoCRUD mongoCRUD = MongoCRUD.getInstance();
+        Map<Object, Object> liveMarketData;
+        String [] marketSplit;
+        DataFetch fetcher;
+        String markets = "";
+        int inputL;
+        int inputL2;
+        String inputS;
 
-         BigDecimal profit;
+        BigDecimal profit;
 
-         LocalDateTime start = LocalDateTime.now();
-         Global.quant = .0400000;
+        LocalDateTime start = LocalDateTime.now();
+        Global.quant = .0400000;
 
         System.out.println("Please enter markets separated by comma, or clear");
         while (!"clear".equalsIgnoreCase(markets)) {
@@ -91,7 +89,7 @@ public class Main {
                         //rate limit is dynamic be careful adjusting Thread.sleep
                         Thread.sleep(Global.rateLimit);
 
-                        //save it to the db
+                        // Save it to the db
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
 
                         System.out.println("Please enter day count for the short moving avg up to 365 days");
@@ -103,10 +101,10 @@ public class Main {
                         System.out.println("Please enter a calculation strategy high-low = 0, open-close = 1, " +
                             "close = 2");
                         inputS = sc.next();
-                        /* The Map<String,String> requires us to loop the through the value of the map to cast
-                         them using Wrapper class Double .valueOf method. The resulting values will be placed into
-                         an ArrayList then used to build the priceObj. The calculation used to determine the values
-                         added to the priceObj will be decided by your previous inputS.
+                        /* The Map<String,String> from the database requires us to loop the through the value
+                         of the map to cast them using Wrapper class Double .valueOf method. The resulting values
+                         will be placed into an ArrayList then used to build the priceObj. The calculation used to
+                         determine the values added to the priceObj will be decided by your previous inputS.
 
                          After the priceObject is built it will be initialized.
                          */
@@ -267,7 +265,7 @@ public class Main {
                             priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
 
                             // If the incoming size reaches a factor of a candle length create a candle
-                            if(priceObj.getPriceLonger().size() % Global.candleLength == 0 &&
+                            if (priceObj.getPriceLonger().size() % Global.candleLength == 0 &&
                                 priceObj.getPriceShorter().size() % Global.candleLength == 0) {
                                 createCandle(priceObj);
                                 System.out.println("Candle created: \n" + priceObj.toString());
@@ -329,7 +327,8 @@ public class Main {
                                             buy = BigDecimal.valueOf(lastDouble)
                                                 .add(BigDecimal.valueOf(0.00000002));
                                             System.out.println("Take the last at " + buy);
-                                        } else {
+                                        }
+                                        else {
                                             buy = BigDecimal.valueOf(askDouble);
                                             System.out.println("Take the ask at " + buy);
                                         }
@@ -337,12 +336,13 @@ public class Main {
                                         HttpResponse<String> response
                                             = sendOrder(createOrder(buy.doubleValue(), "BUY"));
                                         responseCode = response.statusCode();
-                                    } catch (IOException e) {
+                                    }
+                                    catch (IOException e) {
                                         System.out.print("There was an IOException " + e + "\n" + "response : " +
                                             responseCode);
                                     }
                                 }
-                                if(responseCode == 201) {
+                                if (responseCode == 201) {
                                         //buyMode = false;
                                     successfulBuy = true;
                                     buyBidMode = false;
@@ -407,7 +407,8 @@ public class Main {
                                     try {
                                         HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
                                         responseCode = response.statusCode();
-                                    } catch (IOException e) {
+                                    }
+                                    catch (IOException e) {
                                         System.out.print("There was an IOException " + e + "\n response : " +
                                             responseCode);
                                     }
@@ -458,16 +459,18 @@ public class Main {
                     mongoCRUD.deleteAllMarketData(Global.MARKET_SUMMARY);
                     mongoCRUD.deleteAllMarketData(Global.HISTORICAL_DATA);
                     break;
-                    } else {
+                }
+                else {
                     System.out.println("Market entry invalid, please try again");
                 }
-            } catch (IndexOutOfBoundsException e) {
+            }
+            catch (IndexOutOfBoundsException e) {
                 System.out.println("You have entered an entry too short, or have forgotten a comma" +
                     ", please enter your market");
                 e.printStackTrace();
-            } finally {
+            }
+            finally {
                 //drop database
-
                 mongoCRUD.deleteAllMarketData(Global.MARKET_SUMMARY);
                 mongoCRUD.deleteAllMarketData(Global.HISTORICAL_DATA);
             }
