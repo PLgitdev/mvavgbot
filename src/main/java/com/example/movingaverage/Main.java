@@ -63,11 +63,10 @@ public class Main {
                     try {
                         System.out.println("Welcome please enter a candle length" +
                             " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
-
+                        // Select candle length using console input Integers 0-3
                         Global.len = sc.nextInt();
                         String l;
                         switch (Global.len) {
-
                             case 0:
                                 l = "MINUTE_1";
                                 Global.candleLength = 60 * candleLengthM;
@@ -87,16 +86,20 @@ public class Main {
                             default:
                                 throw new IllegalArgumentException();
                         }
+                        // Fetch historical data
                         ArrayList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
                         //rate limit is dynamic be careful adjusting Thread.sleep
-
                         Thread.sleep(Global.rateLimit);
+
+                        //save it to the db
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
 
                         System.out.println("Please enter day count for the short moving avg up to 365 days");
                         inputL = sc.nextInt();
+
                         System.out.println("Please enter day count for the int moving avg up to one year, 365 days");
                         inputL2 = sc.nextInt();
+
                         System.out.println("Please enter a calculation strategy high-low = 0, open-close = 1, " +
                             "close = 2");
                         inputS = sc.next();
@@ -145,8 +148,10 @@ public class Main {
                                     longerDaysDataHighD.add(Double.valueOf((String) map.get("high"))));
                                 longerDaysDataLow.forEach((map) ->
                                     longerDaysDataLowD.add(Double.valueOf((String) map.get("low"))));
-                                priceBuilder.priceShorter(takeAvg(shorterDaysDataHigh, shorterDaysDataHighD, shorterDaysDataLowD));
-                                priceBuilder.priceLonger(takeAvg(longerDaysDataHigh, longerDaysDataHighD, longerDaysDataLowD));
+                                priceBuilder.priceShorter(takeAvg(shorterDaysDataHigh,
+                                    shorterDaysDataHighD, shorterDaysDataLowD));
+                                priceBuilder.priceLonger(takeAvg(longerDaysDataHigh,
+                                    longerDaysDataHighD, longerDaysDataLowD));
                                 break;
                             case "1":
                                 List<Map<?, ?>> shorterDaysDataClose = mongoCRUD
