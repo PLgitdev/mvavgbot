@@ -293,8 +293,9 @@ public class Main {
                                This is where calculations and decisions are made based on incoming HLOC data.
                                At first we check if the ask is larger than the last if we are in buyMode.
                                We obtain these values from the HLOC data and we continue if the last is not larger
-                               or equal to the ask. Different conditions based on the data will lead to HTTP calls to the
-                               server at different prices based on the best possible entry or exit for the market.
+                               or equal to the ask. Different conditions based on the data will lead to HTTP calls
+                               to the server at different prices based on the best possible entry or exit for the
+                               market.
                              */
                             if (buyMode && !successfulBuy) {
                                 if (askDouble <= lastDouble) {
