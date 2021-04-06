@@ -1,7 +1,9 @@
 package com.example.movingaverage.Model;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -133,13 +135,13 @@ public class Price {
     }
 
     public void dateLimitCheck(int x) {
-        if (LocalDateTime.now().getDayOfWeek().compareTo(dateLimit.getDayOfWeek()) < 0) {
+        if (LocalDateTime.now().getDayOfWeek().compareTo(dateLimit.getDayOfWeek()) > 0) {
             priceShorter.remove(priceShorter.size() - x);
         }
     }
 
     public void dateLimitCheckLonger(int x) {
-        if (LocalDateTime.now().getDayOfWeek().compareTo(dateLimit.getDayOfWeek()) < 0) {
+        if (LocalDateTime.now().getDayOfWeek().compareTo(dateLimit.getDayOfWeek()) > 0) {
             priceLonger.remove(priceLonger.size() - x);
         }
     }
