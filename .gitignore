@@ -3,6 +3,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
 !**/src/test/**
+/src/main/java/com/example/movingaverage/Keys.java
 
 ### STS ###
 .apt_generated
@@ -26,6 +27,5 @@ target/
 /nbdist/
 /.nb-gradle/
 build/
-
 ### VS Code ###
 .vscode/

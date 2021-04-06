@@ -1,7 +1,5 @@
 package com.example.movingaverage.Live;
 
-import com.example.movingaverage.Keys;
-
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
