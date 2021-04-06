@@ -85,7 +85,7 @@ public class Main {
                                 Global.candleLength = 86400 * candleLengthM;
                                 break;
                             default:
-                                throw new IllegalArgumentException());
+                                throw new IllegalArgumentException();
                         }
                         ArrayList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
                         //rate limit is dynamic be careful adjusting Thread.sleep
