@@ -284,10 +284,20 @@ public class Main {
                             System.out.println(liveMarketData.get("Last") + "\n" +
                                 "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
                                 + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
-                            //check average inequality
+                            // Check average inequality or add more indicators boolean array?
                             boolean buyMode = priceObj.validMACDCrossover();
                             System.out.println(buyMode);
                             int responseCode = 0;
+                            /* If buy mode is on and we have not yet placed an order (one order at a time FOK) we start
+                               trying to enter the market based upon our programed indicators and the current
+                               inequality or relationship between the indicators. Proper function excludes possibility
+                               of stacking buys it if buys it must sell if then it sells it is able to buy again.
+                               This is where calculations and decisions are made based on incoming HLOC data.
+                               At first we check if the ask is larger than the last if we are in buyMode.
+                               We obtain these values from the HLOC data and we continue if the last is not larger
+                               or equal to the ask. Different conditions based on the data will lead to HTTP calls to the
+                               server at different prices based on the best possible entry or exit for the market.
+                             */
                             if (buyMode && !successfulBuy) {
                                 if (askDouble <= lastDouble) {
                                     buy = BigDecimal.valueOf(askDouble);
