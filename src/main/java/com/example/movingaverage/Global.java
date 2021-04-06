@@ -12,6 +12,8 @@ public class Global {
     public static int len = Integer.MIN_VALUE;
     public static int candleLength;
     public static int rateLimit = 1000;
+    final public static String HISTORICAL_DATA = "historicaldata";
+    final public static String MARKET_SUMMARY = "marketsummary";
     public static HttpRequestFactory requestFactory
         = new NetHttpTransport().createRequestFactory();
 

@@ -40,8 +40,8 @@ public class Price {
     private Double signal;
     private LocalDateTime timestamp;
     private LocalDateTime dateLimit;
-    private ArrayList<Double> priceShorter;
-    private ArrayList<Double> priceLonger;
+    private List<Double> priceShorter;
+    private List<Double> priceLonger;
     private List<Double> signalLine;
     private List<Double> nineDaysOfClose;
     private List<Double> twelveDayRibbons;
@@ -121,7 +121,7 @@ public class Price {
         this.avgLonger =  calculateSMA(priceLonger);
     }
 
-    public void updateSignalLine() {
+    public void setSignalLine() {
         Deque<Double> signalDeque = new LinkedList<>(signalLine);
 
         if (this.mACD != null) {
