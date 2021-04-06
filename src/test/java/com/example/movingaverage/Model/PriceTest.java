@@ -19,10 +19,10 @@ class PriceTest {
     final Double currentPrice = 0.03024210;
     ArrayList<Double> pricesShorter = new ArrayList<>(Arrays.asList(.01, .02, .01));
     ArrayList<Double> pricesLonger = new ArrayList<>(Arrays.asList(.01, .02, .04, .06));
-    List<Double> ninedaysofclose = new ArrayList<>(Arrays.asList(.01, .03));
+    List<Double> nineDaysOfClose = new ArrayList<>(Arrays.asList(.01, .03));
     List<Double> shortMACDPeriod = new ArrayList<>(Arrays.asList(.01, .02, .01));
     List<Double> longMACDPeriod = new ArrayList<>(Arrays.asList(.01, .02, .04, .06));
-    List<Double> signaLine = new ArrayList<>(0);
+    List<Double> signalLine = new ArrayList<>(0);
     List<Double> twelveDayRibbons = new ArrayList<>(0);
     List<Double> twentyDayRibbons = new ArrayList<>(0);
     Price priceObj = Price.builder().priceShorter(pricesShorter)
@@ -32,8 +32,8 @@ class PriceTest {
         .currentPrice(currentPrice)
         .twelveDayRibbons(twelveDayRibbons)
         .twentySixDayRibbons(twentyDayRibbons)
-        .nineDaysOfClose(ninedaysofclose)
-        .signalLine(signaLine)
+        .nineDaysOfClose(nineDaysOfClose)
+        .signalLine(signalLine)
         .smoothing(2.0)
         .build();
 
