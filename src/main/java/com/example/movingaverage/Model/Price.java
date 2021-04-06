@@ -3,14 +3,31 @@ import com.google.common.annotations.VisibleForTesting;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This is the price object. The price object is in charge of calculating the indicators from the incoming data.
+
+Current Indicators:
+
+Simple moving average                     - Average calculated for each of the time periods set by the console input
+The moving average convergence divergence - A weighted average using a classical 12, 26, close strategy derived from SMA
+The signal line                           - Take the EMA of 9 days of the closing price
+
+This object will be updated by adding Last prices from incoming HLOC data from the server every iteration it will then
+make candles based on candle size global input.
+
+Once the data has has expired it will be removed
+    For example:  the program has been running longer than one day and needs to recalculate the indicators
+
+This object uses methods that return boolean values based on inequities between the indicators
+    For example: Buy signal will be affected by the boolean value between the signal line and the MACD (mACD)
+
+- roundSquare
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 @EqualsAndHashCode
 @Builder
@@ -27,14 +44,50 @@ public class Price {
     private Double signal;
     private LocalDateTime timestamp;
     private LocalDateTime dateLimit;
-    private ArrayList<Double> priceShorter;
-    private ArrayList<Double> priceLonger;
+    private List<Double> priceShorter;
+    private List<Double> priceLonger;
     private List<Double> signalLine;
     private List<Double> nineDaysOfClose;
     private List<Double> twelveDayRibbons;
     private List<Double> twentySixDayRibbons;
     private List<Double> shortMACDPeriod;
     private List<Double> longerMACDPeriod;
+
+    public void init() {
+        //To calculate EMA you must use the SMA using close of last period as the initial value
+        Deque<Double> sMACD = new ArrayDeque<>(shortMACDPeriod);
+        Deque<Double> lMACD = new ArrayDeque<>(longerMACDPeriod);
+        Deque<Double> temp = new ArrayDeque<>();
+        double previousShortSMA = calculateSMA(shortMACDPeriod);
+        double previousLongSMA = calculateSMA(shortMACDPeriod);
+        double currentLongValue;
+        double currentShortValue;
+        double tempValue;
+        double value;
+        double signal;
+
+        //set up the initial short EMA
+        this.sMACDEMA = calculateEMA(currentPrice, previousShortSMA, smoothing,12);
+        this.twelveDayRibbons.add((this.sMACDEMA));
+
+        //set up the initial long EMA
+        this.lMACDEMA = calculateEMA(currentPrice, previousLongSMA, smoothing, 26);
+        this.twentySixDayRibbons.add(this.lMACDEMA);
+
+        //initialize the signal line
+        while (temp.size() < nineDaysOfClose.size()) {
+            currentShortValue = sMACD.pop();
+            currentLongValue = lMACD.pop();
+            value = calculateEMA(currentShortValue, sMACD.peek(), smoothing, 12) -
+                calculateEMA(currentLongValue, lMACD.peek(), smoothing, 26);
+            temp.push(value);
+        }
+        while (temp.size() > 1) {
+            tempValue = temp.pop();
+            signal = calculateEMA(tempValue,temp.peek(),smoothing,9);
+            this.signalLine.add(signal);
+        }
+    }
 
     public void addPriceShorter (Double price) {
         this.priceShorter.add(price);
@@ -48,112 +101,104 @@ public class Price {
         this.priceLonger.add(price);
         this.currentPrice = price;
     }
+
     public void setMACD() {
-        if(lMACDEMA != null) {
+        if (lMACDEMA != null) {
             this.mACD =  sMACDEMA - lMACDEMA ;
         }
     }
-    public void updateSignalLine() {
-        if(this.mACD != null) {
-            int n = signalLine.size();
-            double prev = signalLine.get(n - 1);
-            this.signal = calculateEMA(mACD, prev, smoothing, 9);
-            signalLine.add(signal); //create a signal line by making a EMA function
-        }
-    }
+
     public void setSMACDEMA() {
-        if(twelveDayRibbons.size() > 0) {
-            double prev = twelveDayRibbons.get(twelveDayRibbons.size() - 1);
-            this.sMACDEMA = calculateEMA(currentPrice,prev,smoothing,12);
-            twelveDayRibbons.add((sMACDEMA));
-        }
-        else {
-            twelveDayRibbons.add(calculateSMA(shortMACDPeriod));
-        }
+        Deque<Double> twelveDayDeque = new ArrayDeque<>(twelveDayRibbons);
+        this.sMACDEMA = calculateEMA(currentPrice, twelveDayDeque.peek(), smoothing,12);
+        this.twelveDayRibbons.add((sMACDEMA));
     }
-    //LinkedList!!!!
+
     public void setLMACDEMA() {
-        if(twentySixDayRibbons.size() > 0) {
-            double prev = twentySixDayRibbons.get(twentySixDayRibbons.size() - 1);
-            this.lMACDEMA  = calculateEMA(currentPrice,prev,smoothing,26);
-            twentySixDayRibbons.add((lMACDEMA));
-        }
-        else {
-            twentySixDayRibbons.add(calculateSMA(longerMACDPeriod));
-        }
+        Deque<Double> twentySixDayDeque = new ArrayDeque<>(twentySixDayRibbons);
+        this.lMACDEMA  = calculateEMA(currentPrice, twentySixDayDeque.peek(), smoothing,26);
+        this.twentySixDayRibbons.add(this.lMACDEMA);
     }
+
     public void setSMA() {
         this.avgShorter = calculateSMA(priceShorter);
         this.avgLonger =  calculateSMA(priceLonger);
     }
-    public boolean validSMACrossover() {
-        return validShortCrossover(avgShorter,avgLonger);
+
+    public void setSignalLine() {
+        Deque<Double> signalDeque = new LinkedList<>(signalLine);
+
+        if (this.mACD != null) {
+            this.signal = calculateEMA(mACD, signalDeque.peek(), smoothing, 9);
+            this.signalLine.add(signal); //create a signal line
+        }
     }
-    public boolean validSMABackCross() { return  validLongerCrossover(avgShorter,avgLonger); }
-    public boolean validMACDCrossover() {
-        return validShortCrossover(this.mACD, this.signal);
-    }
-    public boolean validMACDBackCross() {
-        return validLongerCrossover(this.mACD, this.signal);
-    }
+
     public void dateLimitCheck(int x) {
-        if(LocalDateTime.now().compareTo(dateLimit) > 0) {
+        if (LocalDateTime.now().getDayOfWeek().compareTo(dateLimit.getDayOfWeek()) < 0) {
             priceShorter.remove(priceShorter.size() - x);
         }
     }
+
     public void dateLimitCheckLonger(int x) {
-        if (LocalDateTime.now().compareTo(dateLimit) > 0) {
+        if (LocalDateTime.now().getDayOfWeek().compareTo(dateLimit.getDayOfWeek()) < 0) {
             priceLonger.remove(priceLonger.size() - x);
         }
     }
-    //LinkedList ????
-    public void initializeSignalLine() {
-        int n = nineDaysOfClose.size();
-        ArrayList<Double> temp = new ArrayList<>();
-        for(int i = 1; i < n; i++) {
-            double value = calculateEMA(shortMACDPeriod.get(i),shortMACDPeriod.get(i - 1), smoothing, 12) -
-                calculateEMA(longerMACDPeriod.get(i), longerMACDPeriod.get(i - 1), smoothing, 26);
-                temp.add(value);
-        }
-        for(int i = 1; i < temp.size(); i++) {
-            Double s = calculateEMA(temp.get(i),temp.get(i - 1),smoothing,9);
-            signalLine.add(s);
-        }
+
+    // Unused in current strategy
+
+    public boolean validSMACrossover() {
+        return validShortCrossover(this.avgShorter,this.avgLonger);
     }
+
+    public boolean validSMABackCross() { return  validLongerCrossover(this.avgShorter,this.avgLonger); }
+
+    public boolean validMACDCrossover() {
+        return validShortCrossover(this.mACD, this.signal);
+    }
+
+    public boolean validMACDBackCross() {
+        return validLongerCrossover(this.mACD, this.signal);
+    }
+
+    //-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     private Double emaMultiplier(Double smoothing, int period) {
         return (smoothing / (period + 1d));
     }
-    private double calculateSMA(List<Double> l) {
-        int n = l.size();
+
+    private double calculateSMA(List<Double> data) {
+        int n = data.size();
         Double[] a = new Double[n];
-        a = l.toArray(a);
+        a = data.toArray(a);
         double sum = binarySum(a, 0, a.length - 1);
         BigDecimal bigSum = BigDecimal.valueOf(sum);
         return bigSum.divide(BigDecimal.valueOf(n), 8,  RoundingMode.HALF_UP).doubleValue();
     }
-    private double calculateEMA(Double b, Double a, Double smoothing, int period) {
-        Double m = emaMultiplier(smoothing, period);
-        return (b * m) + (a * (1 - m));
+
+    private double calculateEMA(Double current, Double previousEMA, Double smoothing, int period) {
+        Double multiplier = emaMultiplier(smoothing, period);
+        return (current * multiplier) + (previousEMA * (1 - multiplier));
     }
     private boolean validShortCrossover(Double a, Double b) {
-        if(a != null &&  b != null) {
+        if (a != null && b != null) {
             return a > b;
         }
         return false;
     }
     private boolean validLongerCrossover(Double a, Double b) {
-        if(a != null &&  b != null) {
+        if (a != null &&  b != null) {
             return a < b;
         }
         return false;
     }
     private Double binarySum(Double[] data, int b, int e) {
         Arrays.sort(data);
-        if(b > e) {
+        if (b > e) {
             throw new IllegalArgumentException();
         }
-        else if(b == e) {
+        else if (b == e) {
             return data[b];
         }
         else {
@@ -161,31 +206,6 @@ public class Price {
             return binarySum(data, b, m) + binarySum(data, m + 1, e);
         }
     }
-    //what if it kept trying different amts
-    //when there is a valid contraction after a valid sma crossover
-// ?? random idea i had basically will reach a vaLid expansion for a certain amount set
-
-    /*
-    private boolean validExpansion(List<Double> ma, int amt) {
-        int counter = 0;
-        for (int i = 0; i < ma.size(); i++) {
-            if (i > 0 && (ma.get(i) > ma.get(i - 1))) {
-                counter++;
-            }
-        }
-        return  counter == amt;
-    }
-    private boolean validContraction(List<Double> ma,int amt) {
-        int counter = 0;
-       for (int i = 0; i < ma.size(); i++) {
-           if (i > 0 && (ma.get(i) < ma.get(i - 1))) {
-               counter++;
-           }
-       }
-       return counter == amt;
-
-   }
-   */
     @Override
     public String toString() {
         return "Price{" +

@@ -1,4 +1,4 @@
-package com.example.movingaverage.Controller;
+package com.example.movingaverage.DAO;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -6,6 +6,8 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -42,8 +44,8 @@ public class MongoCRUD {
     }
 
 
-    public ArrayList<Map<?, ?>> retrieveMarketDataByDays(String collection, int days, String q, String p) {
-        ArrayList<Map<?, ?>> marketDataCollection = new ArrayList<Map<?, ?>>(){};
+    public List<Map<?, ?>> retrieveMarketDataByDays(String collection, int days, String q, String p) {
+        List<Map<?, ?>> marketDataCollection = new ArrayList<Map<?, ?>>(){};
         MongoCollection<Document> dbCollection = db.getCollection(collection);
         dbCollection .find(gte(q, now.minusDays(days).toString()))
             .projection(include(p))
