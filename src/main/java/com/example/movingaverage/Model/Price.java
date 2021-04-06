@@ -32,7 +32,6 @@ This object uses methods that return boolean values based on inequities between 
 @EqualsAndHashCode
 @Builder
 @Data
-@VisibleForTesting
 public class Price {
     private Double smoothing;
     private Double currentPrice;
