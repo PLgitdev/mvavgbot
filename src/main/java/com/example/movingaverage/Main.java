@@ -24,10 +24,6 @@ import java.util.*;
  if you feel like forking the project you would most likely want to add RSI
  this project is currently adding an indicator RSI which will extend the period of time the bot can be left
  unmonitored and reduce the amount of experience necessary with trading to make profit.
-
-
- - roundSquare
-
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 public class Main {

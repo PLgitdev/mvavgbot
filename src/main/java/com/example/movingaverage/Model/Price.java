@@ -27,7 +27,6 @@ Once the data has has expired it will be removed
 This object uses methods that return boolean values based on inequities between the indicators
     For example: Buy signal will be affected by the boolean value between the signal line and the MACD (mACD)
 
-- roundSquare
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 @EqualsAndHashCode
