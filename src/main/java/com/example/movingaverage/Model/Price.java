@@ -88,6 +88,7 @@ public class Price {
         }
     }
 
+    //Add a price every iteration individually
     public void addPriceShorter (Double price) {
         this.priceShorter.add(price);
     }
@@ -95,6 +96,7 @@ public class Price {
         this.priceLonger.add(price);
     }
 
+    //Set all prices at once
     public void setPrices(Double price) {
         this.priceShorter.add(price);
         this.priceLonger.add(price);
@@ -133,6 +135,7 @@ public class Price {
         }
     }
 
+    //check for expired data
     public void dateLimitCheck(int x) {
         if (LocalDateTime.now().getDayOfWeek().compareTo(dateLimit.getDayOfWeek()) > 0) {
             priceShorter.remove(priceShorter.size() - x);

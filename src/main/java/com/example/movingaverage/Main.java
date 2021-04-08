@@ -42,7 +42,7 @@ public class Main {
         BigDecimal profit;
 
         LocalDateTime start = LocalDateTime.now();
-        Global.quant = .0400000;
+        //Global.quant = .0400000; hard coded to avoid accidentally purchase
 
         System.out.println("Please enter markets separated by comma, or clear");
         while (!"clear".equalsIgnoreCase(markets)) {
@@ -260,10 +260,10 @@ public class Main {
                             // Set values to the price object
                             priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
 
-                            // If the incoming size reaches a factor of a candle length create a candle
+                            // If the incoming size reaches a factor of a candle length set indicators
                             if (priceObj.getPriceLonger().size() % Global.candleLength == 0 &&
                                 priceObj.getPriceShorter().size() % Global.candleLength == 0) {
-                                createCandle(priceObj);
+                                setIndicators(priceObj);
                                 System.out.println("Candle created: \n" + priceObj.toString());
                             }
                             mongoCRUD.createMarketData(liveMarketData, Global.MARKET_SUMMARY);
@@ -282,7 +282,7 @@ public class Main {
                             boolean buyMode = priceObj.validMACDCrossover();
                             System.out.println(buyMode);
                             int responseCode = 0;
-                            /* If buy mode is on and we have not yet placed an order (one order at a time FOK) we start
+                            /* If buy mode is true and we have not yet placed an order (one order at a time FOK) we start
                                trying to enter the market based upon our programed indicators and the current
                                inequality or relationship between the indicators. Proper function excludes possibility
                                of stacking buys it if buys it must sell if then it sells it is able to buy again.
@@ -425,8 +425,9 @@ public class Main {
                                 }
                             }
 
-                            //reset the historical data
-                            if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL))) {
+                            //reset the historical data if objects max out from overflow or the data has expired
+                            if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL))
+                                || priceObj.getPriceShorter().size() >= Integer.MAX_VALUE - 1) {
                                 priceObj.getPriceShorter().clear();
                                 mongoCRUD
                                     .retrieveMarketDataByDays(Global.MARKET_SUMMARY,
@@ -435,7 +436,8 @@ public class Main {
                                         "Last").forEach((data) -> priceObj
                                             .addPriceShorter((Double) data.get("Last")));
                             }
-                            if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL2))) {
+                            if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(inputL2))
+                                || priceObj.getPriceShorter().size() >= Integer.MAX_VALUE - 1) {
                                 priceObj.getPriceLonger().clear();
                                 mongoCRUD
                                     .retrieveMarketDataByDays(Global.MARKET_SUMMARY,
@@ -520,7 +522,7 @@ public class Main {
         return createOrder(sell.doubleValue(), "SELL");
     }
 
-    public static void createCandle(Price priceObj) {
+    public static void setIndicators(Price priceObj) {
         priceObj.setSMA();
         priceObj.setSMACDEMA();
         priceObj.setLMACDEMA();
