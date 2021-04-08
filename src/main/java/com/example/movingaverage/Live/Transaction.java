@@ -36,6 +36,7 @@ import java.util.Map;
  -
  - The content hash must be calculated before the signature and a builder can be used to achieve this.
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 public abstract class Transaction implements Encryption, Communication {
     protected String type;
     protected Double limit;
