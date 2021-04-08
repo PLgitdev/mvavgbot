@@ -10,23 +10,24 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-This is the price object. The price object is in charge of calculating the indicators from the incoming data.
-
-Current Indicators:
-
-Simple moving average                     - Average calculated for each of the time periods set by the console input
-The moving average convergence divergence - A weighted average using a classical 12, 26, close strategy derived from SMA
-The signal line                           - Take the EMA of 9 days of the closing price
-
-This object will be updated by adding Last prices from incoming HLOC data from the server every iteration it will then
-make candles based on candle size global input.
-
-Once the data has has expired it will be removed
-    For example:  the program has been running longer than one day and needs to recalculate the indicators
-
-This object uses methods that return boolean values based on inequities between the indicators
-    For example: Buy signal will be affected by the boolean value between the signal line and the MACD (mACD)
-
+ - This is the price class. The price class creates an object  that is in
+ - charge of calculating the indicators from the incoming data.
+ -
+ - Current Indicators:
+ -
+ - Simple moving average                     - Average calculated for each of the time periods set by the console input
+ - The moving average convergence divergence - A weighted average using a classical 12, 26, close strategy
+ - The signal line                           - Take the EMA of 9 days of the closing price
+ -
+ - This object will be updated by adding Last prices from incoming HLOC data from the server each iteration it will then
+ - create values that define indicators based on candle size global input.
+ -
+ - Once the data has has expired it will be removed
+ -     For example:  the program has been running longer than one day and needs to recalculate the indicators
+ -
+ - This object uses methods that return boolean values based on inequities between the indicators
+ -     For example: Buy signal will be affected by the boolean value between the signal line and the MACD (mACD)
+ -
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 @EqualsAndHashCode
