@@ -42,7 +42,7 @@ public class Main {
         BigDecimal profit;
 
         LocalDateTime start = LocalDateTime.now();
-        //Global.quant = .0400000; hard coded to avoid accidentally purchase
+        //Global.quant = .0400000; hard coded to avoid accidental purchase
 
         System.out.println("Please enter markets separated by comma, or clear");
         while (!"clear".equalsIgnoreCase(markets)) {
