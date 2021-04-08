@@ -18,6 +18,24 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
+/*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ - This is the Transaction abstract class which handles HTTP requests to the Bittrex server that need the be
+ - authenticated specifically in the case of a transaction.
+ -
+ - Transaction has two children Buy and Sell.
+ -
+ - A transaction requires a SHA512 encryption as well as a HMAC SHA 512 Keyed encryption authentication for the v3 api.
+
+ - The headers require the following values
+ -     Api-key
+ -     Api-Timestamp - in unix time of the current time
+ -     Api-Content   - Hash a SHA512 hex encoded value created from the content of the request
+ -     Content type  - Must be application/json
+ -     Api-Signature - This is a HMAC SHA512 hex encoded value created from the concatenation of time, uri,
+ -                     type of request ie. POST, and the content hash
+ -
+ - The content hash must be calculated before the signature and a builder can be used to achieve this.
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 public abstract class Transaction implements Encryption, Communication{
     protected String type;
     protected Double limit;
