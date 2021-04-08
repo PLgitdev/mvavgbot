@@ -10,8 +10,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
- - This is the price class. The price class creates an object  that is in
- - charge of calculating the indicators from the incoming data.
+ - This is the price class. Once created the price object is in charge of calculating the indicators from the
+ - incoming data.
+ -
  -
  - Current Indicators:
  -
