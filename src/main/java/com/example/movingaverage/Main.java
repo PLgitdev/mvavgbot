@@ -63,15 +63,18 @@ public class Main {
                         switch (Global.len) {
                             case 0:
                                 l = "MINUTE_1";
+                                Global.rateLimit = 1000;
                                 Global.candleLength = 60 * candleLengthM;
                                 break;
                             case 1:
                                 l = "MINUTE_5";
-                                Global.candleLength = (60 * 5) * candleLengthM;
+                                Global.rateLimit = 1000 * 5;
+                                Global.candleLength = (5 * 60 * candleLengthM);
                                 break;
                             case 2:
                                 l = "HOUR_1";
-                                Global.candleLength = (60 * 60) * candleLengthM;
+                                Global.rateLimit = 1000 * 60;
+                                Global.candleLength = (60 * 60 * candleLengthM);
                                 break;
                             case 3:
                                 l = "DAY_1";
@@ -255,6 +258,7 @@ public class Main {
                         boolean buyMode = false;
                         boolean hold;
                         //Loop to poll for market data
+                        int candleCountdown = Global.candleLength;
                         while (!markets.equalsIgnoreCase("clear")) {
                             // Fetch the data
                             Thread.sleep(Global.rateLimit);
@@ -270,6 +274,11 @@ public class Main {
                                 System.out.println("Candle created: \n" + priceObj.toString());
                                 System.out.println(buyMode);
                             }
+                            /*if (candleCountdown % Global.candleLength == 0) {
+                                System.out.println("count-down to candle " + --);
+                            }
+                            --candleCountdown;
+                             */
                             mongoCRUD.createMarketData(liveMarketData, Global.MARKET_SUMMARY);
                             /*  If you want to check every iteration
                               liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value)); */
