@@ -76,7 +76,7 @@ public class Price {
         this.twentySixDayRibbons.add(this.lMACDEMA);
 
         //initialize the signal line
-        while (temp.size() < nineDaysOfClose.size()) {
+        while (temp.size() < nineDaysOfClose.size() - 1) {
             currentShortValue = sMACD.pop();
             currentLongValue = lMACD.pop();
             value = calculateEMA(currentShortValue, sMACD.peek(), smoothing, 12) -

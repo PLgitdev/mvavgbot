@@ -276,12 +276,13 @@ public class Main {
                             double lastDouble = Double.parseDouble(liveMarketData.get("Last").toString());
                             double askDouble = Double.parseDouble(liveMarketData.get("Ask").toString());
                             double bidDouble = Double.parseDouble(liveMarketData.get("Bid").toString());
-                            System.out.println(liveMarketData.get("Last") + "\n" +
+                            /* System.out.println(liveMarketData.get("Last") + "\n" +
                                 "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
                                 + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
+                             */
                             // Check average inequality or add more indicators boolean array?
                             boolean buyMode = priceObj.validMACDCrossover();
-                            System.out.println(buyMode);
+                            //System.out.println(buyMode);
                             int responseCode = 0;
                             /* If buy mode is true and we have not yet placed an order (one order at a time FOK) we start
                                trying to enter the market based upon our programed indicators and the current
