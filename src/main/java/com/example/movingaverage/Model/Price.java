@@ -75,7 +75,7 @@ public class Price {
         this.lMACDEMA = calculateEMA(currentPrice, previousLongSMA, smoothing, 26);
         this.twentySixDayRibbons.add(this.lMACDEMA);
 
-        //initialize the signal line
+        //initialize the signal line.. beware the min and 5 min candle cannot hold all the data in one List
         while (temp.size() < nineDaysOfClose.size() - 1) {
             currentShortValue = sMACD.pop();
             currentLongValue = lMACD.pop();

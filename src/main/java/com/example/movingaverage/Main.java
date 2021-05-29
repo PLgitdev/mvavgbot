@@ -252,6 +252,7 @@ public class Main {
                         boolean successfulBuy = false;
                         boolean sellBidMode = true;
                         boolean buyBidMode = false;
+                        boolean buyMode = false;
                         boolean hold;
                         //Loop to poll for market data
                         while (!markets.equalsIgnoreCase("clear")) {
@@ -265,10 +266,11 @@ public class Main {
                             if (priceObj.getPriceLonger().size() % Global.candleLength == 0 &&
                                 priceObj.getPriceShorter().size() % Global.candleLength == 0) {
                                 setIndicators(priceObj);
+                                buyMode = priceObj.validMACDCrossover();
                                 System.out.println("Candle created: \n" + priceObj.toString());
+                                System.out.println(buyMode);
                             }
                             mongoCRUD.createMarketData(liveMarketData, Global.MARKET_SUMMARY);
-
                             /*  If you want to check every iteration
                               liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value)); */
 
@@ -281,8 +283,6 @@ public class Main {
                                 + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
                              */
                             // Check average inequality or add more indicators boolean array?
-                            boolean buyMode = priceObj.validMACDCrossover();
-                            //System.out.println(buyMode);
                             int responseCode = 0;
                             /* If buy mode is true and we have not yet placed an order (one order at a time FOK) we start
                                trying to enter the market based upon our programed indicators and the current
