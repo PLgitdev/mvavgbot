@@ -5,8 +5,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -15,8 +14,8 @@ import static com.mongodb.client.model.Filters.gte;
 import static com.mongodb.client.model.Projections.include;
 
 public class MongoCRUD {
-    private  MongoDatabase db;
-    private  LocalDateTime now;
+    private final  MongoDatabase db;
+    private final  LocalDateTime now;
 
     private static MongoCRUD soleInstanceMongoCRUD;
 
@@ -45,7 +44,7 @@ public class MongoCRUD {
 
 
     public List<Map<?, ?>> retrieveMarketDataByDays(String collection, int days, String q, String p) {
-        List<Map<?, ?>> marketDataCollection = new ArrayList<Map<?, ?>>(){};
+        List<Map<?, ?>> marketDataCollection = new LinkedList<>(){};
         MongoCollection<Document> dbCollection = db.getCollection(collection);
         dbCollection .find(gte(q, now.minusDays(days).toString()))
             .projection(include(p))

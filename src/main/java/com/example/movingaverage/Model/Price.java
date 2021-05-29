@@ -91,10 +91,10 @@ public class Price {
     }
 
     //Add a price every iteration individually
-    public void addPriceShorter (Double price) {
+    public void addPriceShorter(Double price) {
         this.priceShorter.add(price);
     }
-    public void addPriceLonger (Double price) {
+    public void addPriceLonger(Double price) {
         this.priceLonger.add(price);
     }
 
@@ -136,6 +136,8 @@ public class Price {
             this.signalLine.add(signal); //create a signal line
         }
     }
+    //RSI !
+
 
     //check for expired data
     public void dateLimitCheck(int x) {

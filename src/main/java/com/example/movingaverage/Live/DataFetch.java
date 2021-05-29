@@ -36,13 +36,13 @@ public class DataFetch {
         return stringToMap(clean);
         }
 
-    public ArrayList<Map<Object, Object>> historicalDataFetcher(String s) throws IOException {
-        ArrayList<Map<Object,Object>> arr = new ArrayList<>();
+    public LinkedList<Map<Object, Object>> historicalDataFetcher(String s) throws IOException {
+        LinkedList<Map<Object,Object>> arr = new LinkedList<>();
         String url = ("https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + s + "/recent");
         String historicalData = fetch(url);
         String[] historicalSplit = historicalData.replaceAll(CLEAN_REGEX, "").split("},");
         for (String value : historicalSplit) {
-            arr.add(stringToMap(value));
+            arr.push(stringToMap(value));
         }
         return arr;
     }

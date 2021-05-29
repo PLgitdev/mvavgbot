@@ -14,14 +14,14 @@ import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.*;
  /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
- This program is an automated trading algorithm with a modular strategy based on common financial indicators.
+ This program is an automated trading application with a modular strategy based on common financial indicators.
  In this version the deciding indicators are the moving average convergence divergence, commonly known as MACD and
  the signal line which both are derived from historical data. These EMA or exponential moving averages are
  derived from the simple moving average determined by time period of historical data you select to use for analysis.
  The simple moving average is fundamental in calculating this weighted average which determines the buy sell decisions
  of the program. This program uses smoothing of 2.0 for this EMA multiplier which is a standard.
  *Caution this bot runs on a model currently that is preset for an optimal entry point in the market.
- if you feel like forking the project you would most likely want to add RSI
+ if you feel like joining the project you would most likely want to add RSI
  this project is currently adding an indicator RSI which will extend the period of time the bot can be left
  unmonitored and reduce the amount of experience necessary with trading to make profit.
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -81,7 +81,7 @@ public class Main {
                                 throw new IllegalArgumentException();
                         }
                         // Fetch historical data
-                        ArrayList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
+                        LinkedList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
                         //rate limit is dynamic be careful adjusting Thread.sleep
                         Thread.sleep(Global.rateLimit);
 
@@ -99,20 +99,20 @@ public class Main {
                         inputS = sc.next();
                         /* The Map<String,String> from the database requires us to loop the through the value
                          of the map to cast them using Wrapper class Double .valueOf method. The resulting values
-                         will be placed into an ArrayList then used to build the priceObj. The calculation used to
+                         will be placed into a LinkedList then used to build the priceObj. The calculation used to
                          determine the values added to the priceObj will be decided by your previous inputS.
 
                          After the priceObject is built it will be initialized.
                          */
 
                         Price.PriceBuilder priceBuilder = Price.builder().smoothing(2.0);
-                        ArrayList<Double> shortMACDPeriod = new ArrayList<>();
-                        ArrayList<Double> longerMACDPeriod = new ArrayList<>();
-                        ArrayList<Double> nineDayMACDPeriod = new ArrayList<>();
-                        ArrayList<Double> shorterDaysDataOpenD = new ArrayList<>();
-                        ArrayList<Double> shorterDaysDataCloseD = new ArrayList<>();
-                        ArrayList<Double> longerDaysDataOpenD = new ArrayList<>();
-                        ArrayList<Double> longerDaysDataCloseD = new ArrayList<>();
+                        LinkedList<Double> shortMACDPeriod = new LinkedList<>();
+                        LinkedList<Double> longerMACDPeriod = new LinkedList<>();
+                        LinkedList<Double> nineDayMACDPeriod = new LinkedList<>();
+                        LinkedList<Double> shorterDaysDataOpenD = new LinkedList<>();
+                        LinkedList<Double> shorterDaysDataCloseD = new LinkedList<>();
+                        LinkedList<Double> longerDaysDataOpenD = new LinkedList<>();
+                        LinkedList<Double> longerDaysDataCloseD = new LinkedList<>();
 
                         switch (inputS) {
                             case "0":
@@ -138,10 +138,10 @@ public class Main {
                                         "low");
 
                                 // Has to be a better way to do this parsing on another day
-                                ArrayList<Double> shorterDaysDataHighD = new ArrayList<>();
-                                ArrayList<Double> shorterDaysDataLowD = new ArrayList<>();
-                                ArrayList<Double> longerDaysDataHighD = new ArrayList<>();
-                                ArrayList<Double> longerDaysDataLowD = new ArrayList<>();
+                                LinkedList<Double> shorterDaysDataHighD = new LinkedList<>();
+                                LinkedList<Double> shorterDaysDataLowD = new LinkedList<>();
+                                LinkedList<Double> longerDaysDataHighD = new LinkedList<>();
+                                LinkedList<Double> longerDaysDataLowD = new LinkedList<>();
                                 shorterDaysDataHigh.forEach((map) ->
                                     shorterDaysDataHighD.add(Double.valueOf((String) map.get("high"))));
                                 shorterDaysDataLow.forEach((map) ->
@@ -235,6 +235,7 @@ public class Main {
                             longerMACDPeriod.add(Double.parseDouble((String) map.get("close"))));
 
                         // Finish building the priceObj and init
+                        liveMarketData = fetcher.marketDataFetcher();
                         Price priceObj = priceBuilder.nineDaysOfClose(nineDayMACDPeriod)
                             .shortMACDPeriod(shortMACDPeriod)
                             .longerMACDPeriod(longerMACDPeriod)
@@ -242,7 +243,8 @@ public class Main {
                             .twentySixDayRibbons(new ArrayList<>(0))
                             .signalLine(new ArrayList<>(0))
                             .timestamp(LocalDateTime.now())
-                            .dateLimit(LocalDateTime.now().plusHours(24)).build();
+                            .dateLimit(LocalDateTime.now().plusHours(24))
+                                .currentPrice(Double.valueOf(liveMarketData.get("Last").toString())).build();
                         priceObj.init();
                         BigDecimal buy = new BigDecimal(0);
                         BigDecimal sell; // If it says not initialized try setting to zero
@@ -254,7 +256,6 @@ public class Main {
                         //Loop to poll for market data
                         while (!markets.equalsIgnoreCase("clear")) {
                             // Fetch the data
-                            liveMarketData = fetcher.marketDataFetcher();
                             Thread.sleep(Global.rateLimit);
 
                             // Set values to the price object
