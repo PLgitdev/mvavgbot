@@ -86,7 +86,7 @@ public class Main {
                         // Fetch historical data
                         LinkedList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
                         //rate limit is dynamic be careful adjusting Thread.sleep
-                        Thread.sleep(Global.rateLimit);
+                        Thread.sleep(1000);
 
                         // Save it to the db
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
