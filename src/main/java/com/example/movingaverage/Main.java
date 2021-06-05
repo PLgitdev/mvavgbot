@@ -254,19 +254,15 @@ public class Main {
                         //Loop to poll for market data
                         double candleCountdown = Global.candleLength;
                         while (!markets.equalsIgnoreCase("clear")) {
-                            // Fetch the data
-
-                            // Set values to the price object
-                            priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
-
                             // If the incoming size reaches a factor of a candle length set indicators
                             if (candleCheck(LocalDateTime.now())) {
+                                priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
                                 System.out.println("Time is: " + LocalDateTime.now());
                                 setIndicators(priceObj);
                                 buyMode = priceObj.validMACDCrossover();
                                 System.out.println("Candle created: \n" + priceObj.toString());
                                 System.out.println(buyMode);
-                                if (!buyMode) Thread.sleep(Global.rateLimit);
+                                Thread.sleep(Global.rateLimit);
                             }
                             /*if (candleCountdown % Global.candleLength == 0) {
                                 System.out.println("count-down to candle " + --);
@@ -522,20 +518,20 @@ public class Main {
         boolean candleCreated = false;
         switch (Global.len) {
             case 0:
-                candleCreated = now.getSecond() == 59;
-                Global.rateLimit = 1000 * 60;
+                candleCreated = now.getSecond() == 0;
+                Global.rateLimit = 1000;
                 break;
             case 1:
                 candleCreated = now.getMinute() % 5 == 0;
-                Global.rateLimit = (1000 * 60) * 5;
+                Global.rateLimit = 1000 * 60;
                 break;
             case 2:
                 candleCreated = now.getHour() == 0;
-                Global.rateLimit = (60 * 1000) * 60;
+                Global.rateLimit = (1000 * 60) * 60;
                 break;
             case 3:
                 candleCreated = now.getHour() % 24 == 0;
-                Global.rateLimit = (60 * (60 * 1000)) * 24;
+                Global.rateLimit = (((1000 * 60) * 60) * 24);
                 break;
             default:
         }
