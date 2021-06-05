@@ -253,7 +253,14 @@ public class Main {
                         boolean hold;
                         //Loop to poll for market data
                         double candleCountdown = Global.candleLength;
+
                         while (!markets.equalsIgnoreCase("clear")) {
+                            if (sc.next().equalsIgnoreCase("switch")) {
+                                System.out.println("Please tell us your new candle length choice using the original " +
+                                        "input\n 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
+                                int modifier = sc.nextInt();
+                                candleLengthModify(modifier);
+                            }
                             // If the incoming size reaches a factor of a candle length set indicators
                             if (candleCheck(LocalDateTime.now())) {
                                 priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
@@ -536,6 +543,9 @@ public class Main {
             default:
         }
         return candleCreated;
+    }
+    public static void candleLengthModify(int modifier) {
+        Global.len = modifier;
     }
 
     public static Transaction sellRoutine(BigDecimal sell, Double bidDouble) throws IOException {
