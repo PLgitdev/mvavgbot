@@ -262,7 +262,7 @@ public class Main {
                                 buyMode = priceObj.validMACDCrossover();
                                 System.out.println("Candle created: \n" + priceObj.toString());
                                 System.out.println(buyMode);
-                                Thread.sleep(Global.rateLimit);
+                                if (!buyMode) Thread.sleep(Global.rateLimit);
                             }
                             /*if (candleCountdown % Global.candleLength == 0) {
                                 System.out.println("count-down to candle " + --);
