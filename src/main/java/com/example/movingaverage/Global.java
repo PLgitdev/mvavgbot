@@ -10,7 +10,7 @@ public class Global {
     public static double quant;
     public static String close = null;
     public static int len = Integer.MIN_VALUE;
-    public static int candleLength;
+    public static double candleLength;
     public static int rateLimit = 1000;
     final public static String HISTORICAL_DATA = "historicaldata";
     final public static String MARKET_SUMMARY = "marketsummary";

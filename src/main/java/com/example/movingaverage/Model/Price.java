@@ -224,19 +224,9 @@ public class Price {
             ", avgShorter=" + avgShorter +
             ", avgLonger=" + avgLonger +
             ", mACD=" + mACD +
-            ", sMACDEMA=" + sMACDEMA +
-            ", lMACDEMA=" + lMACDEMA +
             ", signal=" + signal +
             ", timestamp=" + timestamp +
             ", dateLimit=" + dateLimit +
-            ", priceShorter=" + priceShorter +
-            ", priceLonger=" + priceLonger +
-            ", signalLine=" + signalLine +
-            ", nineDaysOfClose=" + nineDaysOfClose +
-            ", twelveDayRibbons=" + twelveDayRibbons +
-            ", twentySixDayRibbons=" + twentySixDayRibbons +
-            ", shortMACDPeriod=" + shortMACDPeriod +
-            ", longerMACDPeriod=" + longerMACDPeriod +
             '}';
     }
 }

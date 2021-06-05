@@ -6,12 +6,15 @@ import com.example.movingaverage.Live.DataFetch;
 import com.example.movingaverage.Live.Sell;
 import com.example.movingaverage.Live.Transaction;
 import com.example.movingaverage.Model.Price;
+import com.google.api.client.util.DateTime;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
  /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  This program is an automated trading application with a modular strategy based on common financial indicators.
@@ -51,7 +54,6 @@ public class Main {
                 marketSplit = markets.split(",");
                 Global.mOne = marketSplit[0].toUpperCase();
                 Global.mTwo = marketSplit[1].toUpperCase();
-                int candleLengthM = Global.rateLimit / 1000;
                 fetcher = DataFetch.getInstance();
                 if (fetcher.valid()) {
                     try {
@@ -63,22 +65,15 @@ public class Main {
                         switch (Global.len) {
                             case 0:
                                 l = "MINUTE_1";
-                                Global.rateLimit = 1000;
-                                Global.candleLength = 60 * candleLengthM;
                                 break;
                             case 1:
                                 l = "MINUTE_5";
-                                Global.rateLimit = 1000 * 5;
-                                Global.candleLength = (5 * 60 * candleLengthM);
                                 break;
                             case 2:
                                 l = "HOUR_1";
-                                Global.rateLimit = 1000 * 60;
-                                Global.candleLength = (60 * 60 * candleLengthM);
                                 break;
                             case 3:
                                 l = "DAY_1";
-                                Global.candleLength = 86400 * candleLengthM;
                                 break;
                             default:
                                 throw new IllegalArgumentException();
@@ -86,7 +81,6 @@ public class Main {
                         // Fetch historical data
                         LinkedList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
                         //rate limit is dynamic be careful adjusting Thread.sleep
-                        Thread.sleep(1000);
 
                         // Save it to the db
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
@@ -258,21 +252,21 @@ public class Main {
                         boolean buyMode = false;
                         boolean hold;
                         //Loop to poll for market data
-                        int candleCountdown = Global.candleLength;
+                        double candleCountdown = Global.candleLength;
                         while (!markets.equalsIgnoreCase("clear")) {
                             // Fetch the data
-                            Thread.sleep(Global.rateLimit);
 
                             // Set values to the price object
                             priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
 
                             // If the incoming size reaches a factor of a candle length set indicators
-                            if (priceObj.getPriceLonger().size() % Global.candleLength == 0 &&
-                                priceObj.getPriceShorter().size() % Global.candleLength == 0) {
+                            if (candleCheck(LocalDateTime.now())) {
+                                System.out.println("Time is: " + LocalDateTime.now());
                                 setIndicators(priceObj);
                                 buyMode = priceObj.validMACDCrossover();
                                 System.out.println("Candle created: \n" + priceObj.toString());
                                 System.out.println(buyMode);
+                                Thread.sleep(Global.rateLimit);
                             }
                             /*if (candleCountdown % Global.candleLength == 0) {
                                 System.out.println("count-down to candle " + --);
@@ -523,6 +517,30 @@ public class Main {
         System.out.println("The sell was calculated lower than the bid, " + "\n" +
             "sell : " + sell);
         return sell;
+    }
+    public static boolean candleCheck(LocalDateTime now) {
+        boolean candleCreated = false;
+        int checktime =now.getSecond();
+        switch (Global.len) {
+            case 0:
+                candleCreated = now.getSecond() == 59;
+                Global.rateLimit = 1000;
+                break;
+            case 1:
+                candleCreated = now.getMinute() % 5 == 0;
+                Global.rateLimit = 5000;
+                break;
+            case 2:
+                candleCreated = now.getHour() == 0;
+                Global.rateLimit = 60 * 1000;
+                break;
+            case 3:
+                candleCreated = now.getHour() % 24 == 0;
+                Global.rateLimit = 24 * (60 * 100);
+                break;
+            default:
+        }
+        return candleCreated;
     }
 
     public static Transaction sellRoutine(BigDecimal sell, Double bidDouble) throws IOException {
