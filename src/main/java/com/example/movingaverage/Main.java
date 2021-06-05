@@ -266,7 +266,7 @@ public class Main {
                                 buyMode = priceObj.validMACDCrossover();
                                 System.out.println("Candle created: \n" + priceObj.toString());
                                 System.out.println(buyMode);
-                                Thread.sleep(Global.rateLimit);
+                                if (!buyMode) Thread.sleep(Global.rateLimit);
                             }
                             /*if (candleCountdown % Global.candleLength == 0) {
                                 System.out.println("count-down to candle " + --);
@@ -520,23 +520,22 @@ public class Main {
     }
     public static boolean candleCheck(LocalDateTime now) {
         boolean candleCreated = false;
-        int checktime =now.getSecond();
         switch (Global.len) {
             case 0:
                 candleCreated = now.getSecond() == 59;
-                Global.rateLimit = 1000;
+                Global.rateLimit = 1000 * 60;
                 break;
             case 1:
                 candleCreated = now.getMinute() % 5 == 0;
-                Global.rateLimit = 5000;
+                Global.rateLimit = (1000 * 60) * 5;
                 break;
             case 2:
                 candleCreated = now.getHour() == 0;
-                Global.rateLimit = 60 * 1000;
+                Global.rateLimit = (60 * 1000) * 60;
                 break;
             case 3:
                 candleCreated = now.getHour() % 24 == 0;
-                Global.rateLimit = 24 * (60 * 100);
+                Global.rateLimit = (60 * (60 * 1000)) * 24;
                 break;
             default:
         }
