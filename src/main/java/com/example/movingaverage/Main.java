@@ -61,36 +61,11 @@ public class Main {
                             " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
                         // Select candle length using console input Integers 0-3
                         Global.len = sc.nextInt();
-                        String l;
-                        switch (Global.len) {
-                            case 0:
-                                l = "MINUTE_1";
-                                break;
-                            case 1:
-                                l = "MINUTE_5";
-                                break;
-                            case 2:
-                                l = "HOUR_1";
-                                break;
-                            case 3:
-                                l = "DAY_1";
-                                break;
-                            default:
-                                throw new IllegalArgumentException();
-                        }
-                        // Fetch historical data
-                        LinkedList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
-                        //rate limit is dynamic be careful adjusting Thread.sleep
-
-                        // Save it to the db
-                        historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
-
+                        candleLengthFetch(Global.len, fetcher, mongoCRUD);
                         System.out.println("Please enter day count for the short moving avg up to 365 days");
                         inputL = sc.nextInt();
-
                         System.out.println("Please enter day count for the int moving avg up to one year, 365 days");
                         inputL2 = sc.nextInt();
-
                         System.out.println("Please enter a calculation strategy high-low = 0, open-close = 1, " +
                             "close = 2");
                         inputS = sc.next();
@@ -252,14 +227,13 @@ public class Main {
                         boolean buyMode = false;
                         boolean hold;
                         //Loop to poll for market data
-                        double candleCountdown = Global.candleLength;
 
                         while (!markets.equalsIgnoreCase("clear")) {
                             if (sc.next().equalsIgnoreCase("switch")) {
                                 System.out.println("Please tell us your new candle length choice using the original " +
                                         "input\n 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
                                 int modifier = sc.nextInt();
-                                candleLengthModify(modifier);
+                                candleLengthFetch(modifier, fetcher, mongoCRUD);
                             }
                             // If the incoming size reaches a factor of a candle length set indicators
                             if (candleCheck(LocalDateTime.now())) {
@@ -271,15 +245,9 @@ public class Main {
                                 System.out.println(buyMode);
                                 if (!buyMode) Thread.sleep(Global.rateLimit);
                             }
-                            /*if (candleCountdown % Global.candleLength == 0) {
-                                System.out.println("count-down to candle " + --);
-                            }
-                            --candleCountdown;
-                             */
                             mongoCRUD.createMarketData(liveMarketData, Global.MARKET_SUMMARY);
                             /*  If you want to check every iteration
                               liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value)); */
-
                             // Might have to go back to Wrappers after live testing
                             double lastDouble = Double.parseDouble(liveMarketData.get("Last").toString());
                             double askDouble = Double.parseDouble(liveMarketData.get("Ask").toString());
@@ -544,8 +512,27 @@ public class Main {
         }
         return candleCreated;
     }
-    public static void candleLengthModify(int modifier) {
+    public static void candleLengthFetch(int modifier, DataFetch fetcher, MongoCRUD mongoCRUD) throws IOException {
         Global.len = modifier;
+        String l = "";
+        switch (Global.len) {
+            case 0:
+                l = "MINUTE_1";
+                break;
+            case 1:
+                l = "MINUTE_5";
+                break;
+            case 2:
+                l = "HOUR_1";
+                break;
+            case 3:
+                l = "DAY_1";
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+        LinkedList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
+        historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
     }
 
     public static Transaction sellRoutine(BigDecimal sell, Double bidDouble) throws IOException {
