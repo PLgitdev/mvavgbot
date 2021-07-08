@@ -44,6 +44,20 @@ public class Main {
                 "\n market\\s?.*=(\\w|\\D|\\S){2,6}$ : this will bind a market combination to a session.\n" +
                 " sync\\s?.*(0-3)$ : this will set the length of the session candle length");
         while (true) {
+            if (sc.hasNext("^boot$")) {
+                Price priceObj = priceBuilder.nineDaysOfClose(nineDayMACDPeriod)
+                        .shortMACDPeriod(shortMACDPeriod)
+                        .longerMACDPeriod(longerMACDPeriod)
+                        .twelveDayRibbons(new ArrayList<>(0))
+                        .twentySixDayRibbons(new ArrayList<>(0))
+                        .signalLine(new ArrayList<>(0))
+                        .timestamp(LocalDateTime.now())
+                        .dateLimit(LocalDateTime.now().plusHours(24)).build();
+                priceObj.init();
+                runStrategy();
+
+            }
+
            //to set up the configuration you will issue a series of commands these can be changed during runtime
                if (sc.hasNext("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
                    if (fetcher.valid()) {
@@ -241,36 +255,36 @@ public class Main {
                    boolean buyBidMode = false;
                    boolean hold;
                    //Loop to poll for market data
-                   while (!markets.equalsIgnoreCase("clear")) {
-                       // Fetch the data
-                       liveMarketData = fetcher.marketDataFetcher();
-                       Thread.sleep(Global.rateLimit);
+            public static void runStrategy() {
+                // Fetch the data
+                liveMarketData = fetcher.marketDataFetcher();
+                Thread.sleep(Global.rateLimit);
 
-                       // Set values to the price object
-                       priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
+                // Set values to the price object
+                priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
 
-                       // If the incoming size reaches a factor of a candle length set indicators
-                       if (priceObj.getPriceLonger().size() % Global.candleLength == 0 &&
-                           priceObj.getPriceShorter().size() % Global.candleLength == 0) {
-                           setIndicators(priceObj);
-                           System.out.println("Candle created: \n" + priceObj.toString());
-                       }
-                       mongoCRUD.createMarketData(liveMarketData, Global.MARKET_SUMMARY);
+                // If the incoming size reaches a factor of a candle length set indicators
+                if (priceObj.getPriceLonger().size() % PriceObjectSession.candleLength == 0 &&
+                        priceObj.getPriceShorter().size() % PriceObjectSession.candleLength == 0) {
+                    setIndicators(priceObj);
+                    System.out.println("Candle created: \n" + priceObj.toString());
+                }
+                mongoCRUD.createMarketData(liveMarketData, Global.MARKET_SUMMARY);
 
                        /*  If you want to check every iteration
                          liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value)); */
 
-                       // Might have to go back to Wrappers after live testing
-                       double lastDouble = Double.parseDouble(liveMarketData.get("Last").toString());
-                       double askDouble = Double.parseDouble(liveMarketData.get("Ask").toString());
-                       double bidDouble = Double.parseDouble(liveMarketData.get("Bid").toString());
-                       System.out.println(liveMarketData.get("Last") + "\n" +
-                           "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
-                           + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
-                       // Check average inequality or add more indicators boolean array?
-                       boolean buyMode = priceObj.validMACDCrossover();
-                       System.out.println(buyMode);
-                       int responseCode = 0;
+                // Might have to go back to Wrappers after live testing
+                double lastDouble = Double.parseDouble(liveMarketData.get("Last").toString());
+                double askDouble = Double.parseDouble(liveMarketData.get("Ask").toString());
+                double bidDouble = Double.parseDouble(liveMarketData.get("Bid").toString());
+                System.out.println(liveMarketData.get("Last") + "\n" +
+                        "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
+                        + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
+                // Check average inequality or add more indicators boolean array?
+                boolean buyMode = priceObj.validMACDCrossover();
+                System.out.println(buyMode);
+                int responseCode = 0;
                        /* If buy mode is true and we have not yet placed an order (one order at a time FOK) we start
                           trying to enter the market based upon our programed indicators and the current
                           inequality or relationship between the indicators. Proper function excludes possibility
@@ -282,137 +296,130 @@ public class Main {
                           to the server at different prices based on the best possible entry or exit for the
                           market.
                         */
-                       if (buyMode && !successfulBuy) {
-                           if (askDouble <= lastDouble) {
-                               buy = BigDecimal.valueOf(askDouble);
-                               System.out.println("Take the ask at " + buy);
-                               try {
-                                   HttpResponse<String> response
-                                       = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                                   responseCode = response.statusCode();
-                               }
-                               catch (IOException e) {
-                                   System.out.println("IO Exception : " + e + "\n" + "response: " + responseCode);
-                               }
-                           }
-                           else {
-                               buy = BigDecimal.valueOf(bidDouble);
-                               buyBidMode = true;
-                           }
-                           System.out.println("BUY at " + buy);
-                           liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
-                           //maybe use response = 0?
-                           if (buyBidMode && responseCode != 201) {
-                               buy = buy.setScale(8, RoundingMode.HALF_UP);
-                               try {
-                                   if (buy.doubleValue() >= askDouble) {
-                                       buy = BigDecimal.valueOf(askDouble).add(BigDecimal.valueOf(0.00000002));
-                                       System.out.println("add to the ask for " + buy);
-                                   }
-                                   if (buy.doubleValue() > lastDouble) {
-                                       buy = BigDecimal.valueOf(lastDouble)
-                                           .add(BigDecimal.valueOf(0.00000002));
-                                       System.out.println("Take the last at " + buy);
-                                   }
-                                   else {
-                                       buy = BigDecimal.valueOf(askDouble);
-                                       System.out.println("Take the ask at " + buy);
-                                   }
+                if (buyMode && !successfulBuy) {
+                    if (askDouble <= lastDouble) {
+                        buy = BigDecimal.valueOf(askDouble);
+                        System.out.println("Take the ask at " + buy);
+                        try {
+                            HttpResponse<String> response
+                                    = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                            responseCode = response.statusCode();
+                        } catch (IOException e) {
+                            System.out.println("IO Exception : " + e + "\n" + "response: " + responseCode);
+                        }
+                    } else {
+                        buy = BigDecimal.valueOf(bidDouble);
+                        buyBidMode = true;
+                    }
+                    System.out.println("BUY at " + buy);
+                    liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
+                    //maybe use response = 0?
+                    if (buyBidMode && responseCode != 201) {
+                        buy = buy.setScale(8, RoundingMode.HALF_UP);
+                        try {
+                            if (buy.doubleValue() >= askDouble) {
+                                buy = BigDecimal.valueOf(askDouble).add(BigDecimal.valueOf(0.00000002));
+                                System.out.println("add to the ask for " + buy);
+                            }
+                            if (buy.doubleValue() > lastDouble) {
+                                buy = BigDecimal.valueOf(lastDouble)
+                                        .add(BigDecimal.valueOf(0.00000002));
+                                System.out.println("Take the last at " + buy);
+                            } else {
+                                buy = BigDecimal.valueOf(askDouble);
+                                System.out.println("Take the ask at " + buy);
+                            }
 
-                                   HttpResponse<String> response
-                                       = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                                   responseCode = response.statusCode();
-                               }
-                               catch (IOException e) {
-                                   System.out.print("There was an IOException " + e + "\n" + "response : " +
-                                       responseCode);
-                               }
-                           }
-                           if (responseCode == 201) {
-                                   //buyMode = false;
-                               successfulBuy = true;
-                               buyBidMode = false;
-                                   System.out.println("Successful Buy 201 at " + buy + "\n" +
-                                       "this is the response " + responseCode);
-                                   responseCode = 0;
-                           }
-                       }
-                       if (successfulBuy && lastDouble <
-                           //sensitivity
-                           buy.subtract(buy.multiply(BigDecimal.valueOf(0.025))).doubleValue()) {
-                           sell = BigDecimal.valueOf(bidDouble);
-                           try {
-                               HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
-                               responseCode = response.statusCode();
-                           }
-                           catch (IOException e) {
-                               System.out.print("There was an IOException " + e + "\n" + "response : " +
-                                   responseCode);
+                            HttpResponse<String> response
+                                    = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                            responseCode = response.statusCode();
+                        } catch (IOException e) {
+                            System.out.print("There was an IOException " + e + "\n" + "response : " +
+                                    responseCode);
+                        }
+                    }
+                    if (responseCode == 201) {
+                        //buyMode = false;
+                        successfulBuy = true;
+                        buyBidMode = false;
+                        System.out.println("Successful Buy 201 at " + buy + "\n" +
+                                "this is the response " + responseCode);
+                        responseCode = 0;
+                    }
+                }
+                if (successfulBuy && lastDouble <
+                        //sensitivity
+                        buy.subtract(buy.multiply(BigDecimal.valueOf(0.025))).doubleValue()) {
+                    sell = BigDecimal.valueOf(bidDouble);
+                    try {
+                        HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
+                        responseCode = response.statusCode();
+                    } catch (IOException e) {
+                        System.out.print("There was an IOException " + e + "\n" + "response : " +
+                                responseCode);
 
-                           }
-                           sellBidMode = false;
-                           System.out.println("Sell exited because last price dropped to low");
-                       }
-                       else if (successfulBuy && sellBidMode) {
-                           if (bidDouble < lastDouble) {
-                               hold = false;
-                               sell = BigDecimal.valueOf(lastDouble);
-                               sell = sell.subtract(BigDecimal.valueOf(.0000005));
-                               sellBidMode = true;
-                               System.out.println("Last was chosen then subtracted from");
-                           }
-                           else if (bidDouble > askDouble) {
-                               hold = false;
-                               sell = BigDecimal.valueOf(bidDouble);
-                               sellBidMode = true;
-                               System.out.println("Bid was chosen");
-                           }
-                           else {
-                               hold = false;
-                               sell = BigDecimal.valueOf(askDouble);
-                               sell = sell.subtract(BigDecimal.valueOf(.0000005));
-                               System.out.println("Ask was chosen then subtracted from");
-                           }
-                           if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.015)))
-                                   .doubleValue() && sell.doubleValue() != 0) {
-                               hold = true;
-                               System.out.println("Hold missed sell wait due to not enough profit");
-                           }
-                           if (buyMode) {
-                               hold = true;
-                               System.out.println("buy signal not sell signal HOLD");
-                           }
-                           System.out.println("\n" + "Sell at " + sell + " vs bid " + liveMarketData.get("Bid"));
-                           if (!hold) {
-                               // if the Bid is more than the last use the Last
-                               sell = sell.subtract(BigDecimal.valueOf(.00000001));
-                               sell = sell.setScale(8, RoundingMode.HALF_UP);
-                               //if no sell successful
-                               System.out.println("\n Cancel last sell and Sell at " + sell + " bid is " +
-                                   liveMarketData.get("Bid"));
-                               try {
-                                   HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
-                                   responseCode = response.statusCode();
-                               }
-                               catch (IOException e) {
-                                   System.out.print("There was an IOException " + e + "\n response : " +
-                                       responseCode);
-                               }
-                               if (responseCode == 201) {
-                                   //? and valid MACDCrossover?
-                                   profit = sell.subtract(buy);
-                                   if (profit.doubleValue() > 0d) {
-                                       profit = profit.divide(buy, RoundingMode.HALF_UP)
-                                           .multiply(BigDecimal.valueOf(100.0));
-                                   }
-                                   profitPercentageTotals += profit.doubleValue();
-                                   System.out.println("Sell successful at " + sell + " " + "profit percent : " +
-                                       profit + "%" + "\n response: " + responseCode);
-                                   sellBidMode = false;
-                                   successfulBuy = false;
-                               }
-                           }
-                       }
+                    }
+                    sellBidMode = false;
+                    System.out.println("Sell exited because last price dropped to low");
+                } else if (successfulBuy && sellBidMode) {
+                    if (bidDouble < lastDouble) {
+                        hold = false;
+                        sell = BigDecimal.valueOf(lastDouble);
+                        sell = sell.subtract(BigDecimal.valueOf(.0000005));
+                        sellBidMode = true;
+                        System.out.println("Last was chosen then subtracted from");
+                    } else if (bidDouble > askDouble) {
+                        hold = false;
+                        sell = BigDecimal.valueOf(bidDouble);
+                        sellBidMode = true;
+                        System.out.println("Bid was chosen");
+                    } else {
+                        hold = false;
+                        sell = BigDecimal.valueOf(askDouble);
+                        sell = sell.subtract(BigDecimal.valueOf(.0000005));
+                        System.out.println("Ask was chosen then subtracted from");
+                    }
+                    if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.015)))
+                            .doubleValue() && sell.doubleValue() != 0) {
+                        hold = true;
+                        System.out.println("Hold missed sell wait due to not enough profit");
+                    }
+                    if (buyMode) {
+                        hold = true;
+                        System.out.println("buy signal not sell signal HOLD");
+                    }
+                    System.out.println("\n" + "Sell at " + sell + " vs bid " + liveMarketData.get("Bid"));
+                    if (!hold) {
+                        // if the Bid is more than the last use the Last
+                        sell = sell.subtract(BigDecimal.valueOf(.00000001));
+                        sell = sell.setScale(8, RoundingMode.HALF_UP);
+                        //if no sell successful
+                        System.out.println("\n Cancel last sell and Sell at " + sell + " bid is " +
+                                liveMarketData.get("Bid"));
+                        try {
+                            HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
+                            responseCode = response.statusCode();
+                        } catch (IOException e) {
+                            System.out.print("There was an IOException " + e + "\n response : " +
+                                    responseCode);
+                        }
+                        if (responseCode == 201) {
+                            //? and valid MACDCrossover?
+                            profit = sell.subtract(buy);
+                            if (profit.doubleValue() > 0d) {
+                                profit = profit.divide(buy, RoundingMode.HALF_UP)
+                                        .multiply(BigDecimal.valueOf(100.0));
+                            }
+                            profitPercentageTotals += profit.doubleValue();
+                            System.out.println("Sell successful at " + sell + " " + "profit percent : " +
+                                    profit + "%" + "\n response: " + responseCode);
+                            sellBidMode = false;
+                            successfulBuy = false;
+                        }
+                    }
+                }
+            }
+                       //end boot
 
                        //reset the historical data if objects max out from overflow or the data has expired
                        if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(Global.shortDaysInput))
@@ -440,24 +447,13 @@ public class Main {
                        if (!start.equals(start.plusDays(Global.shortDaysInput))) { priceObj.dateLimitCheck(1); }
                        if (!start.equals(start.plusDays(Global.longDaysInput))) { priceObj.dateLimitCheckLonger(1); }
                    }
-               } catch (Exception e) {
-                   e.printStackTrace();
                }
-               //drop database
-               mongoCRUD.deleteAllMarketData(Global.MARKET_SUMMARY);
-               mongoCRUD.deleteAllMarketData(Global.HISTORICAL_DATA);
-               break;
-                }
-                else {
-                    System.out.println("Market entry invalid, please try again");
-                }
-            }
-public static void dropDB(MongoCRUD mongoCRUD){
+    }
+    public static void dropDB(MongoCRUD mongoCRUD) {
         mongoCRUD.deleteAllMarketData(Global.MARKET_SUMMARY);
         mongoCRUD.deleteAllMarketData(Global.HISTORICAL_DATA);
-        }
-
-//Optimize this with a binary sum or statistics this needs to change
+    }
+    //Optimize this with a binary sum or statistics this needs to change
     public static List<Double> takeAvg(List<Map<?, ?>> maps,
                                         List<Double> arOne, List<Double> arTwo) {
         List<Double> avg = new LinkedList<>();
