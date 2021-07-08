@@ -21,10 +21,7 @@ public class DataFetch {
         this.mTwo = Global.mTwo;
     }
 
-    public static DataFetch getInstance() {
-        if (soleInstanceDataFetch == null) {
-            soleInstanceDataFetch = new DataFetch();
-        }
+    public static DataFetch getNewInstance() {
         return soleInstanceDataFetch;
     }
 

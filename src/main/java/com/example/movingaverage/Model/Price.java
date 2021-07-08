@@ -34,6 +34,7 @@ import java.util.*;
 @EqualsAndHashCode
 @Builder
 @Data
+
 public class Price {
     private Double smoothing;
     private Double currentPrice;

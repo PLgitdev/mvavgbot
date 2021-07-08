@@ -30,13 +30,20 @@ import java.util.*;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, InterruptedException {
         Scanner sc = new Scanner(System.in);
         MongoCRUD mongoCRUD = MongoCRUD.getInstance();
         Map<Object, Object> liveMarketData;
-        DataFetch fetcher = DataFetch.getInstance();
         BigDecimal profit;
         LocalDateTime start = LocalDateTime.now();
+        Price.PriceBuilder priceBuilder = Price.builder().smoothing(1.0);
+        ArrayList<Double> shortMACDPeriod = new ArrayList<>();
+        ArrayList<Double> longerMACDPeriod = new ArrayList<>();
+        ArrayList<Double> nineDayMACDPeriod = new ArrayList<>();
+        ArrayList<Double> shorterDaysDataOpenD = new ArrayList<>();
+        ArrayList<Double> shorterDaysDataCloseD = new ArrayList<>();
+        ArrayList<Double> longerDaysDataOpenD = new ArrayList<>();
+        ArrayList<Double> longerDaysDataCloseD = new ArrayList<>();
         //Global.quant = .0400000; hard coded to avoid accidental purchase
 
         System.out.println("The commands are as following; " +
@@ -45,35 +52,47 @@ public class Main {
                 " sync\\s?.*(0-3)$ : this will set the length of the session candle length");
         while (true) {
             if (sc.hasNext("^boot$")) {
-                Price priceObj = priceBuilder.nineDaysOfClose(nineDayMACDPeriod)
-                        .shortMACDPeriod(shortMACDPeriod)
-                        .longerMACDPeriod(longerMACDPeriod)
-                        .twelveDayRibbons(new ArrayList<>(0))
-                        .twentySixDayRibbons(new ArrayList<>(0))
-                        .signalLine(new ArrayList<>(0))
-                        .timestamp(LocalDateTime.now())
-                        .dateLimit(LocalDateTime.now().plusHours(24)).build();
-                priceObj.init();
-                runStrategy();
+                System.out.println("Welcome please enter a candle length" +
+                        " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
+                //candle length function
+                System.out.println("Please enter day count for the short moving avg up to 365 days");
+                PriceObjectSession.shortDaysInput = sc.nextInt();
 
+                System.out.println("Please enter day count for the int moving avg up to one year, 365 days");
+                PriceObjectSession.longDaysInput = sc.nextInt();
+
+                System.out.println("Please enter a calculation strategy high-low = 0, open-close = 1, " +
+                        "close = 2");
+                PriceObjectSession.calcStratInput = sc.next();
+                System.out.println("You have entered an entry too short, or have forgotten a comma" +
+                        ", please enter your market");
+                historicalData = fetchHistoricalDataByMarket(DataFetch.getNewInstance(), sync(PriceObjectSession.calcStratInput));
+                historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
             }
+            // Run function
+            Price priceObj = priceBuilder.nineDaysOfClose(nineDayMACDPeriod)
+                    .shortMACDPeriod(shortMACDPeriod)
+                    .longerMACDPeriod(longerMACDPeriod)
+                    .twelveDayRibbons(new ArrayList<>(0))
+                    .twentySixDayRibbons(new ArrayList<>(0))
+                    .signalLine(new ArrayList<>(0))
+                    .timestamp(LocalDateTime.now())
+                    .dateLimit(LocalDateTime.now().plusHours(24)).build();
+            priceObj.init();
+            runStrategy();
 
-           //to set up the configuration you will issue a series of commands these can be changed during runtime
+            //to set up the configuration you will issue a series of commands these can be changed during runtime
                if (sc.hasNext("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
                    if (fetcher.valid()) {
                        System.out.println("Please enter markets separated by comma, or clear");
                        marketSelect(sc);
+                       DataFetch fetcher = DataFetch.getNewInstance();
                    }
                }
-            System.out.println("You have entered an entry too short, or have forgotten a comma" +
-                    ", please enter your market");
-            System.out.println("Welcome please enter a candle length using resync + \\d" +
-                       " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
             if (sc.hasNext("^sync\\s?.*(0-3)$")) {
                 try {
                     String reSyncValue = sc.toString().split("\\d")[0];
-                    fetchHistoricalData(fetcher, reSync(reSyncValue));
-                    //rate limit is dynamic be careful adjusting Thread.sleep
+                    fetchHistoricalDataByMarket(DataFetch.getNewInstance(), reSync(reSyncValue));
                 } catch (InterruptedException e) {
                     System.out.println("Interrupted exception on thread sleep" + Arrays.toString(e.getStackTrace()));
                 }
@@ -85,17 +104,7 @@ public class Main {
 
             // Save it to the db
                    //return this function
-                   historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
 
-                   System.out.println("Please enter day count for the short moving avg up to 365 days");
-                   Global.shortDaysInput = sc.nextInt();
-
-                   System.out.println("Please enter day count for the int moving avg up to one year, 365 days");
-                   Global.longDaysInput = sc.nextInt();
-
-                   System.out.println("Please enter a calculation strategy high-low = 0, open-close = 1, " +
-                       "close = 2");
-                   Global.calcStratInput = sc.next();
                    /* The Map<String,String> from the database requires us to loop the through the value
                     of the map to cast them using Wrapper class Double .valueOf method. The resulting values
                     will be placed into an ArrayList then used to build the priceObj. The calculation used to
@@ -104,14 +113,6 @@ public class Main {
                     After the priceObject is built it will be initialized.
                     */
 
-                   Price.PriceBuilder priceBuilder = Price.builder().smoothing(2.0);
-                   ArrayList<Double> shortMACDPeriod = new ArrayList<>();
-                   ArrayList<Double> longerMACDPeriod = new ArrayList<>();
-                   ArrayList<Double> nineDayMACDPeriod = new ArrayList<>();
-                   ArrayList<Double> shorterDaysDataOpenD = new ArrayList<>();
-                   ArrayList<Double> shorterDaysDataCloseD = new ArrayList<>();
-                   ArrayList<Double> longerDaysDataOpenD = new ArrayList<>();
-                   ArrayList<Double> longerDaysDataCloseD = new ArrayList<>();
 
                    public Price querySwitch(String calculationStrategy) {
                        switch (calculationStrategy) {
@@ -247,205 +248,34 @@ public class Main {
                        .timestamp(LocalDateTime.now())
                        .dateLimit(LocalDateTime.now().plusHours(24)).build();
                    priceObj.init();
-                   BigDecimal buy = new BigDecimal(0);
-                   BigDecimal sell; // If it says not initialized try setting to zero
-                   double profitPercentageTotals = 0.0;
-                   boolean successfulBuy = false;
-                   boolean sellBidMode = true;
-                   boolean buyBidMode = false;
-                   boolean hold;
                    //Loop to poll for market data
-            public static void runStrategy() {
-                // Fetch the data
-                liveMarketData = fetcher.marketDataFetcher();
-                Thread.sleep(Global.rateLimit);
-
-                // Set values to the price object
-                priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
-
-                // If the incoming size reaches a factor of a candle length set indicators
-                if (priceObj.getPriceLonger().size() % PriceObjectSession.candleLength == 0 &&
-                        priceObj.getPriceShorter().size() % PriceObjectSession.candleLength == 0) {
-                    setIndicators(priceObj);
-                    System.out.println("Candle created: \n" + priceObj.toString());
-                }
-                mongoCRUD.createMarketData(liveMarketData, Global.MARKET_SUMMARY);
-
-                       /*  If you want to check every iteration
-                         liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value)); */
-
-                // Might have to go back to Wrappers after live testing
-                double lastDouble = Double.parseDouble(liveMarketData.get("Last").toString());
-                double askDouble = Double.parseDouble(liveMarketData.get("Ask").toString());
-                double bidDouble = Double.parseDouble(liveMarketData.get("Bid").toString());
-                System.out.println(liveMarketData.get("Last") + "\n" +
-                        "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
-                        + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
-                // Check average inequality or add more indicators boolean array?
-                boolean buyMode = priceObj.validMACDCrossover();
-                System.out.println(buyMode);
-                int responseCode = 0;
-                       /* If buy mode is true and we have not yet placed an order (one order at a time FOK) we start
-                          trying to enter the market based upon our programed indicators and the current
-                          inequality or relationship between the indicators. Proper function excludes possibility
-                          of stacking buys it if buys it must sell if then it sells it is able to buy again.
-                          This is where calculations and decisions are made based on incoming HLOC data.
-                          At first we check if the ask is larger than the last if we are in buyMode.
-                          We obtain these values from the HLOC data and we continue if the last is not larger
-                          or equal to the ask. Different conditions based on the data will lead to HTTP calls
-                          to the server at different prices based on the best possible entry or exit for the
-                          market.
-                        */
-                if (buyMode && !successfulBuy) {
-                    if (askDouble <= lastDouble) {
-                        buy = BigDecimal.valueOf(askDouble);
-                        System.out.println("Take the ask at " + buy);
-                        try {
-                            HttpResponse<String> response
-                                    = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                            responseCode = response.statusCode();
-                        } catch (IOException e) {
-                            System.out.println("IO Exception : " + e + "\n" + "response: " + responseCode);
-                        }
-                    } else {
-                        buy = BigDecimal.valueOf(bidDouble);
-                        buyBidMode = true;
-                    }
-                    System.out.println("BUY at " + buy);
-                    liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
-                    //maybe use response = 0?
-                    if (buyBidMode && responseCode != 201) {
-                        buy = buy.setScale(8, RoundingMode.HALF_UP);
-                        try {
-                            if (buy.doubleValue() >= askDouble) {
-                                buy = BigDecimal.valueOf(askDouble).add(BigDecimal.valueOf(0.00000002));
-                                System.out.println("add to the ask for " + buy);
-                            }
-                            if (buy.doubleValue() > lastDouble) {
-                                buy = BigDecimal.valueOf(lastDouble)
-                                        .add(BigDecimal.valueOf(0.00000002));
-                                System.out.println("Take the last at " + buy);
-                            } else {
-                                buy = BigDecimal.valueOf(askDouble);
-                                System.out.println("Take the ask at " + buy);
-                            }
-
-                            HttpResponse<String> response
-                                    = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                            responseCode = response.statusCode();
-                        } catch (IOException e) {
-                            System.out.print("There was an IOException " + e + "\n" + "response : " +
-                                    responseCode);
-                        }
-                    }
-                    if (responseCode == 201) {
-                        //buyMode = false;
-                        successfulBuy = true;
-                        buyBidMode = false;
-                        System.out.println("Successful Buy 201 at " + buy + "\n" +
-                                "this is the response " + responseCode);
-                        responseCode = 0;
-                    }
-                }
-                if (successfulBuy && lastDouble <
-                        //sensitivity
-                        buy.subtract(buy.multiply(BigDecimal.valueOf(0.025))).doubleValue()) {
-                    sell = BigDecimal.valueOf(bidDouble);
-                    try {
-                        HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
-                        responseCode = response.statusCode();
-                    } catch (IOException e) {
-                        System.out.print("There was an IOException " + e + "\n" + "response : " +
-                                responseCode);
-
-                    }
-                    sellBidMode = false;
-                    System.out.println("Sell exited because last price dropped to low");
-                } else if (successfulBuy && sellBidMode) {
-                    if (bidDouble < lastDouble) {
-                        hold = false;
-                        sell = BigDecimal.valueOf(lastDouble);
-                        sell = sell.subtract(BigDecimal.valueOf(.0000005));
-                        sellBidMode = true;
-                        System.out.println("Last was chosen then subtracted from");
-                    } else if (bidDouble > askDouble) {
-                        hold = false;
-                        sell = BigDecimal.valueOf(bidDouble);
-                        sellBidMode = true;
-                        System.out.println("Bid was chosen");
-                    } else {
-                        hold = false;
-                        sell = BigDecimal.valueOf(askDouble);
-                        sell = sell.subtract(BigDecimal.valueOf(.0000005));
-                        System.out.println("Ask was chosen then subtracted from");
-                    }
-                    if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.015)))
-                            .doubleValue() && sell.doubleValue() != 0) {
-                        hold = true;
-                        System.out.println("Hold missed sell wait due to not enough profit");
-                    }
-                    if (buyMode) {
-                        hold = true;
-                        System.out.println("buy signal not sell signal HOLD");
-                    }
-                    System.out.println("\n" + "Sell at " + sell + " vs bid " + liveMarketData.get("Bid"));
-                    if (!hold) {
-                        // if the Bid is more than the last use the Last
-                        sell = sell.subtract(BigDecimal.valueOf(.00000001));
-                        sell = sell.setScale(8, RoundingMode.HALF_UP);
-                        //if no sell successful
-                        System.out.println("\n Cancel last sell and Sell at " + sell + " bid is " +
-                                liveMarketData.get("Bid"));
-                        try {
-                            HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
-                            responseCode = response.statusCode();
-                        } catch (IOException e) {
-                            System.out.print("There was an IOException " + e + "\n response : " +
-                                    responseCode);
-                        }
-                        if (responseCode == 201) {
-                            //? and valid MACDCrossover?
-                            profit = sell.subtract(buy);
-                            if (profit.doubleValue() > 0d) {
-                                profit = profit.divide(buy, RoundingMode.HALF_UP)
-                                        .multiply(BigDecimal.valueOf(100.0));
-                            }
-                            profitPercentageTotals += profit.doubleValue();
-                            System.out.println("Sell successful at " + sell + " " + "profit percent : " +
-                                    profit + "%" + "\n response: " + responseCode);
-                            sellBidMode = false;
-                            successfulBuy = false;
-                        }
-                    }
-                }
-            }
                        //end boot
 
                        //reset the historical data if objects max out from overflow or the data has expired
-                       if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(Global.shortDaysInput))
+                       if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(PriceObjectSession.shortDaysInput))
                            || priceObj.getPriceShorter().size() >= Integer.MAX_VALUE - 1) {
                            priceObj.getPriceShorter().clear();
                            mongoCRUD
                                .retrieveMarketDataByDays(Global.MARKET_SUMMARY,
-                                   Global.shortDaysInput-1,
+                                   PriceObjectSession.shortDaysInput-1,
                                    "TimeStamp",
                                    "Last").forEach((data) -> priceObj
                                        .addPriceShorter((Double) data.get("Last")));
                        }
-                       if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(Global.longDaysInput))
+                       if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(PriceObjectSession.longDaysInput))
                            || priceObj.getPriceShorter().size() >= Integer.MAX_VALUE - 1) {
                            priceObj.getPriceLonger().clear();
                            mongoCRUD
                                .retrieveMarketDataByDays(Global.MARKET_SUMMARY,
-                                   Global.longDaysInput-1,
+                                   PriceObjectSession.longDaysInput-1,
                                    "TimeStamp",
                                    "Last").forEach((data) -> priceObj
                                        .addPriceLonger((Double) (data.get("Last"))));
                            priceObj.setTimestamp(LocalDateTime.now());
                        }
                        //if it has not reset fully then subtract 1 a day
-                       if (!start.equals(start.plusDays(Global.shortDaysInput))) { priceObj.dateLimitCheck(1); }
-                       if (!start.equals(start.plusDays(Global.longDaysInput))) { priceObj.dateLimitCheckLonger(1); }
+                       if (!start.equals(start.plusDays(PriceObjectSession.shortDaysInput))) { priceObj.dateLimitCheck(1); }
+                       if (!start.equals(start.plusDays(PriceObjectSession.longDaysInput))) { priceObj.dateLimitCheckLonger(1); }
                    }
                }
     }
@@ -507,7 +337,7 @@ public class Main {
         priceObj.setSignalLine();
     }
 
-    public static String reSync(String reSyncValue) {
+    public static String sync(String reSyncValue) {
         int candleLengthM = Global.rateLimit / 1000;
         String queryParameter;
         switch (reSyncValue) {
@@ -534,7 +364,7 @@ public class Main {
         //return this function callback
         return queryParameter;
     }
-    public static ArrayList<Map<Object, Object>> fetchHistoricalData(DataFetch fetcher, String queryParam) throws InterruptedException, IOException {
+    public static ArrayList<Map<Object, Object>> fetchHistoricalDataByMarket(DataFetch fetcher, String queryParam) throws InterruptedException, IOException {
         Thread.sleep(Global.rateLimit);
         return fetcher.historicalDataFetcher(queryParam);
     }
@@ -547,5 +377,176 @@ public class Main {
         Global.mOne = marketSplit[0].toUpperCase();
         Global.mTwo = marketSplit[1].toUpperCase();
 
+    }
+    public static void runStrategy() {
+        BigDecimal buy = new BigDecimal(0);
+        BigDecimal sell; // If it says not initialized try setting to zero
+        double profitPercentageTotals = 0.0;
+        boolean successfulBuy = false;
+        boolean sellBidMode = true;
+        boolean buyBidMode = false;
+        boolean hold;
+        // Fetch the data
+        liveMarketData = fetcher.marketDataFetcher();
+        Thread.sleep(Global.rateLimit);
+
+        // Set values to the price object
+        priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
+
+        // If the incoming size reaches a factor of a candle length set indicators
+        if (priceObj.getPriceLonger().size() % PriceObjectSession.candleLength == 0 &&
+                priceObj.getPriceShorter().size() % PriceObjectSession.candleLength == 0) {
+            setIndicators(priceObj);
+            System.out.println("Candle created: \n" + priceObj.toString());
+        }
+        mongoCRUD.createMarketData(liveMarketData, Global.MARKET_SUMMARY);
+
+                       /*  If you want to check every iteration
+                         liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value)); */
+
+        // Might have to go back to Wrappers after live testing
+        double lastDouble = Double.parseDouble(liveMarketData.get("Last").toString());
+        double askDouble = Double.parseDouble(liveMarketData.get("Ask").toString());
+        double bidDouble = Double.parseDouble(liveMarketData.get("Bid").toString());
+        System.out.println(liveMarketData.get("Last") + "\n" +
+                "Total percentage gain/loss : " + profitPercentageTotals + "\n" + "Bank : "
+                + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
+        // Check average inequality or add more indicators boolean array?
+        boolean buyMode = priceObj.validMACDCrossover();
+        System.out.println(buyMode);
+        int responseCode = 0;
+                       /* If buy mode is true and we have not yet placed an order (one order at a time FOK) we start
+                          trying to enter the market based upon our programed indicators and the current
+                          inequality or relationship between the indicators. Proper function excludes possibility
+                          of stacking buys it if buys it must sell if then it sells it is able to buy again.
+                          This is where calculations and decisions are made based on incoming HLOC data.
+                          At first we check if the ask is larger than the last if we are in buyMode.
+                          We obtain these values from the HLOC data and we continue if the last is not larger
+                          or equal to the ask. Different conditions based on the data will lead to HTTP calls
+                          to the server at different prices based on the best possible entry or exit for the
+                          market.
+                        */
+        if (buyMode && !successfulBuy) {
+            if (askDouble <= lastDouble) {
+                buy = BigDecimal.valueOf(askDouble);
+                System.out.println("Take the ask at " + buy);
+                try {
+                    HttpResponse<String> response
+                            = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                    responseCode = response.statusCode();
+                } catch (IOException | InterruptedException e) {
+                    System.out.println("IO Exception : " + e + "\n" + "response: " + responseCode);
+                }
+            } else {
+                buy = BigDecimal.valueOf(bidDouble);
+                buyBidMode = true;
+            }
+            System.out.println("BUY at " + buy);
+            liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
+            //maybe use response = 0?
+            if (buyBidMode && responseCode != 201) {
+                buy = buy.setScale(8, RoundingMode.HALF_UP);
+                try {
+                    if (buy.doubleValue() >= askDouble) {
+                        buy = BigDecimal.valueOf(askDouble).add(BigDecimal.valueOf(0.00000002));
+                        System.out.println("add to the ask for " + buy);
+                    }
+                    if (buy.doubleValue() > lastDouble) {
+                        buy = BigDecimal.valueOf(lastDouble)
+                                .add(BigDecimal.valueOf(0.00000002));
+                        System.out.println("Take the last at " + buy);
+                    } else {
+                        buy = BigDecimal.valueOf(askDouble);
+                        System.out.println("Take the ask at " + buy);
+                    }
+
+                    HttpResponse<String> response
+                            = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                    responseCode = response.statusCode();
+                } catch (IOException e) {
+                    System.out.print("There was an IOException " + e + "\n" + "response : " +
+                            responseCode);
+                }
+            }
+            if (responseCode == 201) {
+                //buyMode = false;
+                successfulBuy = true;
+                buyBidMode = false;
+                System.out.println("Successful Buy 201 at " + buy + "\n" +
+                        "this is the response " + responseCode);
+                responseCode = 0;
+            }
+        }
+        if (successfulBuy && lastDouble <
+                //sensitivity
+                buy.subtract(buy.multiply(BigDecimal.valueOf(0.025))).doubleValue()) {
+            sell = BigDecimal.valueOf(bidDouble);
+            try {
+                HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
+                responseCode = response.statusCode();
+            } catch (IOException e) {
+                System.out.print("There was an IOException " + e + "\n" + "response : " +
+                        responseCode);
+
+            }
+            sellBidMode = false;
+            System.out.println("Sell exited because last price dropped to low");
+        } else if (successfulBuy && sellBidMode) {
+            if (bidDouble < lastDouble) {
+                hold = false;
+                sell = BigDecimal.valueOf(lastDouble);
+                sell = sell.subtract(BigDecimal.valueOf(.0000005));
+                sellBidMode = true;
+                System.out.println("Last was chosen then subtracted from");
+            } else if (bidDouble > askDouble) {
+                hold = false;
+                sell = BigDecimal.valueOf(bidDouble);
+                sellBidMode = true;
+                System.out.println("Bid was chosen");
+            } else {
+                hold = false;
+                sell = BigDecimal.valueOf(askDouble);
+                sell = sell.subtract(BigDecimal.valueOf(.0000005));
+                System.out.println("Ask was chosen then subtracted from");
+            }
+            if (sell.doubleValue() < buy.add(buy.multiply(BigDecimal.valueOf(.015)))
+                    .doubleValue() && sell.doubleValue() != 0) {
+                hold = true;
+                System.out.println("Hold missed sell wait due to not enough profit");
+            }
+            if (buyMode) {
+                hold = true;
+                System.out.println("buy signal not sell signal HOLD");
+            }
+            System.out.println("\n" + "Sell at " + sell + " vs bid " + liveMarketData.get("Bid"));
+            if (!hold) {
+                // if the Bid is more than the last use the Last
+                sell = sell.subtract(BigDecimal.valueOf(.00000001));
+                sell = sell.setScale(8, RoundingMode.HALF_UP);
+                //if no sell successful
+                System.out.println("\n Cancel last sell and Sell at " + sell + " bid is " +
+                        liveMarketData.get("Bid"));
+                try {
+                    HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));
+                    responseCode = response.statusCode();
+                } catch (IOException e) {
+                    System.out.print("There was an IOException " + e + "\n response : " +
+                            responseCode);
+                }
+                if (responseCode == 201) {
+                    //? and valid MACDCrossover?
+                    profit = sell.subtract(buy);
+                    if (profit.doubleValue() > 0d) {
+                        profit = profit.divide(buy, RoundingMode.HALF_UP)
+                                .multiply(BigDecimal.valueOf(100.0));
+                    }
+                    profitPercentageTotals += profit.doubleValue();
+                    System.out.println("Sell successful at " + sell + " " + "profit percent : " +
+                            profit + "%" + "\n response: " + responseCode);
+                    sellBidMode = false;
+                    successfulBuy = false;
+                }
+            }
+        }
     }
 }
