@@ -35,7 +35,7 @@ public class Main {
         String [] marketSplit;
         DataFetch fetcher;
         String markets = "";
-        String inputS;
+
 
         BigDecimal profit;
 
@@ -94,11 +94,11 @@ public class Main {
 
                         System.out.println("Please enter a calculation strategy high-low = 0, open-close = 1, " +
                             "close = 2");
-                        inputS = sc.next();
+                        Global.calcStratInput = sc.next();
                         /* The Map<String,String> from the database requires us to loop the through the value
                          of the map to cast them using Wrapper class Double .valueOf method. The resulting values
                          will be placed into an ArrayList then used to build the priceObj. The calculation used to
-                         determine the values added to the priceObj will be decided by your previous inputS.
+                         determine the values added to the priceObj will be decided by your previous Global.calcStratInput.
 
                          After the priceObject is built it will be initialized.
                          */
