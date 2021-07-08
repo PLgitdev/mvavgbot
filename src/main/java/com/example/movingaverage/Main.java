@@ -6,6 +6,8 @@ import com.example.movingaverage.Live.DataFetch;
 import com.example.movingaverage.Live.Sell;
 import com.example.movingaverage.Live.Transaction;
 import com.example.movingaverage.Model.Price;
+import com.example.movingaverage.session.PriceObjectSession;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -49,41 +51,20 @@ public class Main {
                 marketSplit = markets.split(",");
                 Global.mOne = marketSplit[0].toUpperCase();
                 Global.mTwo = marketSplit[1].toUpperCase();
-                int candleLengthM = Global.rateLimit / 1000;
                 fetcher = DataFetch.getInstance();
                 if (fetcher.valid()) {
                     try {
-                        System.out.println("Welcome please enter a candle length" +
-                            " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
+                        System.out.println("Welcome please enter a candle length using resync + \\d" +
+                                " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
                         // Select candle length using console input Integers 0-3
-                        Global.len = sc.nextInt();
-                        String l;
-                        switch (Global.len) {
-                            case 0:
-                                l = "MINUTE_1";
-                                Global.candleLength = 60 * candleLengthM;
-                                break;
-                            case 1:
-                                l = "MINUTE_5";
-                                Global.candleLength = (60 * 5) * candleLengthM;
-                                break;
-                            case 2:
-                                l = "HOUR_1";
-                                Global.candleLength = (60 * 60) * candleLengthM;
-                                break;
-                            case 3:
-                                l = "DAY_1";
-                                Global.candleLength = 86400 * candleLengthM;
-                                break;
-                            default:
-                                throw new IllegalArgumentException();
-                        }
-                        // Fetch historical data
-                        ArrayList<Map<Object,Object>> historicalData = fetcher.historicalDataFetcher(l);
-                        //rate limit is dynamic be careful adjusting Thread.sleep
-                        Thread.sleep(Global.rateLimit);
+                            if (sc.hasNext("^resync\\s?.*(0-3)$")) {
+                                String reSyncValue = sc.toString().split("\\d")[0];
+                                fetchHistoricalData(fetcher, reSync(reSyncValue));
+                                    //rate limit is dynamic be careful adjusting Thread.sleep
+                                }
 
                         // Save it to the db
+                        //return this function
                         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
 
                         System.out.println("Please enter day count for the short moving avg up to 365 days");
@@ -530,5 +511,37 @@ public class Main {
         priceObj.setLMACDEMA();
         priceObj.setMACD();
         priceObj.setSignalLine();
+    }
+
+    public static String reSync(String reSyncValue) {
+        int candleLengthM = Global.rateLimit / 1000;
+        String queryParameter;
+        switch (reSyncValue) {
+            case "0":
+                queryParameter = "MINUTE_1";
+                PriceObjectSession.candleLength = 60 * candleLengthM;
+                break;
+            case "1":
+                queryParameter = "MINUTE_5";
+                PriceObjectSession.candleLength = (60 * 5) * candleLengthM;
+                break;
+            case "2":
+                queryParameter = "HOUR_1";
+                PriceObjectSession.candleLength = (60 * 60) * candleLengthM;
+                break;
+            case "3":
+                queryParameter = "DAY_1";
+                PriceObjectSession.candleLength = 86400 * candleLengthM;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+        // Fetch historical data
+        //return this function callback
+        return queryParameter;
+    }
+    public static ArrayList<Map<Object, Object>> fetchHistoricalData(DataFetch fetcher, String queryParam) throws InterruptedException, IOException {
+        Thread.sleep(Global.rateLimit);
+        return fetcher.historicalDataFetcher(queryParam);
     }
 }
