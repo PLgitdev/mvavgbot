@@ -12,6 +12,9 @@ public class Global {
     public static int len = Integer.MIN_VALUE;
     public static int candleLength;
     public static int rateLimit = 1000;
+    public static int shortDaysInput;
+    public static int longDaysInput;
+    public static String calcStratInput;
     final public static String HISTORICAL_DATA = "historicaldata";
     final public static String MARKET_SUMMARY = "marketsummary";
     public static HttpRequestFactory requestFactory
