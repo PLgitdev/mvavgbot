@@ -34,9 +34,7 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         MongoCRUD mongoCRUD = MongoCRUD.getInstance();
         Map<Object, Object> liveMarketData;
-        String [] marketSplit;
         DataFetch fetcher;
-        String markets = "";
 
 
         BigDecimal profit;
@@ -44,20 +42,22 @@ public class Main {
         LocalDateTime start = LocalDateTime.now();
         //Global.quant = .0400000; hard coded to avoid accidental purchase
 
-        System.out.println("Please enter markets separated by comma, or clear");
-        while (!"clear".equalsIgnoreCase(markets)) {
-            markets = sc.next();
-            try {
-                marketSplit = markets.split(",");
-                Global.mOne = marketSplit[0].toUpperCase();
-                Global.mTwo = marketSplit[1].toUpperCase();
+        System.out.println("The commands are as following; " +
+                "\n market\\s?.*=(\\w|\\D|\\S){2,6}$ : this will bind a market combination to a session.\n" +
+                " sync\\s?.*(0-3)$ : this will set the length of the session candle length");
+        while (true) {
+            if (sc.hasNext("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
+                System.out.println("Please enter markets separated by comma, or clear");
+                marketSelect(sc);
+            }
                 fetcher = DataFetch.getInstance();
+                //to set up the configuration you will issue a series of commands these can be changed during runtime
                 if (fetcher.valid()) {
+                    System.out.println("Welcome please enter a candle length using resync + \\d" +
+                            " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
                     try {
-                        System.out.println("Welcome please enter a candle length using resync + \\d" +
-                                " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
                         // Select candle length using console input Integers 0-3
-                            if (sc.hasNext("^resync\\s?.*(0-3)$")) {
+                            if (sc.hasNext("^sync\\s?.*(0-3)$")) {
                                 String reSyncValue = sc.toString().split("\\d")[0];
                                 fetchHistoricalData(fetcher, reSync(reSyncValue));
                                     //rate limit is dynamic be careful adjusting Thread.sleep
@@ -543,5 +543,15 @@ public class Main {
     public static ArrayList<Map<Object, Object>> fetchHistoricalData(DataFetch fetcher, String queryParam) throws InterruptedException, IOException {
         Thread.sleep(Global.rateLimit);
         return fetcher.historicalDataFetcher(queryParam);
+    }
+    public static void marketSelect(Scanner sc) {
+        String markets = "";
+        String [] marketSplit;
+        System.out.println("Please enter markets separated by comma, or clear");
+        markets = sc.next();
+        marketSplit = markets.split(",");
+        Global.mOne = marketSplit[0].toUpperCase();
+        Global.mTwo = marketSplit[1].toUpperCase();
+
     }
 }
