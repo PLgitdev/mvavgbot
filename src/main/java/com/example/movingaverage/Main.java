@@ -35,7 +35,6 @@ public class Main {
         LocalDateTime start = LocalDateTime.now();
         MongoCRUD mongoCRUD = MongoCRUD.getInstance();
         Map<Object, Object> liveMarketData;
-        BigDecimal profit;
         ArrayList<Double> shortMACDPeriod = new ArrayList<>();
         ArrayList<Double> longerMACDPeriod = new ArrayList<>();
         ArrayList<Double> nineDayMACDPeriod = new ArrayList<>();
@@ -63,10 +62,10 @@ public class Main {
                     .timestamp(LocalDateTime.now())
                     .dateLimit(LocalDateTime.now().plusHours(24));
             Price priceObject = priceObjectBuild(priceBuilder);
-            // Init function
+            // Init object
             priceObject.init();
             // Run strategy
-            runStrategy();
+            //runStrategy();
 
             //to set up the configuration you will issue a series of commands these can be changed during runtime
             if (sc.hasNext("^boot$")) {
@@ -90,7 +89,7 @@ public class Main {
                     System.out.println("Interrupted exception on thread sleep" + Arrays.toString(e.getStackTrace()));
                 }
                 catch (IOException e){
-                    System.out.println("Interrupted exception on thread sleep" + Arrays.toString(e.getStackTrace());
+                    System.out.println("Interrupted exception on thread sleep" + Arrays.toString(e.getStackTrace()));
                 }
             }
         }
@@ -179,9 +178,9 @@ public class Main {
         marketSplit = markets.split(",");
         Global.mOne = marketSplit[0].toUpperCase();
         Global.mTwo = marketSplit[1].toUpperCase();
-
     }
-    public static void runStrategy(MongoCRUD mongoCRUD, Price priceObj) throws IOException {
+    public static void runStrategy(MongoCRUD mongoCRUD, Price priceObj) throws IOException, InterruptedException {
+        BigDecimal profit;
         BigDecimal buy = new BigDecimal(0);
         BigDecimal sell; // If it says not initialized try setting to zero
         double profitPercentageTotals = 0.0;
