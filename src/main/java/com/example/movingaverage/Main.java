@@ -79,13 +79,15 @@ public class Main {
     // could do above with http requests
     // groom command to get rid of old data
 
-    public static boolean exitSale (PriceObjectSession sessoin) {
+    /*public static boolean exitSale (PriceObjectSession sessoin) {
         //sensitivity 0.025
         if (lastDouble < buy.subtract(buy.multiply(BigDecimal.valueOf(PriceObjectSession.sensitvityMultiplier))).doubleValue()) {
 
         }
 
     }
+
+     */
 
     // Frontend automation code
     public static void runCommand(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
