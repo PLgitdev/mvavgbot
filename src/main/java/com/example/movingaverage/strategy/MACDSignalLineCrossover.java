@@ -27,8 +27,8 @@ import java.util.Map;
 // Fetch the data
 // If the incoming size reaches a factor of a candle length set indicators
 
-        /*  If you want to check every iteration
-         liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value)); */
+/*  If you want to check every iteration
+    liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value)); */
 // Might have to go back to Wrappers after live testing
 
 public class MACDSignalLineCrossover extends TradingStrategy {
@@ -90,8 +90,8 @@ public class MACDSignalLineCrossover extends TradingStrategy {
             System.out.println("Take the ask at " + this.buy);
         }
         return this.buy;
-    }
         // Send the signal to the bittrex server and then check response
+    }
 
     public void buyResponseHandling(int code) {
         if (code == 201) {
@@ -109,17 +109,7 @@ public class MACDSignalLineCrossover extends TradingStrategy {
         this.sell = BigDecimal.valueOf(bidDouble);
         this.sellBidMode = false;
         System.out.println("Sell exited because last price dropped to low");
-        return sell;
-            /*send sell
-              try {
-                HttpResponse<String> response = sendOrder(this.sellRoutine(this.sell, bidDouble));
-                responseCode = response.statusCode();
-            } catch (IOException e) {
-                System.out.print("There was an IOException " + e + "\n" + "response : " +
-                        responseCode);
-            }
-
-             */
+        return this.sell;
     }
     //if the bid double is less than the last double
     public boolean sellHodlSet() {
@@ -139,15 +129,6 @@ public class MACDSignalLineCrossover extends TradingStrategy {
         //send order
         return this.sell;
     }
-            /*
-            try {
-                HttpResponse<String> response = sendOrder(this.sellRoutine(this.sell, bidDouble));
-                responseCode = response.statusCode();
-            } catch (IOException e) {
-                System.out.print("There was an IOException " + e + "\n response : " +
-                        responseCode);
-            }
-             */
     public boolean sellResponseHandling(int code) {
         if (code == 201) {
             //? and valid MACDCrossover?
@@ -185,3 +166,20 @@ public class MACDSignalLineCrossover extends TradingStrategy {
         return true;
     }
 }
+/*send sell
+try {
+HttpResponse<String> response = sendOrder(this.sellRoutine(this.sell, bidDouble));
+responseCode = response.statusCode();
+} catch (IOException e) {
+System.out.print("There was an IOException " + e + "\n" + "response : " +
+responseCode);
+      }
+
+    try {
+        HttpResponse<String> response = sendOrder(this.sellRoutine(this.sell, bidDouble));
+        responseCode = response.statusCode();
+    } catch (IOException e) {
+        System.out.print("There was an IOException " + e + "\n response : " +
+                responseCode);
+    }
+     */
