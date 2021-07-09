@@ -5,7 +5,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 
 public class Global {
     // if we abstract the markets now we will affect the DAO layer as well as the price object
-    public static String mOne
+    public static String mOne;
     public static String mTwo;
     public static String orderTimeInForce = "FILL_OR_KILL";
     public static double quant;

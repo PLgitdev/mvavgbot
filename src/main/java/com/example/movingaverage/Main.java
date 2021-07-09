@@ -73,8 +73,14 @@ public class Main {
                 Map<Object, Object> polledData = poll();
                 saveMarketPoll(polledData, mongoCRUD);
                 candleTick(PriceObjectSession.currentPriceObject, Double.valueOf(polledData.get("last").toString()));
+                PriceObjectSession.currentPriceObject.validMACDCrossover();
             }
-            commandHistory.push(sc.next());
+            if (commandHistory.size() >= 10) {
+                commandHistory.pop();
+            }
+            else {
+                commandHistory.push(sc.next());
+            }
         }
     }
     // could do above with http requests
@@ -159,7 +165,8 @@ public class Main {
         return queryParameter;
     }
 
-    public static ArrayList<Map<Object, Object>> fetchHistoricalDataByMarket(DataFetch fetcher, String queryParam) throws InterruptedException, IOException {
+    public static ArrayList<Map<Object, Object>> fetchHistoricalDataByMarket(DataFetch fetcher, String queryParam)
+            throws InterruptedException, IOException {
         Thread.sleep(Global.rateLimit);
         return fetcher.historicalDataFetcher(queryParam);
     }
@@ -238,22 +245,17 @@ public class Main {
         if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(PriceObjectSession.shortDaysInput))
                 || priceObj.getPriceShorter().size() >= Integer.MAX_VALUE - 1) {
             priceObj.getPriceShorter().clear();
-            mongoCRUD
-                    .retrieveMarketDataByDays(Global.MARKET_SUMMARY,
-                            PriceObjectSession.shortDaysInput - 1,
-                            "TimeStamp",
-                            "Last").forEach((data) -> priceObj
-                    .addPriceShorter((Double) data.get("Last")));
+            mongoCRUD.retrieveMarketDataByDays(
+                            Global.MARKET_SUMMARY,PriceObjectSession.shortDaysInput - 1,"TimeStamp","Last"
+            ).forEach(priceObj::addPriceShorter);
         }
         if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(PriceObjectSession.longDaysInput))
                 || priceObj.getPriceShorter().size() >= Integer.MAX_VALUE - 1) {
             priceObj.getPriceLonger().clear();
-            mongoCRUD
-                    .retrieveMarketDataByDays(Global.MARKET_SUMMARY,
-                            PriceObjectSession.longDaysInput - 1,
-                            "TimeStamp",
-                            "Last").forEach((data) -> priceObj
-                    .addPriceLonger((Double) (data.get("Last"))));
+            mongoCRUD.retrieveMarketDataByDays(
+                    Global.MARKET_SUMMARY, PriceObjectSession.longDaysInput - 1, "TimeStamp", "Last"
+            ).forEach(priceObj::addPriceLonger);
+
             priceObj.setTimestamp(LocalDateTime.now());
         }
         //if it has not reset fully then subtract 1 a day
