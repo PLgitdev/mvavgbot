@@ -44,25 +44,10 @@ public class Main {
                 "\n sync\\s?.*(0-3)$ : this will set the length of the session candle length\n");
         // Use recursive function mayb?
         while (true) {
-            // Run function
-            Price.PriceBuilder priceBuilder = Price.builder().smoothing(1.0);
-            // MACD build function
-            mACDBuilder(priceBuilder, mongoCRUD);
-            // Build Function
-            priceBuilder.twelveDayRibbons(new ArrayList<>(0))
-                    .twentySixDayRibbons(new ArrayList<>(0))
-                    .signalLine(new ArrayList<>(0))
-                    .timestamp(LocalDateTime.now())
-                    .dateLimit(LocalDateTime.now().plusHours(24));
-            Price priceObject = priceObjectBuild(priceBuilder);
-            // Init object
-            priceObject.init();
-            // Run strategy
-            //runStrategy();
-
             //to set up the configuration you will issue a series of commands these can be changed during runtime
             if (sc.hasNext("^boot$")) {
-                boot(mongoCRUD, sc, priceBuilder);
+               Price.PriceBuilder builder = priceBuilderInit(1.0);
+               boot(mongoCRUD, sc, builder);
             }
             // You are able to switch markets
             if (sc.hasNext("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
@@ -77,12 +62,9 @@ public class Main {
                 try {
                     dropDB(mongoCRUD);
                     PriceObjectSession.calcStratInput = sc.toString().split("\\d")[0];
-                    resetHistoricalData(mongoCRUD);
-                } catch (InterruptedException e) {
-                    System.out.println("Interrupted exception on thread sleep" + Arrays.toString(e.getStackTrace()));
-                }
-                catch (IOException e){
-                    System.out.println("Interrupted exception on thread sleep" + Arrays.toString(e.getStackTrace()));
+                    setHistoricalData(mongoCRUD);
+                } catch (Exception e) {
+                    System.out.println("exception on thread sleep" + Arrays.toString(e.getStackTrace()));
                 }
             }
         }
@@ -226,7 +208,7 @@ public class Main {
                     HttpResponse<String> response
                             = sendOrder(createOrder(buy.doubleValue(), "BUY"));
                     responseCode = response.statusCode();
-                } catch (IOException | InterruptedException e) {
+                } catch (Exception e) {
                     System.out.println("IO Exception : " + e + "\n" + "response: " + responseCode);
                 }
             } else {
@@ -356,11 +338,12 @@ public class Main {
         PriceObjectSession.calcStratInput = sc.next();
         System.out.println("You have entered an entry too short, or have forgotten a comma" +
                 ", please enter your market");
-        resetHistoricalData(mongoCRUD);
+        setHistoricalData(mongoCRUD);
         querySwitchAssembler(PriceObjectSession.calcStratInput, mongoCRUD, builder);
-
+        Price priceObject = priceCreator(mongoCRUD, builder);
+        priceObject.init();
     }
-    public static void resetHistoricalData(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
+    public static void setHistoricalData(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
         ArrayList<Map<Object, Object>> historicalData = fetchHistoricalDataByMarket(DataFetch.getNewInstance(), sync(PriceObjectSession.calcStratInput));
         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
     }
@@ -455,4 +438,22 @@ public class Main {
                 .shortMACDPeriod(twelveDayPeriod)
                 .longerMACDPeriod(twentySixDayPeriod);
     }
+    public static Price.PriceBuilder priceBuilderInit(Double smoothing) {
+        return Price.builder().smoothing(smoothing);
+    }
+
+    public static Price priceCreator(MongoCRUD mongoCRUD, Price.PriceBuilder priceBuilder) {
+        // MACD build function
+        mACDBuilder(priceBuilder, mongoCRUD);
+        // Build Function
+        priceBuilder.twelveDayRibbons(new ArrayList<>(0))
+                .twentySixDayRibbons(new ArrayList<>(0))
+                .signalLine(new ArrayList<>(0))
+                .timestamp(LocalDateTime.now())
+                .dateLimit(LocalDateTime.now().plusHours(24));
+        return priceObjectBuild(priceBuilder);
+    }
+
+
+
 }
