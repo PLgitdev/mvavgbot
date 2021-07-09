@@ -6,6 +6,7 @@ import com.example.movingaverage.session.PriceObjectSession;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.http.HttpResponse;
 import java.util.Map;
 
 /* If buy mode is true and we have not yet placed an order (one order at a time FOK) we start
@@ -33,7 +34,7 @@ public class MACDSignalLineCrossover extends TradingStrategy {
     double askDouble;
     double bidDouble;
     boolean buyMode = false;
-    boolean successfullyBuy = false;
+    boolean successfulBuy = false;
 
     private MACDSignalLineCrossover(Price priceObj, Double ask, Double bid, Double last) {
         super();
@@ -62,7 +63,7 @@ public class MACDSignalLineCrossover extends TradingStrategy {
         //liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
 
     public BigDecimal setBuyBidMode() {
-        if (buyMode && !successfullyBuy)
+        // if (this.buyMode && !this.successfulBuy)
         if (this.askDouble <= this.lastDouble) {
             this.buy = BigDecimal.valueOf(this.askDouble);
             System.out.println("Take the ask at " + this.buy);
@@ -76,6 +77,10 @@ public class MACDSignalLineCrossover extends TradingStrategy {
 
     public boolean isBuyBidMode() {
         return buyBidMode;
+    }
+
+    public boolean isSuccessfulBuy() {
+        return successfulBuy;
     }
 
     // If buy bid mode true then run function below if not then skip it
@@ -99,17 +104,16 @@ public class MACDSignalLineCrossover extends TradingStrategy {
         // Send the signal to the bittrex server and then check response
     }
 
-    public void buyResponseHandling(int code) {
-        if (code == 201) {
-            /*
-            this.buyMode = false;
+    public boolean buyResponseHandling(HttpResponse<String> response) {
+        if (response.statusCode() == 201) {
+            //this.buyMode = false;
             this.successfulBuy = true;
-            this.buyBidMode = false;
-
-             */
+            //this.buyBidMode = false;
             System.out.println("Successful Buy 201 at " + this.buy + "\n" +
-                    "this is the response " + code);
+                    "this is the response " + response.statusCode());
+            return true;
         }
+        else return false;
     }
 
     public BigDecimal sellExit() {
@@ -138,8 +142,8 @@ public class MACDSignalLineCrossover extends TradingStrategy {
         //send order
         return this.sell;
     }
-    public boolean sellResponseHandling(int code) {
-        if (code == 201) {
+    public boolean sellResponseHandling(HttpResponse<String> response) {
+        if (response.statusCode() == 201) {
             //? and valid MACDCrossover?
             this.profit = this.sell.subtract(buy);
             if (this.profit.doubleValue() > 0d) {
@@ -148,7 +152,7 @@ public class MACDSignalLineCrossover extends TradingStrategy {
             }
             this.profitPercentageTotals += profit.doubleValue();
             System.out.println("Sell successful at " + this.sell + " " + "this.profit percent : " +
-                    this.profit + "%" + "\n response: " + code);
+                    this.profit + "%" + "\n response: " + response.statusCode());
             return true;
         }
         return false;

@@ -66,7 +66,7 @@ public class Main {
             }
             if (last.matches("^run$")) {
                 //abstract factory
-                runCommand();
+                runCommand(mongoCRUD);
             }
             if (commandHistory.size() >= 10) {
                 commandHistory.removeLast();
@@ -88,7 +88,7 @@ public class Main {
     }
 
     // Frontend automation code
-    public static void runCommand() throws IOException, InterruptedException {
+    public static void runCommand(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
         PriceObjectSession.currentPriceObject.init();
         Map<Object, Object> polledData = poll();
         double lastDouble = Double.parseDouble(polledData.get("Last").toString());
@@ -103,11 +103,18 @@ public class Main {
                                     PriceObjectSession.currentPriceObject, lastDouble, askDouble, bidDouble
                             );
             signalLineCrossoverStrategy.setBuyBidMode();
-            sendOrder(createOrder(signalLineCrossoverStrategy.setBuyBidMode().doubleValue(),"buy"));
-
-            if (signalLineCrossoverStrategy.isBuyBidMode()) {
-                sendOrder(createOrder(signalLineCrossoverStrategy.buyGate().doubleValue(), "buy"));
-            };
+            while (!PriceObjectSession.successfulBuy) {
+                PriceObjectSession.successfulBuy = signalLineCrossoverStrategy
+                        .buyResponseHandling(sendOrder(createOrder(
+                                signalLineCrossoverStrategy.setBuyBidMode().doubleValue(), "buy"
+                        ))) ?
+                        signalLineCrossoverStrategy.sellHodlSet()
+                        :
+                        signalLineCrossoverStrategy.buyResponseHandling(sendOrder(createOrder(
+                                signalLineCrossoverStrategy.buyGate().doubleValue(), "buy"
+                        )));
+                System.out.println("Waiting for a buy....");
+            }
         }
     }
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {

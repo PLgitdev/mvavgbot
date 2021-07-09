@@ -13,4 +13,5 @@ public class PriceObjectSession {
     public static DataFetch sessionFetcher;
     public static boolean buyMode;
     public static Price currentPriceObject;
+    public static boolean successfulBuy;
 }
