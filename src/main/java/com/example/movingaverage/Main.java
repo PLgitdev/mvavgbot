@@ -51,7 +51,7 @@ public class Main {
         );
         // Boot up
         commandHistory.push(sc.next());
-        while(!commandHistory.isEmpty()) {
+        while (!commandHistory.isEmpty()) {
             String last = commandHistory.peek();
             if (last.matches("^boot$")) {
                 Price.PriceBuilder builder = priceBuilderInit(1.0);
