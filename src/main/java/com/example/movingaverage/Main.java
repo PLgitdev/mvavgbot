@@ -41,10 +41,14 @@ public class Main {
         Deque<String> commandHistory = new ArrayDeque<>(10);
         //Global.quant = .0400000; hard coded to avoid accidental purchase
         // Insert this into the prices value for the candle tick function Double.valueOf(liveMarketData.get("Last").toString()))
-        System.out.println("The commands are as following; " +
+        System.out.println(
+                "The commands are as following; " +
                 "\n boot : This will start the bot if the config is set " +
                 "\n market\\s?.*=(\\w|\\D|\\S){2,6}$ : this will bind a market combination to a session.\n" +
-                "\n sync\\s?.*(0-3)$ : this will set the length of the session candle length\n");
+                "\n sync\\s?.*(0-3)$ : this will set the length of the session candle length\n" +
+                "\n ^test$ : run system tests" +
+                "\n ^practice$ : takes you to a no risk environment"
+        );
         // Boot up
         commandHistory.push(sc.next());
         while(!commandHistory.isEmpty()) {
