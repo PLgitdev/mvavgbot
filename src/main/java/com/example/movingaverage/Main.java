@@ -50,8 +50,7 @@ public class Main {
         }
         // You are able to switch markets
         if (sc.hasNext("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
-            dropDB(mongoCRUD);
-            marketSelect(sc);
+            marketPivot(mongoCRUD, sc);
             // Calculate MACD
             PriceObjectSession.sessionFetcher = DataFetch.getNewInstance();
         }
@@ -65,6 +64,13 @@ public class Main {
                 System.out.println("exception on thread sleep" + Arrays.toString(e.getStackTrace()));
             }
         }
+    }
+
+    private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
+        dropDB(mongoCRUD);
+        marketSelect(sc);
+        setHistoricalData(mongoCRUD);
+        PriceObjectSession.currentPriceObject = priceCreator(mongoCRUD, priceBuilderInit(1.0));
     }
 
     public static Transaction createOrder(Double limit, String direction) throws MalformedURLException {
@@ -172,9 +178,10 @@ public class Main {
     }
 
     public static void boot(MongoCRUD mongoCRUD, Scanner sc, Price.PriceBuilder builder) throws IOException, InterruptedException {
+        dropDB(mongoCRUD);
         System.out.println("Welcome please enter a candle length" +
                 " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
-        //candle length function
+        sync(sc.next());
         System.out.println("Please enter day count for the short moving avg up to 365 days");
         PriceObjectSession.shortDaysInput = sc.nextInt();
 
