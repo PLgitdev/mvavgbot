@@ -188,8 +188,8 @@ public class Main {
                 ", please enter your market");
         setHistoricalData(mongoCRUD);
         querySwitchAssembler(PriceObjectSession.calcStratInput, mongoCRUD, builder);
-        Price priceObject = priceCreator(mongoCRUD, builder);
-        priceObject.init();
+        PriceObjectSession.currentPriceObject = priceCreator(mongoCRUD, builder);
+        PriceObjectSession.currentPriceObject.init();
     }
 
     public static void setHistoricalData(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
