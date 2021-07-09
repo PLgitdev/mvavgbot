@@ -262,16 +262,28 @@ public class Main {
     public static void querySwitchAssembler(String calculationStrategy, MongoCRUD mongoCRUD, Price.PriceBuilder builder) {
         switch (calculationStrategy) {
             case "0":
-                builder.priceShorter(dayDataAggregation("high", "low", mongoCRUD, PriceObjectSession.shortDaysInput));
-                builder.priceLonger(dayDataAggregation("high", "low", mongoCRUD, PriceObjectSession.longDaysInput));
+                builder.priceShorter(
+                        dayDataAggregation("high", "low", mongoCRUD, PriceObjectSession.shortDaysInput)
+                );
+                builder.priceLonger(
+                        dayDataAggregation("high", "low", mongoCRUD, PriceObjectSession.longDaysInput)
+                );
                 break;
             case "1":
-                builder.priceShorter(dayDataAggregation("open", "close", mongoCRUD, PriceObjectSession.shortDaysInput));
-                builder.priceLonger(dayDataAggregation("open", "close", mongoCRUD, PriceObjectSession.longDaysInput));
+                builder.priceShorter(
+                        dayDataAggregation("open", "close", mongoCRUD, PriceObjectSession.shortDaysInput)
+                );
+                builder.priceLonger(
+                        dayDataAggregation("open", "close", mongoCRUD, PriceObjectSession.longDaysInput)
+                );
                 break;
             case "2":
-                builder.priceShorter(dayDataAggregation("close", "close", mongoCRUD, PriceObjectSession.shortDaysInput));
-                builder.priceLonger(dayDataAggregation("close", "close", mongoCRUD, PriceObjectSession.longDaysInput));
+                builder.priceShorter(
+                        dayDataAggregation("close", "close", mongoCRUD, PriceObjectSession.shortDaysInput)
+                );
+                builder.priceLonger(
+                        dayDataAggregation("close", "close", mongoCRUD, PriceObjectSession.longDaysInput)
+                );
                 break;
         }
     }
