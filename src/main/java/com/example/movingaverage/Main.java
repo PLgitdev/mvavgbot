@@ -35,13 +35,6 @@ public class Main {
         LocalDateTime start = LocalDateTime.now();
         MongoCRUD mongoCRUD = MongoCRUD.getInstance();
         Map<Object, Object> liveMarketData;
-        ArrayList<Double> shortMACDPeriod = new ArrayList<>();
-        ArrayList<Double> longerMACDPeriod = new ArrayList<>();
-        ArrayList<Double> nineDayMACDPeriod = new ArrayList<>();
-        ArrayList<Double> shorterDaysDataOpenD = new ArrayList<>();
-        ArrayList<Double> shorterDaysDataCloseD = new ArrayList<>();
-        ArrayList<Double> longerDaysDataOpenD = new ArrayList<>();
-        ArrayList<Double> longerDaysDataCloseD = new ArrayList<>();
         boolean runMode = false;
         //Global.quant = .0400000; hard coded to avoid accidental purchase
 
@@ -463,21 +456,3 @@ public class Main {
                 .longerMACDPeriod(twentySixDayPeriod);
     }
 }
-
-
-            // Save it to the db
-                   //return this function
-
-                   /* The Map<String,String> from the database requires us to loop the through the value
-                    of the map to cast them using Wrapper class Double .valueOf method. The resulting values
-                    will be placed into an ArrayList then used to build the priceObj. The calculation used to
-                    determine the values added to the priceObj will be decided by your previous Global.calcStratInput.
-
-                    After the priceObject is built it will be initialized.
-                    */
-
-
-    //Loop to poll for market data
-    //end boot
-
-    //reset the historical data if objects max out from overflow or the data has expired
