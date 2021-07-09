@@ -35,12 +35,14 @@ public class MACDSignalLineCrossover extends TradingStrategy {
     boolean buyMode = false;
     boolean successfullyBuy = false;
 
-    private MACDSignalLineCrossover(Price priceObj, Map<Object, Object> liveMarketData) {
+    private MACDSignalLineCrossover(Price priceObj) {
         super();
         this.buyMode = PriceObjectSession.buyMode;
         this.priceObj = priceObj;
-        this.liveMarketData = liveMarketData;
         // priceObj.validMACDCrossover();
+    }
+    public static MACDSignalLineCrossover createMACDSignalLineCrossoverStrategy(Price priceObj) {
+        return new MACDSignalLineCrossover(priceObj);
     }
 
     public void setBuyMode() {
@@ -54,6 +56,7 @@ public class MACDSignalLineCrossover extends TradingStrategy {
     }
 
     // Check average inequality or add more indicators boolean array?
+        //liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
 
     public void setBuyBidMode() {
         if (buyMode && !successfullyBuy)
@@ -65,7 +68,6 @@ public class MACDSignalLineCrossover extends TradingStrategy {
             this.buyBidMode = true;
         }
         System.out.println("BUY Attempt at " + buy);
-        liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
     }
 
     public boolean isBuyBidMode() {
@@ -124,13 +126,13 @@ public class MACDSignalLineCrossover extends TradingStrategy {
         return hold();
         // System.out.println("\n" + "Sell at " + this.sell + " vs bid " + liveMarketData.get("Bid"));
     }
-    public BigDecimal sellCalclation() {
+        //System.out.println("\n Cancel last this.sell and Sell at " + this.sell + " bid is " +
+          //  liveMarketData.get("Bid"));
+    public BigDecimal sellCalculation() {
         // if the Bid is more than the last use the Last
         this.sell = this.sell.subtract(BigDecimal.valueOf(.00000001));
         this.sell = this.sell.setScale(8, RoundingMode.HALF_UP);
         //if no this.sell successful
-        System.out.println("\n Cancel last this.sell and Sell at " + this.sell + " bid is " +
-                liveMarketData.get("Bid"));
         //send order
         return this.sell;
     }

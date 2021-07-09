@@ -7,6 +7,8 @@ import com.example.movingaverage.Live.Sell;
 import com.example.movingaverage.Live.Transaction;
 import com.example.movingaverage.Model.Price;
 import com.example.movingaverage.session.PriceObjectSession;
+import com.example.movingaverage.strategy.MACDSignalLineCrossover;
+import com.example.movingaverage.strategy.TradingStrategy;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -44,29 +46,39 @@ public class Main {
                 "\n market\\s?.*=(\\w|\\D|\\S){2,6}$ : this will bind a market combination to a session.\n" +
                 "\n sync\\s?.*(0-3)$ : this will set the length of the session candle length\n");
         // Boot up
-        while(true) {
-            commandHistory.push(sc.next());
-            if (commandHistory.peek().matches("^boot$")) {
+        commandHistory.push(sc.next());
+        while(!commandHistory.isEmpty()) {
+            String last = commandHistory.peek();
+            if (last.matches("^boot$")) {
                 Price.PriceBuilder builder = priceBuilderInit(1.0);
                 boot(mongoCRUD, sc, builder);
             }
             // You are able to switch markets
-            if (commandHistory.peek().matches("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
+            if (last.matches("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
                 marketPivot(mongoCRUD, sc);
                 PriceObjectSession.sessionFetcher = DataFetch.getNewInstance();
             }
             // You are able to switch candle sync modes
-            if (commandHistory.peek().matches("^sync\\s?.*(0-3)$")) {
+            if (last.matches("^sync\\s?.*(0-3)$")) {
                 dropDB(mongoCRUD);
                 PriceObjectSession.calcStratInput = sc.toString().split("\\d")[0];
                 setHistoricalData(mongoCRUD);
             }
-            if (commandHistory.peek().matches("^run$")) {
-
+            if (last.matches("^run$")) {
+                //abstract factory
+                PriceObjectSession.currentPriceObject.init();
+                MACDSignalLineCrossover  signalLineCrossoverStrategy =
+                        MACDSignalLineCrossover
+                                .createMACDSignalLineCrossoverStrategy(PriceObjectSession.currentPriceObject);
+                Map<Object, Object> polledData = poll();
+                saveMarketPoll(polledData, mongoCRUD);
+                candleTick(PriceObjectSession.currentPriceObject, Double.valueOf(polledData.get("last").toString()));
             }
+            commandHistory.push(sc.next());
         }
     }
     // could do above with http requests
+    // groom command to get rid of old data
 
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
         dropDB(mongoCRUD);
@@ -162,7 +174,7 @@ public class Main {
         Global.mTwo = marketSplit[1].toUpperCase();
     }
 
-    public Map<Object, Object> poll() throws IOException {
+    public static Map<Object, Object> poll() throws IOException {
         return PriceObjectSession.sessionFetcher.marketDataFetcher();
     }
 
@@ -198,7 +210,6 @@ public class Main {
         setHistoricalData(mongoCRUD);
         querySwitchAssembler(PriceObjectSession.calcStratInput, mongoCRUD, builder);
         PriceObjectSession.currentPriceObject = priceCreator(mongoCRUD, builder);
-        PriceObjectSession.currentPriceObject.init();
     }
 
     public static void setHistoricalData(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
