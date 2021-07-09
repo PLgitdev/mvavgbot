@@ -66,26 +66,7 @@ public class Main {
             }
             if (last.matches("^run$")) {
                 //abstract factory
-                PriceObjectSession.currentPriceObject.init();
-                Map<Object, Object> polledData = poll();
-                double lastDouble = Double.parseDouble(polledData.get("Last").toString());
-                double askDouble = Double.parseDouble(polledData.get("Ask").toString());
-                double bidDouble = Double.parseDouble(polledData.get("Bid").toString());
-                saveMarketPoll(polledData, mongoCRUD);
-                candleTick(PriceObjectSession.currentPriceObject, Double.valueOf(polledData.get("last").toString()));
-                if (PriceObjectSession.currentPriceObject.validMACDCrossover()) {
-                    MACDSignalLineCrossover signalLineCrossoverStrategy =
-                            MACDSignalLineCrossover
-                                    .createMACDSignalLineCrossoverStrategy(
-                                            PriceObjectSession.currentPriceObject, lastDouble, askDouble, bidDouble
-                                    );
-                    signalLineCrossoverStrategy.setBuyBidMode();
-                    sendOrder(createOrder(signalLineCrossoverStrategy.setBuyBidMode().doubleValue(),"buy"));
-
-                    if (signalLineCrossoverStrategy.isBuyBidMode()) {
-
-                    };
-                }
+                runCommand();
             }
             if (commandHistory.size() >= 10) {
                 commandHistory.removeLast();
@@ -104,6 +85,30 @@ public class Main {
 
         }
 
+    }
+
+    // Frontend automation code
+    public static void runCommand() throws IOException, InterruptedException {
+        PriceObjectSession.currentPriceObject.init();
+        Map<Object, Object> polledData = poll();
+        double lastDouble = Double.parseDouble(polledData.get("Last").toString());
+        double askDouble = Double.parseDouble(polledData.get("Ask").toString());
+        double bidDouble = Double.parseDouble(polledData.get("Bid").toString());
+        saveMarketPoll(polledData, mongoCRUD);
+        candleTick(PriceObjectSession.currentPriceObject, Double.valueOf(polledData.get("last").toString()));
+        if (PriceObjectSession.currentPriceObject.validMACDCrossover()) {
+            MACDSignalLineCrossover signalLineCrossoverStrategy =
+                    MACDSignalLineCrossover
+                            .createMACDSignalLineCrossoverStrategy(
+                                    PriceObjectSession.currentPriceObject, lastDouble, askDouble, bidDouble
+                            );
+            signalLineCrossoverStrategy.setBuyBidMode();
+            sendOrder(createOrder(signalLineCrossoverStrategy.setBuyBidMode().doubleValue(),"buy"));
+
+            if (signalLineCrossoverStrategy.isBuyBidMode()) {
+
+            };
+        }
     }
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
         dropDB(mongoCRUD);
