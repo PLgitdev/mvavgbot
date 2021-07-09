@@ -36,7 +36,6 @@ public class Main {
         MongoCRUD mongoCRUD = MongoCRUD.getInstance();
         Map<Object, Object> liveMarketData;
         BigDecimal profit;
-        Price.PriceBuilder priceBuilder = Price.builder().smoothing(1.0);
         ArrayList<Double> shortMACDPeriod = new ArrayList<>();
         ArrayList<Double> longerMACDPeriod = new ArrayList<>();
         ArrayList<Double> nineDayMACDPeriod = new ArrayList<>();
@@ -51,18 +50,22 @@ public class Main {
                 "\n boot : This will start the bot if the config is set " +
                 "\n market\\s?.*=(\\w|\\D|\\S){2,6}$ : this will bind a market combination to a session.\n" +
                 "\n sync\\s?.*(0-3)$ : this will set the length of the session candle length\n");
+        // Use recursive function mayb?
         while (true) {
             // Run function
-            Price priceObj = priceBuilder.nineDaysOfClose(nineDayMACDPeriod)
-                    .shortMACDPeriod(shortMACDPeriod)
-                    .longerMACDPeriod(longerMACDPeriod)
-                    .twelveDayRibbons(new ArrayList<>(0))
+            Price.PriceBuilder priceBuilder = Price.builder().smoothing(1.0);
+            // MACD build function
+            mACDBuilder(priceBuilder, mongoCRUD);
+            // Build Function
+            priceBuilder.twelveDayRibbons(new ArrayList<>(0))
                     .twentySixDayRibbons(new ArrayList<>(0))
                     .signalLine(new ArrayList<>(0))
                     .timestamp(LocalDateTime.now())
-                    .dateLimit(LocalDateTime.now().plusHours(24)).build();
-            priceObj.init();
-            // Calculate MACD
+                    .dateLimit(LocalDateTime.now().plusHours(24));
+            Price priceObject = priceObjectBuild(priceBuilder);
+            // Init function
+            priceObject.init();
+            // Run strategy
             runStrategy();
 
             //to set up the configuration you will issue a series of commands these can be changed during runtime
@@ -437,32 +440,30 @@ public class Main {
         }
         return avg;
     }
+    public static Price priceObjectBuild(Price.PriceBuilder builder){
+        return builder.build();
+    }
+    //mayb a private function of some thing
+    public static void mACDBuilder(Price.PriceBuilder builder, MongoCRUD mongoCRUD) {
+
+        List<Double> nineDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
+                9,
+                "startsAt",
+                "close");
+        List<Double> twelveDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
+                12,
+                "startsAt",
+                "close");
+        List<Double> twentySixDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
+                26,
+                "startsAt",
+                "close");
+
+        builder.nineDaysOfClose(nineDayPeriod)
+                .shortMACDPeriod(twelveDayPeriod)
+                .longerMACDPeriod(twentySixDayPeriod);
+    }
 }
-
-    /* MACD calculation
-    List<Map<?, ?>> nineDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-            9,
-            "startsAt",
-            "close");
-    List<Map<?, ?>> twelveDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-            12,
-            "startsAt",
-            "close");
-    List<Map<?, ?>> twentySixDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-            26,
-            "startsAt",
-            "close");
-
-                   nineDayPeriod.forEach((map) ->
-                           nineDayMACDPeriod.add(Double.parseDouble((String) map.get("close"))));
-                           twelveDayPeriod.forEach((map) ->
-                           shortMACDPeriod.add(Double.parseDouble((String) map.get("close"))));
-                           twentySixDayPeriod.forEach((map) ->
-                           longerMACDPeriod.add(Double.parseDouble((String) map.get("close"))));
-                           }
-
-
-     */
 
 
             // Save it to the db
