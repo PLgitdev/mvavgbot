@@ -67,16 +67,29 @@ public class Main {
             if (last.matches("^run$")) {
                 //abstract factory
                 PriceObjectSession.currentPriceObject.init();
-                MACDSignalLineCrossover  signalLineCrossoverStrategy =
-                        MACDSignalLineCrossover
-                                .createMACDSignalLineCrossoverStrategy(PriceObjectSession.currentPriceObject);
                 Map<Object, Object> polledData = poll();
+                double lastDouble = Double.parseDouble(polledData.get("Last").toString());
+                double askDouble = Double.parseDouble(polledData.get("Ask").toString());
+                double bidDouble = Double.parseDouble(polledData.get("Bid").toString());
                 saveMarketPoll(polledData, mongoCRUD);
                 candleTick(PriceObjectSession.currentPriceObject, Double.valueOf(polledData.get("last").toString()));
-                PriceObjectSession.currentPriceObject.validMACDCrossover();
+                if (PriceObjectSession.currentPriceObject.validMACDCrossover()) {
+                    MACDSignalLineCrossover signalLineCrossoverStrategy =
+                            MACDSignalLineCrossover
+                                    .createMACDSignalLineCrossoverStrategy(
+                                            PriceObjectSession.currentPriceObject, lastDouble, askDouble, bidDouble
+                                    );
+                    signalLineCrossoverStrategy.setBuyBidMode();
+                    Transaction buy = createOrder(signalLineCrossoverStrategy.setBuyBidMode().doubleValue(),"buy");
+                    sendOrder(buy);
+
+                    if (signalLineCrossoverStrategy.isBuyBidMode()) {
+
+                    };
+                }
             }
             if (commandHistory.size() >= 10) {
-                commandHistory.pop();
+                commandHistory.removeLast();
             }
             else {
                 commandHistory.push(sc.next());
@@ -86,6 +99,13 @@ public class Main {
     // could do above with http requests
     // groom command to get rid of old data
 
+    public static boolean exitSale (PriceObjectSession sessoin) {
+        //sensitivity 0.025
+        if (lastDouble < buy.subtract(buy.multiply(BigDecimal.valueOf(PriceObjectSession.sensitvityMultiplier))).doubleValue()) {
+
+        }
+
+    }
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
         dropDB(mongoCRUD);
         marketSelect(sc);
@@ -197,6 +217,8 @@ public class Main {
             System.out.println("Candle created: \n" + priceObj.toString());
         }
     }
+
+    public static void strategySelection(){}
 
     public static void boot(MongoCRUD mongoCRUD, Scanner sc, Price.PriceBuilder builder) throws IOException, InterruptedException {
         dropDB(mongoCRUD);

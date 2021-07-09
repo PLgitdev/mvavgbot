@@ -29,20 +29,23 @@ import java.util.Map;
 
 public class MACDSignalLineCrossover extends TradingStrategy {
     boolean buyBidMode = false;
-    double lastDouble = Double.parseDouble(liveMarketData.get("Last").toString());
-    double askDouble = Double.parseDouble(liveMarketData.get("Ask").toString());
-    double bidDouble = Double.parseDouble(liveMarketData.get("Bid").toString());
+    double lastDouble;
+    double askDouble;
+    double bidDouble;
     boolean buyMode = false;
     boolean successfullyBuy = false;
 
-    private MACDSignalLineCrossover(Price priceObj) {
+    private MACDSignalLineCrossover(Price priceObj, Double ask, Double bid, Double last) {
         super();
         this.buyMode = PriceObjectSession.buyMode;
         this.priceObj = priceObj;
+        this.lastDouble = last;
+        this.askDouble = ask;
+        this.bidDouble = bid;
         // priceObj.validMACDCrossover();
     }
-    public static MACDSignalLineCrossover createMACDSignalLineCrossoverStrategy(Price priceObj) {
-        return new MACDSignalLineCrossover(priceObj);
+    public static MACDSignalLineCrossover createMACDSignalLineCrossoverStrategy(Price priceObj, Double ask, Double bid, Double last) {
+        return new MACDSignalLineCrossover(priceObj, ask, bid, last);
     }
 
     public void setBuyMode() {
@@ -58,7 +61,7 @@ public class MACDSignalLineCrossover extends TradingStrategy {
     // Check average inequality or add more indicators boolean array?
         //liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
 
-    public void setBuyBidMode() {
+    public BigDecimal setBuyBidMode() {
         if (buyMode && !successfullyBuy)
         if (this.askDouble <= this.lastDouble) {
             this.buy = BigDecimal.valueOf(this.askDouble);
@@ -68,6 +71,7 @@ public class MACDSignalLineCrossover extends TradingStrategy {
             this.buyBidMode = true;
         }
         System.out.println("BUY Attempt at " + buy);
+        return this.buy;
     }
 
     public boolean isBuyBidMode() {
@@ -108,8 +112,6 @@ public class MACDSignalLineCrossover extends TradingStrategy {
         }
     }
 
-    //sensitivity
-    // if (lastDouble < buy.subtract(buy.multiply(BigDecimal.valueOf(0.025))).doubleValue()) {
     public BigDecimal sellExit() {
         this.sell = BigDecimal.valueOf(bidDouble);
         /*
