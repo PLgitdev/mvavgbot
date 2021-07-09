@@ -106,7 +106,7 @@ public class Main {
             sendOrder(createOrder(signalLineCrossoverStrategy.setBuyBidMode().doubleValue(),"buy"));
 
             if (signalLineCrossoverStrategy.isBuyBidMode()) {
-
+                sendOrder(createOrder(signalLineCrossoverStrategy.buyGate().doubleValue(), "buy"));
             };
         }
     }
