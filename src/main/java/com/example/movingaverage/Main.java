@@ -98,25 +98,9 @@ public class Main {
         double bidDouble = Double.parseDouble(polledData.get("Bid").toString());
         saveMarketPoll(polledData, mongoCRUD);
         candleTick(PriceObjectSession.currentPriceObject, Double.valueOf(polledData.get("last").toString()));
+        //function check for what type of indicator is happening
         if (PriceObjectSession.currentPriceObject.validMACDCrossover()) {
-            MACDSignalLineCrossover signalLineCrossoverStrategy =
-                    MACDSignalLineCrossover
-                            .createMACDSignalLineCrossoverStrategy(
-                                    PriceObjectSession.currentPriceObject, lastDouble, askDouble, bidDouble
-                            );
-            signalLineCrossoverStrategy.setBuyBidMode();
-            while (!PriceObjectSession.successfulBuy) {
-                PriceObjectSession.successfulBuy = signalLineCrossoverStrategy
-                        .buyResponseHandling(sendOrder(createOrder(
-                                signalLineCrossoverStrategy.setBuyBidMode().doubleValue(), "buy"
-                        ))) ?
-                        signalLineCrossoverStrategy.sellHodlSet()
-                        :
-                        signalLineCrossoverStrategy.buyResponseHandling(sendOrder(createOrder(
-                                signalLineCrossoverStrategy.buyGate().doubleValue(), "buy"
-                        )));
-                System.out.println("Waiting for a buy....");
-            }
+            runMACDSignalLineCrossoverStrategy(lastDouble, askDouble, bidDouble);
         }
     }
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
@@ -126,6 +110,28 @@ public class Main {
         PriceObjectSession.currentPriceObject = priceCreator(mongoCRUD, priceBuilderInit(1.0));
     }
 
+    public static void runMACDSignalLineCrossoverStrategy(
+            Double lastDouble, Double askDouble, Double bidDouble) throws IOException, InterruptedException {
+
+        MACDSignalLineCrossover signalLineCrossoverStrategy =
+                MACDSignalLineCrossover
+                        .createMACDSignalLineCrossoverStrategy(
+                                PriceObjectSession.currentPriceObject, lastDouble, askDouble, bidDouble
+                        );
+        signalLineCrossoverStrategy.setBuyBidMode();
+        while (!PriceObjectSession.successfulBuy) {
+            PriceObjectSession.successfulBuy = signalLineCrossoverStrategy
+                    .buyResponseHandling(sendOrder(createOrder(
+                            signalLineCrossoverStrategy.setBuyBidMode().doubleValue(), "buy"
+                    ))) ?
+                    signalLineCrossoverStrategy.sellHodlSet()
+                    :
+                    signalLineCrossoverStrategy.buyResponseHandling(sendOrder(createOrder(
+                            signalLineCrossoverStrategy.buyGate().doubleValue(), "buy"
+                    )));
+            System.out.println("Waiting for a buy....");
+        }
+    }
     public static Transaction createOrder(Double limit, String direction) throws MalformedURLException {
         return direction.equalsIgnoreCase("Buy") ?
                 Buy.getInstance("LIMIT", limit, Global.orderTimeInForce, direction) :
