@@ -80,8 +80,7 @@ public class Main {
                                             PriceObjectSession.currentPriceObject, lastDouble, askDouble, bidDouble
                                     );
                     signalLineCrossoverStrategy.setBuyBidMode();
-                    Transaction buy = createOrder(signalLineCrossoverStrategy.setBuyBidMode().doubleValue(),"buy");
-                    sendOrder(buy);
+                    sendOrder(createOrder(signalLineCrossoverStrategy.setBuyBidMode().doubleValue(),"buy"));
 
                     if (signalLineCrossoverStrategy.isBuyBidMode()) {
 
