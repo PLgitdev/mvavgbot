@@ -43,47 +43,44 @@ public class Main {
                 "\n market\\s?.*=(\\w|\\D|\\S){2,6}$ : this will bind a market combination to a session.\n" +
                 "\n sync\\s?.*(0-3)$ : this will set the length of the session candle length\n");
         // Use recursive function mayb?
-        while (true) {
-            //to set up the configuration you will issue a series of commands these can be changed during runtime
-            if (sc.hasNext("^boot$")) {
-               Price.PriceBuilder builder = priceBuilderInit(1.0);
-               boot(mongoCRUD, sc, builder);
-            }
-            // You are able to switch markets
-            if (sc.hasNext("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
+        //to set up the configuration you will issue a series of commands these can be changed during runtime
+        if (sc.hasNext("^boot$")) {
+            Price.PriceBuilder builder = priceBuilderInit(1.0);
+            boot(mongoCRUD, sc, builder);
+        }
+        // You are able to switch markets
+        if (sc.hasNext("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
+            dropDB(mongoCRUD);
+            marketSelect(sc);
+            // Calculate MACD
+            PriceObjectSession.sessionFetcher = DataFetch.getNewInstance();
+        }
+        // You are able to switch candle sync modes
+        if (sc.hasNext("^sync\\s?.*(0-3)$")) {
+            try {
                 dropDB(mongoCRUD);
-                System.out.println("Please enter markets separated by comma, or clear");
-                marketSelect(sc);
-                // Calculate MACD
-                PriceObjectSession.sessionFetcher = DataFetch.getNewInstance();
-            }
-            // You are able to switch candle sync modes
-            if (sc.hasNext("^sync\\s?.*(0-3)$")) {
-                try {
-                    dropDB(mongoCRUD);
-                    PriceObjectSession.calcStratInput = sc.toString().split("\\d")[0];
-                    setHistoricalData(mongoCRUD);
-                } catch (Exception e) {
-                    System.out.println("exception on thread sleep" + Arrays.toString(e.getStackTrace()));
-                }
+                PriceObjectSession.calcStratInput = sc.toString().split("\\d")[0];
+                setHistoricalData(mongoCRUD);
+            } catch (Exception e) {
+                System.out.println("exception on thread sleep" + Arrays.toString(e.getStackTrace()));
             }
         }
     }
 
     public static Transaction createOrder(Double limit, String direction) throws MalformedURLException {
         return direction.equalsIgnoreCase("Buy") ?
-            Buy.getInstance("LIMIT", limit, Global.orderTimeInForce, direction) :
-            Sell.getInstance("LIMIT", limit, Global.orderTimeInForce, direction);
+                Buy.getInstance("LIMIT", limit, Global.orderTimeInForce, direction) :
+                Sell.getInstance("LIMIT", limit, Global.orderTimeInForce, direction);
     }
+
     public static HttpResponse<String> sendOrder(Transaction order) throws IOException, InterruptedException {
         HttpResponse<String> response = order.send();
         if (response.statusCode() == 201) {
             System.out.println("Successful order");
         }
-        if (response.statusCode() == 401)  {
+        if (response.statusCode() == 401) {
             System.out.println("Unauthorized 401 body is" + response.body());
-        }
-        else {
+        } else {
             System.out.println("Response not 201: " + response);
         }
         Thread.sleep(1000);
@@ -92,14 +89,14 @@ public class Main {
 
     public static BigDecimal fixSell(Double bidDouble) {
         BigDecimal sell = BigDecimal.valueOf(bidDouble)
-            .add(BigDecimal.valueOf(0.00000005));
+                .add(BigDecimal.valueOf(0.00000005));
         System.out.println("The sell was calculated lower than the bid, " + "\n" +
-            "sell : " + sell);
+                "sell : " + sell);
         return sell;
     }
 
     public static Transaction sellRoutine(BigDecimal sell, Double bidDouble) throws IOException {
-        if (sell.doubleValue() <  bidDouble) {
+        if (sell.doubleValue() < bidDouble) {
             BigDecimal fixedSell = fixSell(bidDouble).setScale(8, RoundingMode.HALF_UP);
             return createOrder(fixedSell.doubleValue(), "SELL");
         }
@@ -141,25 +138,30 @@ public class Main {
         //return this function callback
         return queryParameter;
     }
+
     public static ArrayList<Map<Object, Object>> fetchHistoricalDataByMarket(DataFetch fetcher, String queryParam) throws InterruptedException, IOException {
         Thread.sleep(Global.rateLimit);
         return fetcher.historicalDataFetcher(queryParam);
     }
+
     public static void marketSelect(Scanner sc) {
         String markets = "";
-        String [] marketSplit;
+        String[] marketSplit;
         System.out.println("Please enter markets separated by comma, or clear");
         markets = sc.next();
         marketSplit = markets.split(",");
         Global.mOne = marketSplit[0].toUpperCase();
         Global.mTwo = marketSplit[1].toUpperCase();
     }
-    public Map<Object, Object> poll () throws IOException {
+
+    public Map<Object, Object> poll() throws IOException {
         return PriceObjectSession.sessionFetcher.marketDataFetcher();
     }
+
     public static void saveMarketPoll(Map<Object, Object> polledData, MongoCRUD mongoCRUD) {
         mongoCRUD.createMarketData(polledData, Global.MARKET_SUMMARY);
     }
+
     public static void candleTick(Price priceObj, Double prices) {
         if (priceObj.getPriceLonger().size() % PriceObjectSession.candleLength == 0 &&
                 priceObj.getPriceShorter().size() % PriceObjectSession.candleLength == 0) {
@@ -168,7 +170,7 @@ public class Main {
             System.out.println("Candle created: \n" + priceObj.toString());
         }
     }
-}
+
     public static void boot(MongoCRUD mongoCRUD, Scanner sc, Price.PriceBuilder builder) throws IOException, InterruptedException {
         System.out.println("Welcome please enter a candle length" +
                 " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
@@ -189,10 +191,12 @@ public class Main {
         Price priceObject = priceCreator(mongoCRUD, builder);
         priceObject.init();
     }
+
     public static void setHistoricalData(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
         ArrayList<Map<Object, Object>> historicalData = fetchHistoricalDataByMarket(DataFetch.getNewInstance(), sync(PriceObjectSession.calcStratInput));
         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
     }
+
     public static void querySwitchAssembler(String calculationStrategy, MongoCRUD mongoCRUD, Price.PriceBuilder builder) {
         switch (calculationStrategy) {
             case "0":
@@ -209,13 +213,14 @@ public class Main {
                 break;
         }
     }
+
     public static void historicalDataTimeoutReset(Price priceObj, MongoCRUD mongoCRUD, LocalDateTime start) {
         if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(PriceObjectSession.shortDaysInput))
                 || priceObj.getPriceShorter().size() >= Integer.MAX_VALUE - 1) {
             priceObj.getPriceShorter().clear();
             mongoCRUD
                     .retrieveMarketDataByDays(Global.MARKET_SUMMARY,
-                            PriceObjectSession.shortDaysInput-1,
+                            PriceObjectSession.shortDaysInput - 1,
                             "TimeStamp",
                             "Last").forEach((data) -> priceObj
                     .addPriceShorter((Double) data.get("Last")));
@@ -225,20 +230,26 @@ public class Main {
             priceObj.getPriceLonger().clear();
             mongoCRUD
                     .retrieveMarketDataByDays(Global.MARKET_SUMMARY,
-                            PriceObjectSession.longDaysInput-1,
+                            PriceObjectSession.longDaysInput - 1,
                             "TimeStamp",
                             "Last").forEach((data) -> priceObj
                     .addPriceLonger((Double) (data.get("Last"))));
             priceObj.setTimestamp(LocalDateTime.now());
         }
         //if it has not reset fully then subtract 1 a day
-        if (!start.equals(start.plusDays(PriceObjectSession.shortDaysInput))) { priceObj.dateLimitCheck(1); }
-        if (!start.equals(start.plusDays(PriceObjectSession.longDaysInput))) { priceObj.dateLimitCheckLonger(1); }
+        if (!start.equals(start.plusDays(PriceObjectSession.shortDaysInput))) {
+            priceObj.dateLimitCheck(1);
+        }
+        if (!start.equals(start.plusDays(PriceObjectSession.longDaysInput))) {
+            priceObj.dateLimitCheckLonger(1);
+        }
     }
+
     public static void dropDB(MongoCRUD mongoCRUD) {
         mongoCRUD.deleteAllMarketData(Global.MARKET_SUMMARY);
         mongoCRUD.deleteAllMarketData(Global.HISTORICAL_DATA);
     }
+
     public static List<Double> dayDataAggregation(String projectionOne, String projectionTwo, MongoCRUD mongoCRUD, int period) {
 
         List<Double> resultOne = mongoCRUD
@@ -246,7 +257,7 @@ public class Main {
                         period,
                         "startsAt",
                         projectionOne);
-        List<Double> resultTwo  = mongoCRUD
+        List<Double> resultTwo = mongoCRUD
                 .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
                         period,
                         "startsAt",
@@ -254,6 +265,7 @@ public class Main {
 
         return takeAvg(resultOne, resultTwo);
     }
+
     public static List<Double> takeAvg(List<Double> arOne, List<Double> arTwo) {
         List<Double> avg = new LinkedList<>();
         for (int i = 0; i < arOne.size(); i++) {
@@ -261,9 +273,11 @@ public class Main {
         }
         return avg;
     }
-    public static Price priceObjectBuild(Price.PriceBuilder builder){
+
+    public static Price priceObjectBuild(Price.PriceBuilder builder) {
         return builder.build();
     }
+
     //mayb a private function of some thing
     public static void mACDBuilder(Price.PriceBuilder builder, MongoCRUD mongoCRUD) {
 
@@ -284,6 +298,7 @@ public class Main {
                 .shortMACDPeriod(twelveDayPeriod)
                 .longerMACDPeriod(twentySixDayPeriod);
     }
+
     public static Price.PriceBuilder priceBuilderInit(Double smoothing) {
         return Price.builder().smoothing(smoothing);
     }
@@ -299,10 +314,13 @@ public class Main {
                 .dateLimit(LocalDateTime.now().plusHours(24));
         return priceObjectBuild(priceBuilder);
     }
-    pulbic static HttpResponse<String>
+}
+    /* pulbic static HttpResponse<String>
 response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
         responseCode = response.statusCode();
         } catch (Exception e) {
         System.out.println("IO Exception : " + e + "\n" + "response: " + responseCode);
         }
         }
+
+     */

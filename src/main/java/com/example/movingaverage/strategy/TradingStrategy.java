@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 public class TradingStrategy {
-    public Price priceObj;;
+    public Price priceObj;
     protected BigDecimal profit;
     protected BigDecimal buy = new BigDecimal(0);
     protected BigDecimal sell; // If it says not initialized try setting to zero
