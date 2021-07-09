@@ -36,35 +36,37 @@ public class Main {
         MongoCRUD mongoCRUD = MongoCRUD.getInstance();
         Map<Object, Object> liveMarketData;
         boolean runMode = false;
+        Deque<String> commandHistory = new ArrayDeque<>(10);
         //Global.quant = .0400000; hard coded to avoid accidental purchase
         // Insert this into the prices value for the candle tick function Double.valueOf(liveMarketData.get("Last").toString()))
         System.out.println("The commands are as following; " +
                 "\n boot : This will start the bot if the config is set " +
                 "\n market\\s?.*=(\\w|\\D|\\S){2,6}$ : this will bind a market combination to a session.\n" +
                 "\n sync\\s?.*(0-3)$ : this will set the length of the session candle length\n");
-        // Use recursive function mayb?
-        //to set up the configuration you will issue a series of commands these can be changed during runtime
-        if (sc.hasNext("^boot$")) {
-            Price.PriceBuilder builder = priceBuilderInit(1.0);
-            boot(mongoCRUD, sc, builder);
-        }
-        // You are able to switch markets
-        if (sc.hasNext("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
-            marketPivot(mongoCRUD, sc);
-            // Calculate MACD
-            PriceObjectSession.sessionFetcher = DataFetch.getNewInstance();
-        }
-        // You are able to switch candle sync modes
-        if (sc.hasNext("^sync\\s?.*(0-3)$")) {
-            try {
+        // Boot up
+        while(true) {
+            commandHistory.push(sc.next());
+            if (commandHistory.peek().matches("^boot$")) {
+                Price.PriceBuilder builder = priceBuilderInit(1.0);
+                boot(mongoCRUD, sc, builder);
+            }
+            // You are able to switch markets
+            if (commandHistory.peek().matches("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
+                marketPivot(mongoCRUD, sc);
+                PriceObjectSession.sessionFetcher = DataFetch.getNewInstance();
+            }
+            // You are able to switch candle sync modes
+            if (commandHistory.peek().matches("^sync\\s?.*(0-3)$")) {
                 dropDB(mongoCRUD);
                 PriceObjectSession.calcStratInput = sc.toString().split("\\d")[0];
                 setHistoricalData(mongoCRUD);
-            } catch (Exception e) {
-                System.out.println("exception on thread sleep" + Arrays.toString(e.getStackTrace()));
+            }
+            if (commandHistory.peek().matches("^run$")) {
+
             }
         }
     }
+    // could do above with http requests
 
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
         dropDB(mongoCRUD);
