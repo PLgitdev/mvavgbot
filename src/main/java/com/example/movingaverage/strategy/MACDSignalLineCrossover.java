@@ -15,6 +15,9 @@ public class MACDSignalLineCrossover extends TradingStrategy {
     boolean sellBidMode = true;
     boolean buyBidMode = false;
     boolean hold;
+    double lastDouble = Double.parseDouble(liveMarketData.get("Last").toString());
+    double askDouble = Double.parseDouble(liveMarketData.get("Ask").toString());
+    double bidDouble = Double.parseDouble(liveMarketData.get("Bid").toString());
     private MACDSignalLineCrossover (Price priceObj, Map<Object, Object> liveMarketData) {
         super();
         this.priceObj = priceObj;
@@ -26,15 +29,14 @@ public class MACDSignalLineCrossover extends TradingStrategy {
         /*  If you want to check every iteration
          liveMarketData.forEach( (key,value) -> System.out.println(key + ":"+  value)); */
         // Might have to go back to Wrappers after live testing
-        double lastDouble = Double.parseDouble(liveMarketData.get("Last").toString());
-        double askDouble = Double.parseDouble(liveMarketData.get("Ask").toString());
-        double bidDouble = Double.parseDouble(liveMarketData.get("Bid").toString());
+
+    public void profitStatus() {
         System.out.println(liveMarketData.get("Last") + "\n" +
                 "Total percentage gain/loss : " + this.profitPercentageTotals + "\n" + "Bank : "
                 + (Global.quant + (Global.quant * (profitPercentageTotals) / 100d)));
+    }
         // Check average inequality or add more indicators boolean array?
         boolean buyMode = priceObj.validMACDCrossover();
-        System.out.println(buyMode);
         int responseCode = 0;
         /* If buy mode is true and we have not yet placed an order (one order at a time FOK) we start
            trying to enter the market based upon our programed indicators and the current
@@ -47,60 +49,60 @@ public class MACDSignalLineCrossover extends TradingStrategy {
            to the server at different prices based on the best possible entry or exit for the
            market.
          */
-        if (buyMode && !successfulBuy) {
-            if (askDouble <= lastDouble) {
-                buy = BigDecimal.valueOf(askDouble);
-                System.out.println("Take the ask at " + buy);
-                try {
-                    HttpResponse<String> response
-                            = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                    responseCode = response.statusCode();
-                } catch (Exception e) {
-                    System.out.println("IO Exception : " + e + "\n" + "response: " + responseCode);
-                }
-            } else {
-                buy = BigDecimal.valueOf(bidDouble);
-                buyBidMode = true;
-            }
-            System.out.println("BUY at " + buy);
-            liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
-            //maybe use response = 0?
-            if (buyBidMode && responseCode != 201) {
-                buy = buy.setScale(8, RoundingMode.HALF_UP);
-                try {
-                    if (buy.doubleValue() >= askDouble) {
-                        buy = BigDecimal.valueOf(askDouble).add(BigDecimal.valueOf(0.00000002));
-                        System.out.println("add to the ask for " + buy);
-                    }
-                    if (buy.doubleValue() > lastDouble) {
-                        buy = BigDecimal.valueOf(lastDouble)
-                                .add(BigDecimal.valueOf(0.00000002));
-                        System.out.println("Take the last at " + buy);
-                    } else {
-                        buy = BigDecimal.valueOf(askDouble);
-                        System.out.println("Take the ask at " + buy);
-                    }
+    public void setBuyBidMode() {
+        // if (buyMode && !successfulBuy)
+        if (this.askDouble <= this.lastDouble) {
+            buy = BigDecimal.valueOf(this.askDouble);
+            System.out.println("Take the ask at " + buy);
+        } else {
+            buy = BigDecimal.valueOf(bidDouble);
+            this.buyBidMode = true;
+        }
+        System.out.println("BUY Attempt at " + buy);
+        liveMarketData.forEach((key, value) -> System.out.println(key + ":" + value));
+    }
 
-                    HttpResponse<String> response
-                            = sendOrder(createOrder(buy.doubleValue(), "BUY"));
-                    responseCode = response.statusCode();
-                } catch (IOException e) {
-                    System.out.print("There was an IOException " + e + "\n" + "response : " +
-                            responseCode);
+    public boolean isBuyBidMode() {
+        return buyBidMode;
+    }
+    public void buyResponseValidation() {
+        if (buyBidMode && responseCode != 201) {
+            buy = buy.setScale(8, RoundingMode.HALF_UP);
+            try {
+                if (buy.doubleValue() >= askDouble) {
+                    buy = BigDecimal.valueOf(askDouble).add(BigDecimal.valueOf(0.00000002));
+                    System.out.println("add to the ask for " + buy);
                 }
-            }
-            if (responseCode == 201) {
-                //buyMode = false;
-                successfulBuy = true;
-                buyBidMode = false;
-                System.out.println("Successful Buy 201 at " + buy + "\n" +
-                        "this is the response " + responseCode);
-                responseCode = 0;
+                if (buy.doubleValue() > lastDouble) {
+                    buy = BigDecimal.valueOf(lastDouble)
+                            .add(BigDecimal.valueOf(0.00000002));
+                    System.out.println("Take the last at " + buy);
+                } else {
+                    buy = BigDecimal.valueOf(askDouble);
+                    System.out.println("Take the ask at " + buy);
+                }
+
+                HttpResponse<String> response
+                        = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+                responseCode = response.statusCode();
+            } catch (IOException e) {
+                System.out.print("There was an IOException " + e + "\n" + "response : " +
+                        responseCode);
             }
         }
+        if (responseCode == 201) {
+            //buyMode = false;
+            successfulBuy = true;
+            buyBidMode = false;
+            System.out.println("Successful Buy 201 at " + buy + "\n" +
+                    "this is the response " + responseCode);
+            responseCode = 0;
+        }
+
+    }
         if (successfulBuy && lastDouble <
-                //sensitivity
-                buy.subtract(buy.multiply(BigDecimal.valueOf(0.025))).doubleValue()) {
+            //sensitivity
+            buy.subtract(buy.multiply(BigDecimal.valueOf(0.025))).doubleValue()) {
             sell = BigDecimal.valueOf(bidDouble);
             try {
                 HttpResponse<String> response = sendOrder(sellRoutine(sell, bidDouble));

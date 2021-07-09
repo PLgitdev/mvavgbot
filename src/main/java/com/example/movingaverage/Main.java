@@ -299,4 +299,10 @@ public class Main {
                 .dateLimit(LocalDateTime.now().plusHours(24));
         return priceObjectBuild(priceBuilder);
     }
-}
+    pulbic static HttpResponse<String>
+response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
+        responseCode = response.statusCode();
+        } catch (Exception e) {
+        System.out.println("IO Exception : " + e + "\n" + "response: " + responseCode);
+        }
+        }
