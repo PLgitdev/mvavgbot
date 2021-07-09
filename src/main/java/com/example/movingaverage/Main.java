@@ -178,7 +178,7 @@ public class Main {
         Global.mTwo = marketSplit[1].toUpperCase();
 
     }
-    public static void runStrategy() {
+    public static void runStrategy(MongoCRUD mongoCRUD, Price priceObj) throws IOException {
         BigDecimal buy = new BigDecimal(0);
         BigDecimal sell; // If it says not initialized try setting to zero
         double profitPercentageTotals = 0.0;
@@ -187,7 +187,7 @@ public class Main {
         boolean buyBidMode = false;
         boolean hold;
         // Fetch the data
-        liveMarketData = fetcher.marketDataFetcher();
+        Map<Object, Object> liveMarketData = PriceObjectSession.sessionFetcher.marketDataFetcher();
         Thread.sleep(Global.rateLimit);
         // Set values to the price object
         priceObj.setPrices(Double.valueOf(liveMarketData.get("Last").toString()));
