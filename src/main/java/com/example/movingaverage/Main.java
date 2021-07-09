@@ -67,7 +67,7 @@ public class Main {
 
             //to set up the configuration you will issue a series of commands these can be changed during runtime
             if (sc.hasNext("^boot$")) {
-                boot(mongoCRUD, sc);
+                boot(mongoCRUD, sc, priceBuilder);
             }
             // You are able to switch markets
             if (sc.hasNext("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
@@ -91,15 +91,6 @@ public class Main {
                 }
             }
         }
-    }
-    //Optimize this with a binary sum or statistics this needs to change
-    public static List<Double> takeAvg(List<Map<?, ?>> maps,
-                                        List<Double> arOne, List<Double> arTwo) {
-        List<Double> avg = new LinkedList<>();
-        for (int i = 0; i < maps.size(); i++) {
-            avg.add((arOne.get(i) + arTwo.get(i)) / 2);
-        }
-        return avg;
     }
 
     public static Transaction createOrder(Double limit, String direction) throws MalformedURLException {
@@ -355,7 +346,7 @@ public class Main {
             }
         }
     }
-    public static void boot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
+    public static void boot(MongoCRUD mongoCRUD, Scanner sc, Price.PriceBuilder builder) throws IOException, InterruptedException {
         System.out.println("Welcome please enter a candle length" +
                 " 0 = MINUTE_1, 1 = MINUTE_5, 2 = HOUR_1, 3 = DAY_1");
         //candle length function
@@ -371,111 +362,26 @@ public class Main {
         System.out.println("You have entered an entry too short, or have forgotten a comma" +
                 ", please enter your market");
         resetHistoricalData(mongoCRUD);
+        querySwitchAssembler(PriceObjectSession.calcStratInput, mongoCRUD, builder);
 
     }
     public static void resetHistoricalData(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
         ArrayList<Map<Object, Object>> historicalData = fetchHistoricalDataByMarket(DataFetch.getNewInstance(), sync(PriceObjectSession.calcStratInput));
         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
     }
-    public void querySwitch(String calculationStrategy, MongoCRUD m) {
+    public static void querySwitchAssembler(String calculationStrategy, MongoCRUD mongoCRUD, Price.PriceBuilder builder) {
         switch (calculationStrategy) {
             case "0":
-                // function ?
-                List<Map<?, ?>> shorterDaysDataHigh = mongoCRUD
-                        .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                                Global.shortDaysInput - 1,
-                                "startsAt",
-                                "high");
-                List<Map<?, ?>> shorterDaysDataLow = mongoCRUD
-                        .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                                Global.shortDaysInput - 1,
-                                "startsAt",
-                                "low");
-                List<Map<?, ?>> longerDaysDataHigh = mongoCRUD
-                        .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                                Global.longDaysInput - 1,
-                                "startsAt",
-                                "high");
-                List<Map<?, ?>> longerDaysDataLow = mongoCRUD
-                        .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                                Global.longDaysInput - 1,
-                                "startsAt",
-                                "low");
-
-                // Has to be a better way to do this parsing on another day
-                ArrayList<Double> shorterDaysDataHighD = new ArrayList<>();
-                ArrayList<Double> shorterDaysDataLowD = new ArrayList<>();
-                ArrayList<Double> longerDaysDataHighD = new ArrayList<>();
-                ArrayList<Double> longerDaysDataLowD = new ArrayList<>();
-                shorterDaysDataHigh.forEach((map) ->
-                        shorterDaysDataHighD.add(Double.valueOf((String) map.get("high"))));
-                shorterDaysDataLow.forEach((map) ->
-                        shorterDaysDataLowD.add(Double.valueOf((String) map.get("low"))));
-                longerDaysDataHigh.forEach((map) ->
-                        longerDaysDataHighD.add(Double.valueOf((String) map.get("high"))));
-                longerDaysDataLow.forEach((map) ->
-                        longerDaysDataLowD.add(Double.valueOf((String) map.get("low"))));
-                priceBuilder.priceShorter(takeAvg(shorterDaysDataHigh,
-                        shorterDaysDataHighD, shorterDaysDataLowD));
-                priceBuilder.priceLonger(takeAvg(longerDaysDataHigh,
-                        longerDaysDataHighD, longerDaysDataLowD));
+                builder.priceShorter(dayDataAggregation("high", "low", mongoCRUD, PriceObjectSession.shortDaysInput));
+                builder.priceLonger(dayDataAggregation("high", "low", mongoCRUD, PriceObjectSession.longDaysInput));
                 break;
             case "1":
-                List<Map<?, ?>> shorterDaysDataClose = mongoCRUD
-                        .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                                Global.shortDaysInput - 1,
-                                "startsAt",
-                                "close");
-                List<Map<?, ?>> shorterDaysDataOpen = mongoCRUD
-                        .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                                Global.shortDaysInput - 1,
-                                "startsAt",
-                                "open"
-                        );
-                List<Map<?, ?>> longerDaysDataClose = mongoCRUD
-                        .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                                Global.longDaysInput - 1,
-                                "startsAt",
-                                "close"
-                        );
-                List<Map<?, ?>> longerDaysDataOpen = mongoCRUD
-                        .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                                Global.longDaysInput - 1,
-                                "startsAt",
-                                "open"
-                        );
-                shorterDaysDataOpen.forEach((map) ->
-                        shorterDaysDataOpenD.add(Double.valueOf((String) map.get("open"))));
-                shorterDaysDataClose.forEach((map) ->
-                        shorterDaysDataCloseD.add(Double.valueOf((String) map.get("close"))));
-                longerDaysDataOpen.forEach((map) ->
-                        longerDaysDataOpenD.add(Double.valueOf((String) map.get("open"))));
-                longerDaysDataClose.forEach((map) ->
-                        longerDaysDataCloseD.add(Double.valueOf((String) map.get("close"))));
-                priceBuilder.priceShorter(takeAvg(shorterDaysDataOpen, shorterDaysDataOpenD, shorterDaysDataCloseD));
-                priceBuilder.priceLonger(takeAvg(longerDaysDataOpen, longerDaysDataOpenD, longerDaysDataCloseD));
+                builder.priceShorter(dayDataAggregation("open", "close", mongoCRUD, PriceObjectSession.shortDaysInput));
+                builder.priceLonger(dayDataAggregation("open", "close", mongoCRUD, PriceObjectSession.longDaysInput));
                 break;
             case "2":
-                List<Double> pricesS = new ArrayList<>();
-                List<Double> pricesL = new ArrayList<>();
-                shorterDaysDataClose = mongoCRUD
-                        .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                                Global.shortDaysInput - 1,
-                                "startsAt",
-                                "close"
-                        );
-                longerDaysDataClose = mongoCRUD
-                        .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                                Global.longDaysInput - 1,
-                                "startsAt",
-                                "close"
-                        );
-                shorterDaysDataClose.forEach((map) ->
-                        pricesS.add(Double.valueOf((String) map.get("close"))));
-                longerDaysDataClose.forEach((map) ->
-                        pricesL.add(Double.valueOf((String) map.get("close"))));
-                priceBuilder.priceShorter(pricesS);
-                priceBuilder.priceLonger(pricesL);
+                builder.priceShorter(dayDataAggregation("close", "close", mongoCRUD, PriceObjectSession.shortDaysInput));
+                builder.priceLonger(dayDataAggregation("close", "close", mongoCRUD, PriceObjectSession.longDaysInput));
                 break;
         }
     }
@@ -508,6 +414,28 @@ public class Main {
     public static void dropDB(MongoCRUD mongoCRUD) {
         mongoCRUD.deleteAllMarketData(Global.MARKET_SUMMARY);
         mongoCRUD.deleteAllMarketData(Global.HISTORICAL_DATA);
+    }
+    public static List<Double> dayDataAggregation(String projectionOne, String projectionTwo, MongoCRUD mongoCRUD, int period) {
+
+        List<Double> resultOne = mongoCRUD
+                .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
+                        period,
+                        "startsAt",
+                        projectionOne);
+        List<Double> resultTwo  = mongoCRUD
+                .retrieveMarketDataByDays(Global.HISTORICAL_DATA,
+                        period,
+                        "startsAt",
+                        projectionTwo);
+
+        return takeAvg(resultOne, resultTwo);
+    }
+    public static List<Double> takeAvg(List<Double> arOne, List<Double> arTwo) {
+        List<Double> avg = new LinkedList<>();
+        for (int i = 0; i < arOne.size(); i++) {
+            avg.add((arOne.get(i) + arTwo.get(i)) / 2);
+        }
+        return avg;
     }
 }
 
