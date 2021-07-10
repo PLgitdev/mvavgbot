@@ -118,11 +118,13 @@ public class Main {
             Double lastDouble, Double askDouble, Double bidDouble) throws IOException, InterruptedException {
 
         MACDSignalLineCrossover signalLineCrossoverStrategy =
-                MACDSignalLineCrossover
-                        .createMACDSignalLineCrossoverStrategy(
-                                PriceObjectSession.currentPriceObject, lastDouble, askDouble, bidDouble
-                        );
+            MACDSignalLineCrossover
+                .createMACDSignalLineCrossoverStrategy(
+                    PriceObjectSession.currentPriceObject, lastDouble, askDouble, bidDouble
+                );
+
         signalLineCrossoverStrategy.setBuyBidMode();
+
         while (!PriceObjectSession.successfulBuy) {
             PriceObjectSession.successfulBuy = signalLineCrossoverStrategy
                     .buyResponseHandling(sendOrder(createOrder(
