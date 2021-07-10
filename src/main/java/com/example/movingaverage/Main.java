@@ -95,11 +95,15 @@ public class Main {
 
     // Frontend automation code
     public static void runCommand(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
+
         PriceObjectSession.currentPriceObject.init();
+
         Map<Object, Object> polledData = poll();
+
         double lastDouble = Double.parseDouble(polledData.get("Last").toString());
         double askDouble = Double.parseDouble(polledData.get("Ask").toString());
         double bidDouble = Double.parseDouble(polledData.get("Bid").toString());
+
         saveMarketPoll(polledData, mongoCRUD);
         candleTick(PriceObjectSession.currentPriceObject, Double.valueOf(polledData.get("last").toString()));
         //function check for what type of indicator is happening
@@ -108,9 +112,11 @@ public class Main {
         }
     }
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
+
         dropDB(mongoCRUD);
         marketSelect(sc);
         setHistoricalData(mongoCRUD);
+
         PriceObjectSession.currentPriceObject = priceCreator(mongoCRUD, priceBuilderInit(1.0));
     }
 
@@ -145,7 +151,9 @@ public class Main {
     }
 
     public static HttpResponse<String> sendOrder(Transaction order) throws IOException, InterruptedException {
+
         HttpResponse<String> response = order.send();
+
         if (response.statusCode() == 201) {
             System.out.println("Successful order");
         }
@@ -154,15 +162,20 @@ public class Main {
         } else {
             System.out.println("Response not 201: " + response);
         }
+
         Thread.sleep(1000);
+
         return response;
     }
 
     public static BigDecimal fixSell(Double bidDouble) {
+
         BigDecimal sell = BigDecimal.valueOf(bidDouble)
                 .add(BigDecimal.valueOf(0.00000005));
+
         System.out.println("The sell was calculated lower than the bid, " + "\n" +
                 "sell : " + sell);
+
         return sell;
     }
 
