@@ -1,10 +1,14 @@
 package com.example.movingaverage.DAO;
 
+import com.mongodb.Block;
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -43,12 +47,12 @@ public class MongoCRUD {
     }
 
 
-    public List<Map<?, ?>> retrieveMarketDataByDays(String collection, int days, String q, String p) {
-        List<Map<?, ?>> marketDataCollection = new LinkedList<>(){};
+    public List<Double> retrieveMarketDataByDays(String collection, int days, String q, String p) {
+        List<Double> marketDataCollection = new ArrayList<>(){};
         MongoCollection<Document> dbCollection = db.getCollection(collection);
-        dbCollection .find(gte(q, now.minusDays(days).toString()))
-            .projection(include(p))
-            .forEach((Consumer<? super Document>) marketDataCollection::add);
+        FindIterable<Document> iterableDocument= dbCollection.find(gte(q, now.minusDays(days).toString()))
+            .projection(include(p));
+        iterableDocument.forEach((Block<? super Document>) (value) -> marketDataCollection.add((Double) value.get(p)));
         return marketDataCollection;
 
     }
