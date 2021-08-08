@@ -5,7 +5,7 @@ import com.example.movingaverage.Model.Price;
 import java.math.BigDecimal;
 import java.util.Map;
 
-public class TradingStrategy {
+public abstract class TradingStrategy {
     public Price priceObj;
     protected BigDecimal profit;
     protected BigDecimal buy = new BigDecimal(0);
