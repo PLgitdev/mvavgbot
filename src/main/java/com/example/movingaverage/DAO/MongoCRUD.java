@@ -52,7 +52,8 @@ public class MongoCRUD {
         MongoCollection<Document> dbCollection = db.getCollection(collection);
         FindIterable<Document> iterableDocument= dbCollection.find(gte(q, now.minusDays(days).toString()))
             .projection(include(p));
-        iterableDocument.forEach((Block<? super Document>) (value) -> marketDataCollection.add((Double) value.get(p)));
+        iterableDocument.forEach((Block<? super Document>) (value) -> marketDataCollection.add(
+                Double.valueOf(value.get(p).toString())));
         return marketDataCollection;
 
     }

@@ -5,7 +5,8 @@ import com.example.movingaverage.Model.Price;
 
 import java.util.Map;
 
-public class PriceObjectSession {
+public class PriceSession {
+    public static String candleType;
     public static int candleLength;
     public static int shortDaysInput;
     public static int longDaysInput;
@@ -14,4 +15,6 @@ public class PriceObjectSession {
     public static boolean buyMode;
     public static Price currentPriceObject;
     public static boolean successfulBuy;
+    public static String mOne;
+    public static String mTwo;
 }

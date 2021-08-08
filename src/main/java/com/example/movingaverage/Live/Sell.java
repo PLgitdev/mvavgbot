@@ -1,6 +1,7 @@
 package com.example.movingaverage.Live;
 
 import com.example.movingaverage.Global;
+import com.example.movingaverage.session.PriceSession;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -12,7 +13,7 @@ public class Sell extends Transaction {
         super();
         this.content = new HashMap<>();
         this.ceiling = Global.quant;
-        this.content.put("marketSymbol", Global.mTwo + "-" + Global.mOne);
+        this.content.put("marketSymbol", PriceSession.mTwo + "-" + PriceSession.mOne);
         this.content.put("direction", direction);
         this.content.put("type", type);
         this.content.put("quantity", "0.00000000");

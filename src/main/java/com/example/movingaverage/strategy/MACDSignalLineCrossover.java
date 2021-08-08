@@ -2,12 +2,11 @@ package com.example.movingaverage.strategy;
 
 import com.example.movingaverage.Global;
 import com.example.movingaverage.Model.Price;
-import com.example.movingaverage.session.PriceObjectSession;
+import com.example.movingaverage.session.PriceSession;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.http.HttpResponse;
-import java.util.Map;
 
 /* If buy mode is true and we have not yet placed an order (one order at a time FOK) we start
    trying to enter the market based upon our programed indicators and the current
@@ -38,7 +37,7 @@ public class MACDSignalLineCrossover extends TradingStrategy {
 
     private MACDSignalLineCrossover(Price priceObj, Double ask, Double bid, Double last) {
         super();
-        this.buyMode = PriceObjectSession.buyMode;
+        this.buyMode = PriceSession.buyMode;
         this.priceObj = priceObj;
         this.lastDouble = last;
         this.askDouble = ask;
@@ -50,7 +49,7 @@ public class MACDSignalLineCrossover extends TradingStrategy {
     }
 
     public void setBuyMode() {
-        this.buyMode = PriceObjectSession.buyMode;
+        this.buyMode = PriceSession.buyMode;
     }
 
     public void profitStatus() {

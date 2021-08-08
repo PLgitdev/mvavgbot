@@ -3,6 +3,8 @@ package com.example.movingaverage.Live;
 
 import com.example.movingaverage.Global;
 import java.io.IOException;
+
+import com.example.movingaverage.session.PriceSession;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import java.util.*;
@@ -17,12 +19,12 @@ public class DataFetch {
     private static DataFetch soleInstanceDataFetch;
 
     private DataFetch() {
-        this.mOne = Global.mOne;
-        this.mTwo = Global.mTwo;
+        this.mOne = PriceSession.mOne;
+        this.mTwo = PriceSession.mTwo;
     }
 
     public static DataFetch getNewInstance() {
-        return soleInstanceDataFetch;
+        return new DataFetch();
     }
 
     public Map<Object, Object> marketDataFetcher() throws IOException {
