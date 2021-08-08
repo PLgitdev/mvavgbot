@@ -128,8 +128,8 @@ public class Main {
 
         signalLineCrossoverStrategy.setBuyBidMode();
 
-        while (!PriceObjectSession.successfulBuy) {
-            PriceObjectSession.successfulBuy = signalLineCrossoverStrategy
+        System.out.println("Waiting for a buy");
+        while (!signalLineCrossoverStrategy
                     .buyResponseHandling(sendOrder(createOrder(
                             signalLineCrossoverStrategy.setBuyBidMode().doubleValue(), "buy"
                     ))) ?
@@ -137,9 +137,11 @@ public class Main {
                     :
                     signalLineCrossoverStrategy.buyResponseHandling(sendOrder(createOrder(
                             signalLineCrossoverStrategy.buyGate().doubleValue(), "buy"
-                    )));
-            System.out.println("Waiting for a buy....");
+                    ))) // || buyTimeout()
+        ) {
+            System.out.print(".");
         }
+        PriceObjectSession.successfulBuy = true;
     }
     public static Transaction createOrder(Double limit, String direction) throws MalformedURLException {
         return direction.equalsIgnoreCase("Buy") ?
