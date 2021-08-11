@@ -81,35 +81,27 @@ public class Main {
         }
     }
 
-    public static class runCommand() implements Runnable{
+    // Implement threading
+    public static void runCommand(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
 
-        private MongoCRUD mongoCRUD;
-        private Map<Object, Object> polledData;
-        private TradingStrategy tradingStrategy;
+        Price snapShot = PriceSession.currentPriceObject;
+        Map<Object, Object> polledData = poll();
 
-        @Override
-        public void run() {
-            PriceSession.currentPriceObject.init();
+        double lastDouble = Double.parseDouble(polledData.get("Last").toString());
+        double askDouble = Double.parseDouble(polledData.get("Ask").toString());
+        double bidDouble = Double.parseDouble(polledData.get("Bid").toString());
 
-            Map<Object, Object> polledData = poll();
+        snapShot.priceListener(lastDouble);
 
-            double lastDouble = Double.parseDouble(polledData.get("Last").toString());
-            double askDouble = Double.parseDouble(polledData.get("Ask").toString());
-            double bidDouble = Double.parseDouble(polledData.get("Bid").toString());
-
-            saveMarketPoll(polledData, mongoCRUD);
-
-            if (candleCheck(LocalDateTime.now())) {
-                candleTick(PriceSession.currentPriceObject, Double.valueOf(polledData.get("last").toString()));
-            }
-
-            //function check for what type of indicator is happening
-            if (PriceSession.currentPriceObject.validMACDCrossover()) {
-                runMACDSignalLineCrossoverStrategy(lastDouble, askDouble, bidDouble);
-                // You must run the trading abstracted trading strategy basically make Trading strat runnable
-
-            }
-
+        snapShot.init();
+        saveMarketPoll(polledData, mongoCRUD);
+        if (candleCheck(LocalDateTime.now())) {
+            candleTick(snapShot, Double.valueOf(lastDouble));
+        }
+        //function check for what type of indicator is happening
+        if (PriceSession.currentPriceObject.validMACDCrossover()) {
+            // Possible abstract factory or string based factory
+            runMACDSignalLineCrossoverStrategy(lastDouble, askDouble, bidDouble);
         }
     }
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {

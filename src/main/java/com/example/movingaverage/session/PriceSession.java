@@ -3,8 +3,6 @@ package com.example.movingaverage.session;
 import com.example.movingaverage.Live.DataFetch;
 import com.example.movingaverage.Model.Price;
 
-import java.util.Map;
-
 public class PriceSession {
     public static String candleType;
     public static int candleLength;

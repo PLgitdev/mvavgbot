@@ -37,6 +37,7 @@ import java.util.*;
 
 public class Price {
     private Double smoothing;
+    // A better way to handle current price in the future
     private Double currentPrice;
     private Double avgShorter;
     private Double avgLonger;
@@ -54,6 +55,10 @@ public class Price {
     private List<Double> twentySixDayRibbons;
     private List<Double> shortMACDPeriod;
     private List<Double> longerMACDPeriod;
+
+    public void priceListener(Double currentPrice) {
+        this.currentPrice = currentPrice;
+    }
 
     public void init() {
         //To calculate EMA you must use the SMA using close of last period as the initial value
