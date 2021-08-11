@@ -8,6 +8,7 @@ import com.example.movingaverage.Live.Transaction;
 import com.example.movingaverage.Model.Price;
 import com.example.movingaverage.session.PriceSession;
 import com.example.movingaverage.strategy.MACDSignalLineCrossover;
+import com.example.movingaverage.strategy.TradingStrategy;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -80,21 +81,35 @@ public class Main {
         }
     }
 
-    public static void runCommand(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
+    public static class runCommand() implements Runnable{
 
-        PriceSession.currentPriceObject.init();
+        private MongoCRUD mongoCRUD;
+        private Map<Object, Object> polledData;
+        private TradingStrategy tradingStrategy;
 
-        Map<Object, Object> polledData = poll();
+        @Override
+        public void run() {
+            PriceSession.currentPriceObject.init();
 
-        double lastDouble = Double.parseDouble(polledData.get("Last").toString());
-        double askDouble = Double.parseDouble(polledData.get("Ask").toString());
-        double bidDouble = Double.parseDouble(polledData.get("Bid").toString());
+            Map<Object, Object> polledData = poll();
 
-        saveMarketPoll(polledData, mongoCRUD);
-        candleTick(PriceSession.currentPriceObject, Double.valueOf(polledData.get("last").toString()));
-        //function check for what type of indicator is happening
-        if (PriceSession.currentPriceObject.validMACDCrossover()) {
-            runMACDSignalLineCrossoverStrategy(lastDouble, askDouble, bidDouble);
+            double lastDouble = Double.parseDouble(polledData.get("Last").toString());
+            double askDouble = Double.parseDouble(polledData.get("Ask").toString());
+            double bidDouble = Double.parseDouble(polledData.get("Bid").toString());
+
+            saveMarketPoll(polledData, mongoCRUD);
+
+            if (candleCheck(LocalDateTime.now())) {
+                candleTick(PriceSession.currentPriceObject, Double.valueOf(polledData.get("last").toString()));
+            }
+
+            //function check for what type of indicator is happening
+            if (PriceSession.currentPriceObject.validMACDCrossover()) {
+                runMACDSignalLineCrossoverStrategy(lastDouble, askDouble, bidDouble);
+                // You must run the trading abstracted trading strategy basically make Trading strat runnable
+
+            }
+
         }
     }
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
@@ -405,6 +420,30 @@ public class Main {
                 .timestamp(LocalDateTime.now())
                 .dateLimit(LocalDateTime.now().plusHours(24));
         return priceObjectBuild(priceBuilder);
+    }
+
+    public static boolean candleCheck(LocalDateTime now) {
+        boolean candleCreated = false;
+        switch (PriceSession.candleLength) {
+            case 0:
+                candleCreated = now.getSecond() == 0;
+                Global.rateLimit = 1000;
+                break;
+            case 1:
+                candleCreated = now.getMinute() % 5 == 0;
+                Global.rateLimit = 1000 * 60;
+                break;
+            case 2:
+                candleCreated = now.getHour() == 0;
+                Global.rateLimit = (1000 * 60) * 60;
+                break;
+            case 3:
+                candleCreated = now.getHour() % 24 == 0;
+                Global.rateLimit = (((1000 * 60) * 60) * 24);
+                break;
+            default:
+        }
+        return candleCreated;
     }
 }
     /* pulbic static HttpResponse<String>
