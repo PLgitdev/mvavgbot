@@ -103,7 +103,7 @@ public class Main {
             // Possible abstract factory or string based factory
             runMACDSignalLineCrossoverStrategy(lastDouble, askDouble, bidDouble);
         }
-        long elapsedTime = (Global.start.minusNanos(LocalDateTime.now().getNano()).getNano()) * 1000L;
+        long elapsedTime = (Global.start.minusNanos(LocalDateTime.now().getNano()).getNano()) / 1000000L;
         Thread.sleep(Global.rateLimit - elapsedTime);
     }
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
@@ -423,7 +423,8 @@ public class Main {
                 //it takes too long to run the program right now to check every second....
                 candleCreated = now.getSecond() == 0;
                 //check every second if it has rolled over
-                Global.rateLimit = 1000;
+                int seconds = now.getSecond() * 1000;
+                Global.rateLimit = 60000 - seconds;
                 break;
             case 1:
                 candleCreated = now.getMinute() % 5 == 0;
