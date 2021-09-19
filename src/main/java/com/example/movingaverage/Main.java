@@ -423,7 +423,8 @@ public class Main {
                 candleCreated = now.getSecond() == 0;
                 //check every second if it has rolled over
                 difference = now.getNano() / 1000000;
-                Global.rateLimit = 6000 - difference;
+                //1000
+                Global.rateLimit = 1000 - difference;
                 break;
             case 1:
                 candleCreated = (now.getMinute() == 5 || now.getMinute() == 0) && now.getSecond() == 0;
