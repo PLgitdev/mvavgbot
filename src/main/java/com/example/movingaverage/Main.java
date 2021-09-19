@@ -246,7 +246,7 @@ public class Main {
         mongoCRUD.createMarketData(polledData, Global.MARKET_SUMMARY);
     }
 
-    public static void candleTick(Price priceObj, Double prices) {
+    public static void candleTick(Price priceObj, Double prices) throws InterruptedException {
             priceObj.setPrices(prices);
             setIndicators(priceObj);
             System.out.println("The time is: " + LocalDateTime.now() + "\n Candle tick: " + priceObj.toString());
@@ -428,13 +428,13 @@ public class Main {
                 Global.rateLimit = 6000 - difference;
                 break;
             case 1:
-                candleCreated = now.getMinute() % 5 == 0;
+                candleCreated = now.getMinute() % 5 == 0 && now.getSecond() == 0;
                 //check every min if it hits a factor of 5
                 difference = now.getSecond() * 1000;
                 Global.rateLimit = 60000 - difference;
                 break;
             case 2:
-                candleCreated = now.getHour() == 0;
+                candleCreated = now.getHour() == 0 && now.getSecond() == 0;
                 //check every min if the hour has rolled over
                 difference = now.getSecond() * 1000;
                 Global.rateLimit = 60000 - difference;
