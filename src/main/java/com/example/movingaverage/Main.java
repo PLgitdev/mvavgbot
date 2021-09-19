@@ -81,7 +81,6 @@ public class Main {
         }
     }
 
-    // Implement threading
     public static void runCommand(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
 
         Price snapShot = PriceSession.currentPriceObject;
@@ -125,6 +124,7 @@ public class Main {
         signalLineCrossoverStrategy.setBuyBidMode();
 
         System.out.println("Waiting for a buy");
+        //could be a decision / binary tree
         while (!signalLineCrossoverStrategy
                     .buyResponseHandling(sendOrder(createOrder(
                             signalLineCrossoverStrategy.setBuyBidMode().doubleValue(), "buy"
@@ -213,6 +213,7 @@ public class Main {
             default:
                 throw new IllegalArgumentException();
         }
+        System.out.println("This is the candle length: " + PriceSession.candleLength);
         // Fetch historical data
         //return this function callback
         return queryParameter;
@@ -243,8 +244,10 @@ public class Main {
     }
 
     public static void candleTick(Price priceObj, Double prices) {
-        if (priceObj.getPriceLonger().size() % PriceSession.candleLength == 0 &&
-                priceObj.getPriceShorter().size() % PriceSession.candleLength == 0) {
+        boolean isShortFactor = priceObj.getPriceLonger().size() % PriceSession.candleLength == 0;
+        boolean isLongFactor = priceObj.getPriceLonger().size() % PriceSession.candleLength == 0;
+        System.out.println("Short Factor: " + isShortFactor + "Long Factor: " + isLongFactor);
+        if (isShortFactor && isLongFactor) {
             priceObj.setPrices(prices);
             setIndicators(priceObj);
             System.out.println("Candle created: \n" + priceObj.toString());
