@@ -71,12 +71,10 @@ public class Main {
             else if (last.matches("^run$")) {
                 //abstract factory
                 runCommand(mongoCRUD);
+                System.out.println("running a poll..." + LocalDateTime.now());
             }
             else if (commandHistory.size() >= 10) {
                 commandHistory.removeLast();
-            }
-            else {
-                commandHistory.push(sc.next());
             }
         }
     }
@@ -104,7 +102,7 @@ public class Main {
             runMACDSignalLineCrossoverStrategy(lastDouble, askDouble, bidDouble);
         }
         long elapsedTime = (Global.start.minusNanos(LocalDateTime.now().getNano()).getNano()) / 1000000L;
-        Thread.sleep(Global.rateLimit - elapsedTime);
+        Thread.sleep(Global.rateLimit);
     }
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
 
@@ -424,7 +422,7 @@ public class Main {
                 //it takes too long to run the program right now to check every second....
                 candleCreated = now.getSecond() == 0;
                 //check every second if it has rolled over
-                difference = now.getNano() * 100000;
+                difference = now.getNano() / 1000000;
                 Global.rateLimit = 6000 - difference;
                 break;
             case 1:
