@@ -249,7 +249,7 @@ public class Main {
     public static void candleTick(Price priceObj, Double prices) {
             priceObj.setPrices(prices);
             setIndicators(priceObj);
-            System.out.println("The time is: " + LocalDateTime.now());
+            System.out.println("The time is: " + LocalDateTime.now() + "\n Candle tick: " + priceObj.toString());
     }
 
     public static void strategySelection(){}
@@ -418,23 +418,26 @@ public class Main {
 
     public static boolean candleCheck(LocalDateTime now) {
         boolean candleCreated = false;
+        int difference;
         switch (PriceSession.candleLength) {
             case 0:
                 //it takes too long to run the program right now to check every second....
                 candleCreated = now.getSecond() == 0;
                 //check every second if it has rolled over
-                int seconds = now.getSecond() * 1000;
-                Global.rateLimit = 60000 - seconds;
+                difference = now.getSecond() * 1000;
+                Global.rateLimit = 60000 - difference;
                 break;
             case 1:
                 candleCreated = now.getMinute() % 5 == 0;
                 //check every min if it hits a factor of 5
-                Global.rateLimit = (1000 * 60);
+                difference = now.getSecond() * 1000;
+                Global.rateLimit = 60000 - difference;
                 break;
             case 2:
                 candleCreated = now.getHour() == 0;
                 //check every min if the hour has rolled over
-                Global.rateLimit = (1000 * 60) * 60;
+                difference = now.getSecond() * 1000;
+                Global.rateLimit = 60000 - difference;
                 break;
             case 3:
                 candleCreated = now.getDayOfMonth() > Global.start.getDayOfMonth();
