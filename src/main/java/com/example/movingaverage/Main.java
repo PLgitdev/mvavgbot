@@ -51,28 +51,28 @@ public class Main {
         );
         // Boot up
         commandHistory.push(sc.next());
+        if (commandHistory.peek().matches("^boot$")) {
+            Price.PriceBuilder builder = priceBuilderInit(1.0);
+            boot(mongoCRUD, sc, builder);
+        }
         while (!commandHistory.isEmpty()) {
             String last = commandHistory.peek();
-            if (last.matches("^boot$")) {
-                Price.PriceBuilder builder = priceBuilderInit(1.0);
-                boot(mongoCRUD, sc, builder);
-            }
             // You are able to switch markets
             if (last.matches("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
                 marketPivot(mongoCRUD, sc);
                 PriceSession.sessionFetcher = DataFetch.getNewInstance();
             }
             // You are able to switch candle sync modes
-            if (last.matches("^sync\\s?.*(0-3)$")) {
+            else if (last.matches("^sync\\s?.*(0-3)$")) {
                 dropDB(mongoCRUD);
                 PriceSession.candleType = sc.toString().split("\\d")[0];
                 setHistoricalData(mongoCRUD);
             }
-            if (last.matches("^run$")) {
+            else if (last.matches("^run$")) {
                 //abstract factory
                 runCommand(mongoCRUD);
             }
-            if (commandHistory.size() >= 10) {
+            else if (commandHistory.size() >= 10) {
                 commandHistory.removeLast();
             }
             else {
@@ -196,19 +196,19 @@ public class Main {
         switch (candleType) {
             case "0":
                 queryParameter = "MINUTE_1";
-                PriceSession.candleLength = 60 * candleLengthM;
+                PriceSession.candleLength = 0;
                 break;
             case "1":
                 queryParameter = "MINUTE_5";
-                PriceSession.candleLength = (60 * 5) * candleLengthM;
+                PriceSession.candleLength = 1;
                 break;
             case "2":
                 queryParameter = "HOUR_1";
-                PriceSession.candleLength = (60 * 60) * candleLengthM;
+                PriceSession.candleLength = 2;
                 break;
             case "3":
                 queryParameter = "DAY_1";
-                PriceSession.candleLength = 86400 * candleLengthM;
+                PriceSession.candleLength = 3;
                 break;
             default:
                 throw new IllegalArgumentException();
