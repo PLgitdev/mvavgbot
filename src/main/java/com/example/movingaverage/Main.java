@@ -76,7 +76,10 @@ public class Main {
             else if (commandHistory.size() >= 10) {
                 commandHistory.removeLast();
             }
-        }
+            else {
+                commandHistory.push(sc.next());
+            }
+        };
     }
 
     public static void runCommand(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
@@ -423,7 +426,6 @@ public class Main {
                 candleCreated = now.getSecond() == 0;
                 //check every second if it has rolled over
                 difference = now.getNano() / 1000000;
-                //1000
                 Global.rateLimit = 1000 - difference;
                 break;
             case 1:
