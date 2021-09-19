@@ -428,7 +428,7 @@ public class Main {
                 Global.rateLimit = 6000 - difference;
                 break;
             case 1:
-                candleCreated = now.getMinute() % 5 == 0 && now.getSecond() == 0;
+                candleCreated = (now.getMinute() == 5 || now.getMinute() == 0) && now.getSecond() == 0;
                 //check every min if it hits a factor of 5
                 difference = now.getSecond() * 1000;
                 Global.rateLimit = 60000 - difference;
