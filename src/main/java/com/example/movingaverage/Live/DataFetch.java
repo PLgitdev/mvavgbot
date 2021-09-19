@@ -27,13 +27,13 @@ public class DataFetch {
         return new DataFetch();
     }
 
-    public Map<Object, Object> marketDataFetcher() throws IOException {
+    public Map<Object, Object> marketDataFetch() throws IOException {
         String url = "https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=" + mOne + "-" + mTwo;
         String content = fetch(url);
         String[] splitContent = content.split("\\[");
         String clean = splitContent[1].replaceAll(CLEAN_REGEX, "");
         return stringToMap(clean);
-        }
+    }
 
     public LinkedList<Map<Object, Object>> historicalDataFetcher(String s) throws IOException {
         LinkedList<Map<Object,Object>> arr = new LinkedList<>();

@@ -92,6 +92,7 @@ public class Main {
 
         snapShot.priceListener(lastDouble);
 
+        // Do we need to init every time takes so long maybe check if last is boot
         snapShot.init();
         saveMarketPoll(polledData, mongoCRUD);
         if (candleCheck(LocalDateTime.now())) {
@@ -102,6 +103,8 @@ public class Main {
             // Possible abstract factory or string based factory
             runMACDSignalLineCrossoverStrategy(lastDouble, askDouble, bidDouble);
         }
+        long elapsedTime = (Global.start.minusNanos(LocalDateTime.now().getNano()).getNano()) * 1000L;
+        Thread.sleep(Global.rateLimit - elapsedTime);
     }
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
 
@@ -221,7 +224,7 @@ public class Main {
 
     public static List<Map<Object, Object>> fetchHistoricalDataByMarket(DataFetch fetcher, String queryParam)
             throws InterruptedException, IOException {
-        Thread.sleep(Global.rateLimit);
+        Thread.sleep(1000);
         return fetcher.historicalDataFetcher(queryParam);
     }
 
@@ -236,7 +239,7 @@ public class Main {
     }
 
     public static Map<Object, Object> poll() throws IOException {
-        return PriceSession.sessionFetcher.marketDataFetcher();
+        return PriceSession.sessionFetcher.marketDataFetch();
     }
 
     public static void saveMarketPoll(Map<Object, Object> polledData, MongoCRUD mongoCRUD) {
@@ -246,6 +249,7 @@ public class Main {
     public static void candleTick(Price priceObj, Double prices) {
             priceObj.setPrices(prices);
             setIndicators(priceObj);
+            System.out.println("The time is: " + LocalDateTime.now());
     }
 
     public static void strategySelection(){}
@@ -416,6 +420,7 @@ public class Main {
         boolean candleCreated = false;
         switch (PriceSession.candleLength) {
             case 0:
+                //it takes too long to run the program right now to check every second....
                 candleCreated = now.getSecond() == 0;
                 //check every second if it has rolled over
                 Global.rateLimit = 1000;
@@ -432,14 +437,12 @@ public class Main {
                 break;
             case 3:
                 candleCreated = now.getDayOfMonth() > Global.start.getDayOfMonth();
-                if (candleCreated) {
-                    Global.start = now;
-                }
                 // check every hour has the day rolled over
                 Global.rateLimit = (((1000 * 60) * 60) * 60);
                 break;
             default:
         }
+        Global.start = now;
         return candleCreated;
     }
 }
