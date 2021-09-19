@@ -434,7 +434,7 @@ public class Main {
                 Global.rateLimit = 60000 - difference;
                 break;
             case 2:
-                candleCreated = now.getHour() == 0 && now.getSecond() == 0;
+                candleCreated = now.getHour() == 0 && now.getMinute() == 0 && now.getSecond() == 0;
                 //check every min if the hour has rolled over
                 difference = now.getSecond() * 1000;
                 Global.rateLimit = 60000 - difference;
