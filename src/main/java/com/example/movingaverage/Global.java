@@ -3,8 +3,11 @@ package com.example.movingaverage;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
+import java.time.LocalDateTime;
+
 public class Global {
     // if we abstract the markets now we will affect the DAO layer as well as the price object
+    public static LocalDateTime start = null;
     public static String orderTimeInForce = "FILL_OR_KILL";
     public static double quant;
     public static String close = null;

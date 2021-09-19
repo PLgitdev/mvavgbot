@@ -34,7 +34,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         Scanner sc = new Scanner(System.in);
-        LocalDateTime start = LocalDateTime.now();
+        Global.start = LocalDateTime.now();
         MongoCRUD mongoCRUD = MongoCRUD.getInstance();
         Map<Object, Object> liveMarketData;
         boolean runMode = false;
@@ -244,14 +244,8 @@ public class Main {
     }
 
     public static void candleTick(Price priceObj, Double prices) {
-        boolean isShortFactor = priceObj.getPriceLonger().size() % PriceSession.candleLength == 0;
-        boolean isLongFactor = priceObj.getPriceLonger().size() % PriceSession.candleLength == 0;
-        System.out.println("Short Factor: " + isShortFactor + "Long Factor: " + isLongFactor);
-        if (isShortFactor && isLongFactor) {
             priceObj.setPrices(prices);
             setIndicators(priceObj);
-            System.out.println("Candle created: \n" + priceObj.toString());
-        }
     }
 
     public static void strategySelection(){}
@@ -417,24 +411,32 @@ public class Main {
         return priceObjectBuild(priceBuilder);
     }
 
+
     public static boolean candleCheck(LocalDateTime now) {
         boolean candleCreated = false;
         switch (PriceSession.candleLength) {
             case 0:
                 candleCreated = now.getSecond() == 0;
+                //check every second if it has rolled over
                 Global.rateLimit = 1000;
                 break;
             case 1:
                 candleCreated = now.getMinute() % 5 == 0;
-                Global.rateLimit = 1000 * 60;
+                //check every min if it hits a factor of 5
+                Global.rateLimit = (1000 * 60);
                 break;
             case 2:
                 candleCreated = now.getHour() == 0;
+                //check every min if the hour has rolled over
                 Global.rateLimit = (1000 * 60) * 60;
                 break;
             case 3:
-                candleCreated = now.getHour() % 24 == 0;
-                Global.rateLimit = (((1000 * 60) * 60) * 24);
+                candleCreated = now.getDayOfMonth() > Global.start.getDayOfMonth();
+                if (candleCreated) {
+                    Global.start = now;
+                }
+                // check every hour has the day rolled over
+                Global.rateLimit = (((1000 * 60) * 60) * 60);
                 break;
             default:
         }
