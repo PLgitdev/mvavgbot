@@ -424,8 +424,8 @@ public class Main {
                 //it takes too long to run the program right now to check every second....
                 candleCreated = now.getSecond() == 0;
                 //check every second if it has rolled over
-                difference = now.getSecond() * 1000;
-                Global.rateLimit = 60000 - difference;
+                difference = now.getNano() * 100000;
+                Global.rateLimit = 6000 - difference;
                 break;
             case 1:
                 candleCreated = now.getMinute() % 5 == 0;
