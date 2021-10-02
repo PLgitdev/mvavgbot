@@ -35,7 +35,6 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         Scanner sc = new Scanner(System.in);
         Global.start = LocalDateTime.now();
-        MongoCRUD mongoCRUD = MongoCRUD.getInstance();
         Map<Object, Object> liveMarketData;
         boolean runMode = false;
         Deque<String> commandHistory = new ArrayDeque<>(10);
@@ -53,13 +52,13 @@ public class Main {
         commandHistory.push(sc.next());
         if (commandHistory.peek().matches("^boot$")) {
             Price.PriceBuilder builder = priceBuilderInit(1.0);
-            boot(mongoCRUD, sc, builder);
+            boot(Global.mongoCRUD, sc, builder);
         }
         while (!commandHistory.isEmpty()) {
             String last = commandHistory.peek();
             // You are able to switch markets
             if (last.matches("^market\\s?.*(\\w|\\D|\\S){2,6}$")) {
-                marketPivot(mongoCRUD, sc);
+                marketPivot(Global.mongoCRUD, sc);
                 PriceSession.sessionFetcher = DataFetch.getNewInstance();
             }
             // You are able to switch candle sync modes
@@ -67,6 +66,7 @@ public class Main {
                 dropDB(mongoCRUD);
                 PriceSession.candleType = sc.toString().split("\\d")[0];
                 setHistoricalData(mongoCRUD);
+                commandHistory.push("run");
             }
             else if (last.matches("^run$")) {
                 //abstract factory
@@ -82,90 +82,13 @@ public class Main {
         };
     }
 
-    public static void runCommand(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
 
-        Price snapShot = PriceSession.currentPriceObject;
-        Map<Object, Object> polledData = poll();
-
-        double lastDouble = Double.parseDouble(polledData.get("Last").toString());
-        double askDouble = Double.parseDouble(polledData.get("Ask").toString());
-        double bidDouble = Double.parseDouble(polledData.get("Bid").toString());
-
-        snapShot.priceListener(lastDouble);
-
-        // Do we need to init every time takes so long maybe check if last is boot
-        snapShot.init();
-        saveMarketPoll(polledData, mongoCRUD);
-        if (candleCheck(LocalDateTime.now())) {
-            candleTick(snapShot, Double.valueOf(lastDouble));
-        }
-        //function check for what type of indicator is happening
-        if (PriceSession.currentPriceObject.validMACDCrossover()) {
-            // Possible abstract factory or string based factory
-            runMACDSignalLineCrossoverStrategy(lastDouble, askDouble, bidDouble);
-        }
-        long elapsedTime = (Global.start.minusNanos(LocalDateTime.now().getNano()).getNano()) / 1000000L;
-        Thread.sleep(Global.rateLimit);
-    }
-    private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
-
-        dropDB(mongoCRUD);
-        marketSelect(sc);
-        setHistoricalData(mongoCRUD);
-
-        PriceSession.currentPriceObject = priceCreator(mongoCRUD, priceBuilderInit(1.0));
-    }
-
-    public static void runMACDSignalLineCrossoverStrategy(
-            Double lastDouble, Double askDouble, Double bidDouble) throws IOException, InterruptedException {
-
-        MACDSignalLineCrossover signalLineCrossoverStrategy =
-                MACDSignalLineCrossover
-                        .createMACDSignalLineCrossoverStrategy(
-                                PriceSession.currentPriceObject, lastDouble, askDouble, bidDouble
-                        );
-
-        signalLineCrossoverStrategy.setBuyBidMode();
-
-        System.out.println("Waiting for a buy");
-        //could be a decision / binary tree
-        while (!signalLineCrossoverStrategy
-                    .buyResponseHandling(sendOrder(createOrder(
-                            signalLineCrossoverStrategy.setBuyBidMode().doubleValue(), "buy"
-                    ))) ?
-                    signalLineCrossoverStrategy.sellHodlSet()
-                    :
-                    signalLineCrossoverStrategy.buyResponseHandling(sendOrder(createOrder(
-                            signalLineCrossoverStrategy.buyGate().doubleValue(), "buy"
-                    ))) // || buyTimeout()
-        ) {
-            System.out.print(".");
-        }
-        PriceSession.successfulBuy = true;
-    }
     public static Transaction createOrder(Double limit, String direction) throws MalformedURLException {
         return direction.equalsIgnoreCase("Buy") ?
                 Buy.getInstance("LIMIT", limit, Global.orderTimeInForce, direction) :
                 Sell.getInstance("LIMIT", limit, Global.orderTimeInForce, direction);
     }
 
-    public static HttpResponse<String> sendOrder(Transaction order) throws IOException, InterruptedException {
-
-        HttpResponse<String> response = order.send();
-
-        if (response.statusCode() == 201) {
-            System.out.println("Successful order");
-        }
-        if (response.statusCode() == 401) {
-            System.out.println("Unauthorized 401 body is" + response.body());
-        } else {
-            System.out.println("Response not 201: " + response);
-        }
-
-        Thread.sleep(1000);
-
-        return response;
-    }
 
     public static BigDecimal fixSell(Double bidDouble) {
 
@@ -186,13 +109,6 @@ public class Main {
         return createOrder(sell.doubleValue(), "SELL");
     }
 
-    public static void setIndicators(Price priceObj) {
-        priceObj.setSMA();
-        priceObj.setSMACDEMA();
-        priceObj.setLMACDEMA();
-        priceObj.setMACD();
-        priceObj.setSignalLine();
-    }
 
     public static String sync(String candleType) {
         int candleLengthM = Global.rateLimit / 1000;
@@ -238,21 +154,6 @@ public class Main {
         PriceSession.mOne = marketSplit[0].toUpperCase();
         PriceSession.mTwo = marketSplit[1].toUpperCase();
     }
-
-    public static Map<Object, Object> poll() throws IOException {
-        return PriceSession.sessionFetcher.marketDataFetch();
-    }
-
-    public static void saveMarketPoll(Map<Object, Object> polledData, MongoCRUD mongoCRUD) {
-        mongoCRUD.createMarketData(polledData, Global.MARKET_SUMMARY);
-    }
-
-    public static void candleTick(Price priceObj, Double prices) throws InterruptedException {
-            priceObj.setPrices(prices);
-            setIndicators(priceObj);
-            System.out.println("The time is: " + LocalDateTime.now() + "\n Candle tick: " + priceObj.toString());
-    }
-
     public static void strategySelection(){}
 
     public static void boot(MongoCRUD mongoCRUD, Scanner sc, Price.PriceBuilder builder) throws IOException, InterruptedException {
@@ -346,10 +247,6 @@ public class Main {
         }
     }
 
-    public static void dropDB(MongoCRUD mongoCRUD) {
-        mongoCRUD.deleteAllMarketData(Global.MARKET_SUMMARY);
-        mongoCRUD.deleteAllMarketData(Global.HISTORICAL_DATA);
-    }
 
     public static List<Double> dayDataAggregation(String projectionOne, String projectionTwo, MongoCRUD mongoCRUD, int period) {
 
@@ -374,36 +271,14 @@ public class Main {
         }
         return avg;
     }
+    private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
 
-    public static Price priceObjectBuild(Price.PriceBuilder builder) {
-        return builder.build();
+        dropDB(mongoCRUD);
+        marketSelect(sc);
+        setHistoricalData(mongoCRUD);
+
+        PriceSession.currentPriceObject = priceCreator(mongoCRUD, priceBuilderInit(1.0));
     }
-
-    //mayb a private function of some thing
-    public static void mACDBuilder(Price.PriceBuilder builder, MongoCRUD mongoCRUD) {
-
-        List<Double> nineDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                9,
-                "startsAt",
-                "close");
-        List<Double> twelveDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                12,
-                "startsAt",
-                "close");
-        List<Double> twentySixDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                26,
-                "startsAt",
-                "close");
-
-        builder.nineDaysOfClose(nineDayPeriod)
-                .shortMACDPeriod(twelveDayPeriod)
-                .longerMACDPeriod(twentySixDayPeriod);
-    }
-
-    public static Price.PriceBuilder priceBuilderInit(Double smoothing) {
-        return Price.builder().smoothing(smoothing);
-    }
-
     public static Price priceCreator(MongoCRUD mongoCRUD, Price.PriceBuilder priceBuilder) {
         // MACD build function
         mACDBuilder(priceBuilder, mongoCRUD);
@@ -417,40 +292,10 @@ public class Main {
     }
 
 
-    public static boolean candleCheck(LocalDateTime now) {
-        boolean candleCreated = false;
-        int difference;
-        switch (PriceSession.candleLength) {
-            case 0:
-                //it takes too long to run the program right now to check every second....
-                candleCreated = now.getSecond() == 0;
-                //check every second if it has rolled over
-                difference = now.getNano() / 1000000;
-                Global.rateLimit = 1000 - difference;
-                break;
-            case 1:
-                candleCreated = (now.getMinute() == 5 || now.getMinute() == 0) && now.getSecond() == 0;
-                //check every min if it hits a factor of 5
-                difference = now.getSecond() * 1000;
-                Global.rateLimit = 60000 - difference;
-                break;
-            case 2:
-                candleCreated = now.getHour() == 0 && now.getMinute() == 0 && now.getSecond() == 0;
-                //check every min if the hour has rolled over
-                difference = now.getSecond() * 1000;
-                Global.rateLimit = 60000 - difference;
-                break;
-            case 3:
-                candleCreated = now.getDayOfMonth() > Global.start.getDayOfMonth();
-                // check every hour has the day rolled over
-                Global.rateLimit = (((1000 * 60) * 60) * 60);
-                break;
-            default:
-        }
-        Global.start = now;
-        return candleCreated;
-    }
-}
+    //mayb a private function of some thing
+
+
+
     /* pulbic static HttpResponse<String>
 response = sendOrder(createOrder(buy.doubleValue(), "BUY"));
         responseCode = response.statusCode();

@@ -23,7 +23,7 @@ public class MongoCRUD {
 
     private static MongoCRUD soleInstanceMongoCRUD;
 
-    private MongoCRUD(){
+    private MongoCRUD() {
         MongoClient mongoClient = new MongoClient("localhost", 27017);
         this.db = mongoClient.getDatabase("mvavgbotdb");
         this.now = LocalDateTime.now();
