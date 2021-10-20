@@ -29,6 +29,7 @@ import java.util.*;
  this project is currently adding an indicator RSI which will extend the period of time the bot can be left
  unmonitored and reduce the amount of experience necessary with trading to make profit.
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+// Next step is to make the Binary decision tree for strategy which has logic in the Routine object
 
 public class Main {
 
