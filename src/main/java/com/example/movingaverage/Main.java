@@ -189,7 +189,7 @@ public class Main {
     }
 
     public static void setHistoricalData(MongoCRUD mongoCRUD) throws IOException, InterruptedException {
-        List<Map<Object, Object>> historicalData = fetchHistoricalDataByMarket(PriceSession.sessionFetcher, sync(PriceSession.candleType));
+        List<Map<String, Object>> historicalData = fetchHistoricalDataByMarket(PriceSession.sessionFetcher, sync(PriceSession.candleType));
         historicalData.forEach((data) -> mongoCRUD.createMarketData(data, Global.HISTORICAL_DATA));
     }
 

@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static com.mongodb.client.model.Filters.gte;
 import static com.mongodb.client.model.Projections.include;
@@ -36,10 +37,8 @@ public class MongoCRUD {
         return soleInstanceMongoCRUD;
     }
 
-    public void createMarketData(Map<Object,Object> data, String collection) {
-       Document doc = new Document();
-       data.forEach( (key, value) -> doc.append(String.valueOf(key), value));
-       db.getCollection(collection).insertOne(doc);
+    public void createMarketData(Map<String,Object> data, String collection) {
+       db.getCollection(collection).insertOne(new Document(data));
     }
 
     public void deleteAllMarketData(String collection) {
