@@ -34,8 +34,10 @@ import java.util.*;
 @EqualsAndHashCode
 @Builder
 @Data
+
 public class Price {
     private Double smoothing;
+    // A better way to handle current price in the future
     private Double currentPrice;
     private Double avgShorter;
     private Double avgLonger;
@@ -54,11 +56,15 @@ public class Price {
     private List<Double> shortMACDPeriod;
     private List<Double> longerMACDPeriod;
 
+    public void priceListener(Double currentPrice) {
+        this.currentPrice = currentPrice;
+    }
+
     public void init() {
         //To calculate EMA you must use the SMA using close of last period as the initial value
-        Deque<Double> sMACD = new ArrayDeque<>(shortMACDPeriod);
-        Deque<Double> lMACD = new ArrayDeque<>(longerMACDPeriod);
-        Deque<Double> temp = new ArrayDeque<>();
+        Deque<Double> sMACD = new LinkedList<>(shortMACDPeriod);
+        Deque<Double> lMACD = new LinkedList<>(longerMACDPeriod);
+        Deque<Double> temp = new LinkedList<>();
         double previousShortSMA = calculateSMA(shortMACDPeriod);
         double previousLongSMA = calculateSMA(shortMACDPeriod);
         double currentLongValue;
@@ -75,8 +81,8 @@ public class Price {
         this.lMACDEMA = calculateEMA(currentPrice, previousLongSMA, smoothing, 26);
         this.twentySixDayRibbons.add(this.lMACDEMA);
 
-        //initialize the signal line
-        while (temp.size() < nineDaysOfClose.size()) {
+        //initialize the signal line.. beware the min and 5 min candle cannot hold all the data in one List
+        while (temp.size() < nineDaysOfClose.size() - 1) {
             currentShortValue = sMACD.pop();
             currentLongValue = lMACD.pop();
             value = calculateEMA(currentShortValue, sMACD.peek(), smoothing, 12) -
@@ -91,10 +97,10 @@ public class Price {
     }
 
     //Add a price every iteration individually
-    public void addPriceShorter (Double price) {
+    public void addPriceShorter(Double price) {
         this.priceShorter.add(price);
     }
-    public void addPriceLonger (Double price) {
+    public void addPriceLonger(Double price) {
         this.priceLonger.add(price);
     }
 
@@ -136,6 +142,8 @@ public class Price {
             this.signalLine.add(signal); //create a signal line
         }
     }
+    //RSI !
+
 
     //check for expired data
     public void dateLimitCheck(int x) {
@@ -222,19 +230,9 @@ public class Price {
             ", avgShorter=" + avgShorter +
             ", avgLonger=" + avgLonger +
             ", mACD=" + mACD +
-            ", sMACDEMA=" + sMACDEMA +
-            ", lMACDEMA=" + lMACDEMA +
             ", signal=" + signal +
             ", timestamp=" + timestamp +
             ", dateLimit=" + dateLimit +
-            ", priceShorter=" + priceShorter +
-            ", priceLonger=" + priceLonger +
-            ", signalLine=" + signalLine +
-            ", nineDaysOfClose=" + nineDaysOfClose +
-            ", twelveDayRibbons=" + twelveDayRibbons +
-            ", twentySixDayRibbons=" + twentySixDayRibbons +
-            ", shortMACDPeriod=" + shortMACDPeriod +
-            ", longerMACDPeriod=" + longerMACDPeriod +
             '}';
     }
 }
