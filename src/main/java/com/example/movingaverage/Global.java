@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 public class Global {
     // if we abstract the markets now we will affect the DAO layer as well as the price object
-    public static MongoCRUD mongoCRUD = MongoCRUD.getInstance();
+    public static MongoCRUD mongoCRUD;
     public static LocalDateTime start = null;
     public static String orderTimeInForce = "FILL_OR_KILL";
     public static double quant;

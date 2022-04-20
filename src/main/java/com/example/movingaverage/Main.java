@@ -6,6 +6,7 @@ import com.example.movingaverage.Live.DataFetch;
 import com.example.movingaverage.Live.Sell;
 import com.example.movingaverage.Live.Transaction;
 import com.example.movingaverage.Model.Price;
+import com.example.movingaverage.actions.Routine;
 import com.example.movingaverage.session.PriceSession;
 import com.example.movingaverage.strategy.MACDSignalLineCrossover;
 import com.example.movingaverage.strategy.TradingStrategy;
@@ -39,6 +40,7 @@ public class Main {
         Global.start = LocalDateTime.now();
         Map<Object, Object> liveMarketData;
         boolean runMode = false;
+        Routine runCommand = new Routine();
         Deque<String> commandHistory = new ArrayDeque<>(10);
         //Global.quant = .0400000; hard coded to avoid accidental purchase
         // Insert this into the prices value for the candle tick function Double.valueOf(liveMarketData.get("Last").toString()))
@@ -51,7 +53,7 @@ public class Main {
                         "\n practice : takes you to a no risk environment"
         );
         // Boot up
-        MongoCRUD mongoCRUD = MongoCRUD.getInstance();
+        Global.mongoCRUD = MongoCRUD.getInstance();
         commandHistory.push(sc.next());
         if (commandHistory.peek().matches("^boot$")) {
             Price.PriceBuilder builder = priceBuilderInit(1.0);
@@ -66,13 +68,13 @@ public class Main {
             }
             // You are able to switch candle sync modes
             else if (last.matches("^sync\\s?.*(0-3)$")) {
-                dropDB(mongoCRUD);
+                dropDB(Global.mongoCRUD);
                 PriceSession.candleType = sc.toString().split("\\d")[0];
-                setHistoricalData(mongoCRUD);
+                setHistoricalData(Global.mongoCRUD);
                 commandHistory.push("run");
             } else if (last.matches("^run$")) {
                 //abstract factory
-                runCommand(mongoCRUD);
+                runCommand.runRoutine();
                 System.out.println("running a poll..." + LocalDateTime.now());
             } else if (commandHistory.size() >= 10) {
                 commandHistory.removeLast();
@@ -326,6 +328,11 @@ public class Main {
                 .shortMACDPeriod(twelveDayPeriod)
                 .longerMACDPeriod(twentySixDayPeriod);
     }
+
+
+
+
+
 }
 
 

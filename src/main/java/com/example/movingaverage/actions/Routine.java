@@ -2,6 +2,8 @@ package com.example.movingaverage.actions;
 
 import com.example.movingaverage.DAO.MongoCRUD;
 import com.example.movingaverage.Global;
+import com.example.movingaverage.Live.Buy;
+import com.example.movingaverage.Live.Sell;
 import com.example.movingaverage.Live.Transaction;
 import com.example.movingaverage.Model.Price;
 import com.example.movingaverage.session.PriceSession;
@@ -9,6 +11,7 @@ import com.example.movingaverage.strategy.MACDSignalLineCrossover;
 import com.example.movingaverage.strategy.TradingStrategy;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,16 +21,15 @@ import java.util.Scanner;
 
 public class Routine {
     MongoCRUD dao;
-    TradingTree strategy;
 
-    private Routine() {
+    public Routine() {
         this.dao = Global.mongoCRUD;
     }
 
     public void runRoutine() throws IOException, InterruptedException {
 
         Price snapShot = PriceSession.currentPriceObject;
-        Map<Object, Object> polledData = poll();
+        Map<String, Object> polledData = poll();
 
         double lastDouble = Double.parseDouble(polledData.get("Last").toString());
         double askDouble = Double.parseDouble(polledData.get("Ask").toString());
@@ -49,11 +51,11 @@ public class Routine {
         Thread.sleep(Global.rateLimit);
     }
 
-    private Map<Object, Object> poll() throws IOException {
+    private Map<String, Object> poll() throws IOException {
         return PriceSession.sessionFetcher.marketDataFetch();
     }
 
-    private void saveMarketPoll(Map<Object, Object> polledData, MongoCRUD mongoCRUD) {
+    private void saveMarketPoll(Map<String, Object> polledData, MongoCRUD mongoCRUD) {
         mongoCRUD.createMarketData(polledData, Global.MARKET_SUMMARY);
     }
 
@@ -97,7 +99,56 @@ public class Routine {
         System.out.println("The time is: " + LocalDateTime.now() + "\n Candle tick: " + priceObj.toString());
     }
 
+    private void runMACDSignalLineCrossoverStrategy(
+            Double lastDouble, Double askDouble, Double bidDouble) throws IOException, InterruptedException {
 
+        MACDSignalLineCrossover strategy = MACDSignalLineCrossover
+                .createMACDSignalLineCrossoverStrategy
+                        (PriceSession.currentPriceObject, lastDouble, askDouble, bidDouble);
+
+        strategy.setBuyBidMode();
+
+        System.out.println("Waiting for a buy");
+        //could be a decision / binary tree
+        while (!strategy
+                .buyResponseHandling(sendOrder(createOrder(
+                        strategy.setBuyBidMode().doubleValue(), "buy"
+                ))) ?
+                strategy.sellHodlSet()
+                :
+                strategy.buyResponseHandling(sendOrder(createOrder(
+                        strategy.buyGate().doubleValue(), "buy"
+                ))) // || buyTimeout()
+        ) {
+            System.out.print(".");
+        }
+        PriceSession.successfulBuy = true;
+    }
+
+    //This goes in the binary tree
+    private HttpResponse<String> sendOrder(Transaction order) throws IOException, InterruptedException {
+
+        HttpResponse<String> response = order.send();
+
+        if (response.statusCode() == 201) {
+            System.out.println("Successful order");
+        }
+        if (response.statusCode() == 401) {
+            System.out.println("Unauthorized 401 body is" + response.body());
+        } else {
+            System.out.println("Response not 201: " + response);
+        }
+
+        Thread.sleep(1000);
+
+        return response;
+    }
+    // Duplicated in main could be abstracted
+    public static Transaction createOrder(Double limit, String direction) throws MalformedURLException {
+        return direction.equalsIgnoreCase("Buy") ?
+                Buy.getInstance("LIMIT", limit, Global.orderTimeInForce, direction) :
+                Sell.getInstance("LIMIT", limit, Global.orderTimeInForce, direction);
+    }
 
     private void setIndicators(Price priceObj) {
         priceObj.setSMA();
