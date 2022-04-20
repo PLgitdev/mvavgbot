@@ -27,7 +27,7 @@ public class DataFetch {
         return new DataFetch();
     }
 
-    public Map<Object, Object> marketDataFetch() throws IOException {
+    public Map<String, Object> marketDataFetch() throws IOException {
         String url = "https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=" + mOne + "-" + mTwo;
         String content = fetch(url);
         String[] splitContent = content.split("\\[");
@@ -35,8 +35,8 @@ public class DataFetch {
         return stringToMap(clean);
     }
 
-    public LinkedList<Map<Object, Object>> historicalDataFetcher(String s) throws IOException {
-        LinkedList<Map<Object,Object>> arr = new LinkedList<>();
+    public LinkedList<Map<String, Object>> historicalDataFetcher(String s) throws IOException {
+        LinkedList<Map<String,Object>> arr = new LinkedList<>();
         String url = ("https://api.bittrex.com/v3/markets/" + mTwo + "-" + mOne + "/candles/" + s + "/recent");
         String historicalData = fetch(url);
         String[] historicalSplit = historicalData.replaceAll(CLEAN_REGEX, "").split("},");
@@ -51,7 +51,7 @@ public class DataFetch {
             new GenericUrl(url));
         return request.execute().parseAsString();
     }
-    private Map<Object, Object> stringToMap(String s) {
+    private Map<String, Object> stringToMap(String s) {
         return Arrays
             .stream(s.split( ",")).map(r -> r.split(":"))
             .collect(Collectors.toMap(a -> a[0], a ->  a[1]));

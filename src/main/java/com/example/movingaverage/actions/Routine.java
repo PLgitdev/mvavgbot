@@ -97,10 +97,7 @@ public class Routine {
         System.out.println("The time is: " + LocalDateTime.now() + "\n Candle tick: " + priceObj.toString());
     }
 
-    private void dropDB(MongoCRUD mongoCRUD) {
-        mongoCRUD.deleteAllMarketData(Global.MARKET_SUMMARY);
-        mongoCRUD.deleteAllMarketData(Global.HISTORICAL_DATA);
-    }
+
 
     private void setIndicators(Price priceObj) {
         priceObj.setSMA();
@@ -110,30 +107,5 @@ public class Routine {
         priceObj.setSignalLine();
     }
 
-    private void mACDBuilder(Price.PriceBuilder builder, MongoCRUD mongoCRUD) {
-
-        List<Double> nineDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                9,
-                "startsAt",
-                "close");
-        List<Double> twelveDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                12,
-                "startsAt",
-                "close");
-        List<Double> twentySixDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
-                26,
-                "startsAt",
-                "close");
-
-        builder.nineDaysOfClose(nineDayPeriod)
-                .shortMACDPeriod(twelveDayPeriod)
-                .longerMACDPeriod(twentySixDayPeriod);
-    }
-    private Price.PriceBuilder priceBuilderInit(Double smoothing) {
-        return Price.builder().smoothing(smoothing);
-    }
-    private Price priceObjectBuild(Price.PriceBuilder builder) {
-        return builder.build();
-    }
 }
 

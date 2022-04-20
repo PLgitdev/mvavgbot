@@ -9,6 +9,7 @@ import com.example.movingaverage.Model.Price;
 import com.example.movingaverage.session.PriceSession;
 import com.example.movingaverage.strategy.MACDSignalLineCrossover;
 import com.example.movingaverage.strategy.TradingStrategy;
+import com.mongodb.Mongo;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -50,6 +51,7 @@ public class Main {
                         "\n practice : takes you to a no risk environment"
         );
         // Boot up
+        MongoCRUD mongoCRUD = MongoCRUD.getInstance();
         commandHistory.push(sc.next());
         if (commandHistory.peek().matches("^boot$")) {
             Price.PriceBuilder builder = priceBuilderInit(1.0);
@@ -68,19 +70,17 @@ public class Main {
                 PriceSession.candleType = sc.toString().split("\\d")[0];
                 setHistoricalData(mongoCRUD);
                 commandHistory.push("run");
-            }
-            else if (last.matches("^run$")) {
+            } else if (last.matches("^run$")) {
                 //abstract factory
                 runCommand(mongoCRUD);
                 System.out.println("running a poll..." + LocalDateTime.now());
-            }
-            else if (commandHistory.size() >= 10) {
+            } else if (commandHistory.size() >= 10) {
                 commandHistory.removeLast();
-            }
-            else {
+            } else {
                 commandHistory.push(sc.next());
             }
-        };
+        }
+        ;
     }
 
 
@@ -140,7 +140,7 @@ public class Main {
         return queryParameter;
     }
 
-    public static List<Map<Object, Object>> fetchHistoricalDataByMarket(DataFetch fetcher, String queryParam)
+    public static List<Map<String, Object>> fetchHistoricalDataByMarket(DataFetch fetcher, String queryParam)
             throws InterruptedException, IOException {
         Thread.sleep(1000);
         return fetcher.historicalDataFetcher(queryParam);
@@ -155,7 +155,9 @@ public class Main {
         PriceSession.mOne = marketSplit[0].toUpperCase();
         PriceSession.mTwo = marketSplit[1].toUpperCase();
     }
-    public static void strategySelection(){}
+
+    public static void strategySelection() {
+    }
 
     public static void boot(MongoCRUD mongoCRUD, Scanner sc, Price.PriceBuilder builder) throws IOException, InterruptedException {
         dropDB(mongoCRUD);
@@ -227,7 +229,7 @@ public class Main {
                 || priceObj.getPriceShorter().size() >= Integer.MAX_VALUE - 1) {
             priceObj.getPriceShorter().clear();
             mongoCRUD.retrieveMarketDataByDays(
-                    Global.MARKET_SUMMARY, PriceSession.shortDaysInput - 1,"TimeStamp","Last"
+                    Global.MARKET_SUMMARY, PriceSession.shortDaysInput - 1, "TimeStamp", "Last"
             ).forEach(priceObj::addPriceShorter);
         }
         if (LocalDateTime.now().equals(priceObj.getTimestamp().plusDays(PriceSession.longDaysInput))
@@ -272,6 +274,7 @@ public class Main {
         }
         return avg;
     }
+
     private static void marketPivot(MongoCRUD mongoCRUD, Scanner sc) throws IOException, InterruptedException {
 
         dropDB(mongoCRUD);
@@ -279,6 +282,11 @@ public class Main {
         setHistoricalData(mongoCRUD);
 
         PriceSession.currentPriceObject = priceCreator(mongoCRUD, priceBuilderInit(1.0));
+    }
+
+    public static void dropDB(MongoCRUD mongoCRUD) {
+        mongoCRUD.deleteAllMarketData(Global.MARKET_SUMMARY);
+        mongoCRUD.deleteAllMarketData(Global.HISTORICAL_DATA);
     }
     public static Price priceCreator(MongoCRUD mongoCRUD, Price.PriceBuilder priceBuilder) {
         // MACD build function
@@ -291,6 +299,34 @@ public class Main {
                 .dateLimit(LocalDateTime.now().plusHours(24));
         return priceObjectBuild(priceBuilder);
     }
+
+    public static Price.PriceBuilder priceBuilderInit(Double smoothing) {
+        return Price.builder().smoothing(smoothing);
+    }
+
+    public static Price priceObjectBuild(Price.PriceBuilder builder) {
+        return builder.build();
+    }
+    public static void mACDBuilder(Price.PriceBuilder builder, MongoCRUD mongoCRUD) {
+
+        List<Double> nineDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
+                9,
+                "startsAt",
+                "close");
+        List<Double> twelveDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
+                12,
+                "startsAt",
+                "close");
+        List<Double> twentySixDayPeriod = mongoCRUD.retrieveMarketDataByDays(Global.HISTORICAL_DATA,
+                26,
+                "startsAt",
+                "close");
+
+        builder.nineDaysOfClose(nineDayPeriod)
+                .shortMACDPeriod(twelveDayPeriod)
+                .longerMACDPeriod(twentySixDayPeriod);
+    }
+}
 
 
     //mayb a private function of some thing
